@@ -1,0 +1,60 @@
+{% extends "public/base.html" %}
+
+{% block container %}
+    <!-- Page Heading/Breadcrumbs -->
+     <header class="app-main-header">
+        <h1 class="app-main-header__title">도서
+            <small>10월의 하늘 주요 강연을 모은 도서를 소개합니다</small>
+        </h1>
+     </header>
+
+    <ol class="app-main-breadcrumb breadcrumb">
+      <li class="app-main-breadcrumb-item breadcrumb-item">
+        <a class="app-main-breadcrumb-item__a" href="index.html">Home</a>
+      </li>
+      <li class="app-main-breadcrumb-item--sub breadcrumb-item active">기록</li>
+      <li class="app-main-breadcrumb-item--sub breadcrumb-item active">도서</li>
+    </ol>
+
+    <ul class="list-unstyled">
+      {% for row in paginator %}
+        <li class="media my-4">
+            <img src="{{ row.books_link }}" style="width:198px; height:278px" class="mr-3">
+            <div class="media-body">
+                <h5 class="mt-0 mb-1">{{ row.books_title }}</h5>
+                {{ row.books_body }}<br>
+                {{ row.books_company }}<br>
+                {{ row.books_date }}<br>
+                교보: {{ row.books_bookshop['kyobo'] }}<br>
+                영풍: {{ row.books_bookshop['ypbook']}}<br>
+                yes24: {{ row.books_bookshop['yes24'] }}<br>
+                aladin: {{ row.books_bookshop['aladin'] }}<br>
+            </div>
+        </li>
+      {% endfor %}
+      {% if paginator|length == 0 %}
+        <li class="media my-4">
+          <div class="media-body font-weight-bold text-center">등록된 서적이 없습니다. 서적을 등록해주십시오</div>
+        </li>
+      {% endif %}
+    </ul>
+
+    <nav aria-label="Page navigation example">
+       <ul class="pagination justify-content-start">
+         <div class="col-10">
+            <nav>
+                <ul class="pagination pagination-sm">
+                    {{ paginator.pager(
+                           dotdot_attr={'class':'spacer'},
+                           symbol_first='',
+                           symbol_last='',
+                           symbol_previous='<a href="#"><span>&laquo;</span></a>',
+                           symbol_next='<a href="#"><span>&raquo;</span></a>',
+                           link_tag=paginate_link_tag,
+                           url=page_url|safe) | safe }}
+                </ul>
+            </nav>
+        </div>
+       </ul>
+    </nav>
+{% endblock %}

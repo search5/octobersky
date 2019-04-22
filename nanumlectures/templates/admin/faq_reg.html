@@ -1,0 +1,78 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+  <script src="//unpkg.com/vue"></script>
+  <script src="//unpkg.com/lodash"></script>
+  <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="{{ url_for('admin.static', filename='js/summerNote.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid" id="form">
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="index.html">10월의 하늘</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">FAQ</li>
+        </ol>
+        <div class="app-main-card">
+
+            <form class="app-main-form">
+                <!-- Page Content -->
+                <h1>FAQ 등록</h1>
+                <hr>
+                <div class="form-group row">
+                    <label for="faqClassify" class="col-2">유형</label>
+                    <div class="col-10">
+                      <select id="faqClassify" class="form-control" v-model="faqClassify">
+                        <option value="">FAQ 유형을 선택하세요</option>
+                        <option value="재능기부자">재능기부자</option>
+                        <option value="홈페이지">홈페이지</option>
+                      </select>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="faqSubject" class="col-2">제목</label>
+                    <div class="col-10">
+                        <input type="text" id="faqSubject" class="form-control" placeholder="제목이 표시됩니다" v-model="faqSubject">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="editor" class="col-2">본문</label>
+                    <div class="col-10">
+                        <summer-note v-model="faqBody" id="editor" placeholder="FAQ 본문을 입력하여 주세요"></summer-note>
+                    </div>
+                </div>
+            </form>
+            <div class="row">
+                <div class="col-12 text-right">
+                    <button class="btn btn-primary" @click.prevent="register">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        new Vue({
+            el: '#form',
+            data: {
+                faqClassify: '',
+                faqSubject: '',
+                faqBody: ''
+            },
+            methods: {
+                register: function (e) {
+                    axios.post('/admin/faq/reg', {
+                        faqClassify: this.faqClassify,
+                        faqSubject: this.faqSubject,
+                        faqBody: this.faqBody
+                    }).then(function (e) {
+                        alert('FAQ 등록이 완료되었습니다')
+                        location.href = '/admin/faq'
+                    })
+                }
+            }
+        })
+    </script>
+    <!-- /.container-fluid -->
+{% endblock %}

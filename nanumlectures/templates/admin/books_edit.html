@@ -1,0 +1,134 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="//unpkg.com/vue"></script>
+    <script src="//unpkg.com/lodash"></script>
+    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=8261b81cbd781be8d8c51fc4018f64c0&libraries=services"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid" id="form">
+
+        <!-- Breadcrumbs-->
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="index.html">Admin</a>
+            </li>
+            <li class="breadcrumb-item active">도서 수정</li>
+        </ol>
+
+        <!-- Page Content -->
+        <form>
+            <div class="form-group row">
+                <label for="roundtable_num" class="col-sm-2 col-form-label">개최회차</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="booksYear" placeholder="개최회차를 입력하세요." v-model="roundtable_num">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="booksTitle" class="col-sm-2 col-form-label">도서명</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="booksTitle" placeholder="도서명을 입력하세요." v-model="booksTitle">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="booksLink" class="col-sm-2 col-form-label">도서 이미지 링크</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="booksLink" placeholder="도서 이미지 링크를 입력하세요" v-model="booksLink">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="booksISBN" class="col-sm-2 col-form-label">ISBN</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="booksISBN" placeholder="도서 ISBN을 입력하세요" v-model="booksISBN">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="booksDate" class="col-sm-2 col-form-label">출간일</label>
+                <div class="col-sm-10">
+                    <input type="date" class="form-control" id="booksDate" placeholder="도서 출간일을 입력하세요" v-model="booksDate">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="booksCompany" class="col-sm-2 col-form-label">출판사</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="booksCompany" placeholder="출판사를 입력하세요" v-model="booksCompany">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="booksBody" class="col-sm-2 col-form-label">도서 설명</label>
+                <div class="col-sm-10">
+                    <textarea rows="6" class="form-control" id="booksBody" placeholder="도서 설명을 입력하세요" v-model="booksBody"></textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="booksKyobo" class="col-sm-2 col-form-label">교보문고</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="booksKyobo" placeholder="교보문고 링크를 입력하세요" v-model="shopLink.kyobo">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="booksYPBooks" class="col-sm-2 col-form-label">영풍문고</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="booksYPBooks" placeholder="영풍문고 링크를 입력하세요" v-model="shopLink.ypbook">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="booksYes24" class="col-sm-2 col-form-label">YES24</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="booksYes24" placeholder="YES24 링크를 입력하세요" v-model="shopLink.yes24">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="booksAladdin" class="col-sm-2 col-form-label">알라딘</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="booksAladin" placeholder="알라딘 링크를 입력하세요" v-model="shopLink.aladin">
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-10">
+                    <button type="button" class="btn btn-primary" @click.prevent="modify">수정</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <script>
+        new Vue({
+            el: '#form',
+            data: {
+                booksYear: '{{ book.books_year or '' }}',
+                booksTitle: '{{ book.books_title or '' }}',
+                booksLink: '{{ book.books_link or '' }}',
+                booksISBN: '{{ book.books_isbn or '' }}',
+                booksDate: '{{ book.books_date or '' }}',
+                booksCompany: '{{ book.books_company or '' }}',
+                booksBody: '{{ book.books_body or '' }}',
+                shopLink: {
+                    kyobo: '{{ book.books_bookshop.kyobo or '' }}',
+                    ypbook: '{{ book.books_bookshop.ypbook or '' }}',
+                    yes24: '{{ book.books_bookshop.yes24 or '' }}',
+                    aladin: '{{ book.books_bookshop.aladin or '' }}'
+                }
+            },
+            methods: {
+                modify: function (e) {
+                    axios.post('/admin/books/{{ book.id }}/edit', {
+                        roundtable_num: this.roundtable_num,
+                        booksTitle: this.booksTitle,
+                        booksLink: this.booksLink,
+                        booksISBN: this.booksISBN,
+                        booksDate: this.booksDate,
+                        booksCompany: this.booksCompany,
+                        booksBody: this.booksBody,
+                        shopLink: this.shopLink
+                    }).then(function (e) {
+                        alert('도서 수정이 완료되었습니다')
+                        location.href = '/admin/books/{{ book.id }}'
+                    })
+                }
+            }
+        })
+    </script>
+    <!-- /.container-fluid -->
+{% endblock %}

@@ -1,0 +1,422 @@
+{% extends "public/base.html" %}
+
+{% block css %}
+    <style type="text/css">
+    .bd-highlight {
+        border: dotted 0.5px #FFFCFC;
+        color: #ffffff;
+    }
+    </style>
+{% endblock %}
+
+{% block script %}
+  <script src="//unpkg.com/vue"></script>
+  <script src="//unpkg.com/lodash"></script>
+  <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=8261b81cbd781be8d8c51fc4018f64c0&libraries=services"></script>
+{% endblock %}
+
+{% block container %}
+    <!-- Page Heading/Breadcrumbs -->
+    <header class="app-main-header">
+        <h1 class="app-main-header__title">함께하는 도서관</h1>
+    </header>
+
+    <ol class="app-main-breadcrumb breadcrumb">
+        <li class="app-main-breadcrumb-item breadcrumb-item">
+            <a class="app-main-breadcrumb-item__a" href="index.html">Home</a>
+        </li>
+        <li class="app-main-breadcrumb-item--sub breadcrumb-item active">소개</li>
+        <li class="app-main-breadcrumb-item--sub breadcrumb-item active">함께하는 도서관</li>
+    </ol>
+
+    <div class="d-md-flex flex-wrap bg-success align-items-stretch">
+      {% for item in area %}
+        <div class="p-2 flex-fill bd-highlight w-25"><a href="{{ url_for('public.together_library', area=item) }}" style="color: white;">{{ library_short2long(item) }}</a></div>
+{#        <div class="p-2 flex-fill bd-highlight w-25">{{ library_short2long(item) }}</div>#}
+      {% endfor %}
+    </div>
+
+    <dl class="row mt-5">
+      {% for library, lecture_addition in opened_library %}
+        <dt class="col-sm-3">
+          <h3>{{ library.library_name }}(<a href="#" onclick="map_open('{{ library.lat }}', '{{ library.long }}')"><i class="fas fa-map"></i></a>)</h3>
+          <p>담당 선생님: {{ library.manager_name or '' }}</p>
+          <address style="font-weight: 400">
+            {{ library.library_addr }}<br>
+            <abbr>T:</abbr> {{ library.library_tel or '' }}
+          </address>
+
+          <details open="" style="font-weight: 400">
+            <summary>강연장 환경</summary>
+            <p>{{ library.library_description or '' }}</p>
+          </details>
+
+          <details open="" style="font-weight: 400">
+            <summary>예상 청중</summary>
+            <p>{{ library.expected_audience or '' }}</p>
+          </details>
+        </dt>
+        <dd class="col-sm-9">
+          <ul class="list-inline">
+            {% set library_dependency = zip(batch_fill(library_filter(library.lecture, show_roundtable_num), lecture_addition.round_num), batch_fill(library_filter(library.host, show_roundtable_num), lecture_addition.round_num)) %}
+            {% for lecture, host in library_dependency %}
+              <li class="list-inline-item">
+                <div class="card" style="width: 16rem;">
+                  <div class="card-body" style="height: 255px">
+                  {% if lecture %}
+                    <h5 class="card-title">{{ lecture.lecture_title }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ lecture.lecture_info }}</h6>
+                    <p class="card-text">{{ lecture.lecture_summary }}</p>
+                  {% else %}
+                    <h5 class="card-title"><span style="color: grey;">강연이 비어있습니다</span></h5>
+                    <h6 class="card-subtitle mb-2 text-muted"><a href="#" onclick="lecture_modal('{{ library.id }}', '{{ loop.index + 1 }}');" class="btn btn-primary btn-sm">강연신청</a></h6>
+                    <p class="card-text"><span class="font-italic" style="color: #e02d1b;">이 자리가 당신의 자리!<br>지금 바로 강연 신청하세요!!</span></p>
+                  {% endif %}
+                  </div>
+                  <div class="card-footer" style="height: 75px;word-break: break-all">
+                    {% if not host %}
+                      <span style="color: grey;">진행자가 비어있습니다</span><br>
+                      <a href="#" onclick="host_modal('{{ library.id }}', '{{ loop.index + 1 }}')" class="btn btn-primary btn-sm">진행자 신청</a>
+                    {% else %}
+                      {{ host.host_info }}
+                    {% endif %}
+                  </div>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        </dd>
+      {% endfor %}
+    </dl>
+
+    <!-- Large modal -->
+    <div class="modal fade library_map" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+              <div class="modal-body">
+                <div style="width: 100%; height: 500px;" id="map">도서관 위치를 나타낸 지도가 표시됩니다.</div>
+              </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app">
+        <div class="modal fade lecture_reg" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                  {% raw %}
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="lecture_title">강연 기부 신청({{ library_info.area }} {{ library_info.library_name }})</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  {% endraw %}
+                  <div class="modal-body">
+                    <div class="form-group">
+                        <label>강연장 정보</label>
+                        <div class="form-control-static">
+                          {% raw %}
+                          <ul>
+                              <li>강연장 환경: {{ library_info.library_description }}</li>
+                              <li>청중 연령: {{ library_info.expected_audience }}</li>
+                          </ul>
+                          {% endraw %}
+                        </div>
+                    </div>
+
+                    {% raw %}
+                    <div class="form-group">
+                      <label for="exampleInputEmail2">강연 시간</label>
+                      <select id="Time" class="form-control" v-model="lecture_info.session_time">
+                        <option value="">선택하세요</option>
+                        <option v-for="(item, index) in available_session_time" :key="index" :value="item">강연 {{ item }}({{ item + 1 }}시)</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="Title">강연 제목</label>
+                        <input type="text" id="Title" placeholder="강연 제목을 입력하세요" class="form-control"
+                               v-model="lecture_info.title">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Summary">강연개요</label>
+                        <textarea type="text" id="Summary" placeholder="강연개요를 입력하세요" rows="5"
+                                  v-model="lecture_info.description" class="form-control"></textarea>
+                    </div>
+                    {% endraw %}
+
+                    <div class="row">
+                      <div class="col-lg-6">
+                          <div class="form-group">
+                              <label for="ExpectedAudience">예상청중</label>
+                              <input type="text" id="ExpectedAudience" v-model="lecture_info.expectedaudience"
+                                     class="form-control" placeholder="예상 청중을 입력하세요">
+                          </div>
+                      </div>
+                      {% raw %}
+                      <div class="col-lg-6">
+                        <div class="form-group">
+                          <label for="Belong">소속</label>
+                          <input type="text" id="Belong" placeholder="소속을 입력하세요" class="form-control"
+                                 v-model="lecture_info.organization">
+                        </div>
+                      </div>
+                      {% endraw %}
+                    </div>
+
+                    {% if (not current_user.phone) or (not current_user.email) %}
+                      <div class="row">
+                        {% if not current_user.phone %}
+                          {% raw %}
+                          <div class="col-lg-6">
+                            <div class="form-group">
+                              <label for="phone">전화번호</label>
+                              <input type="text" id="phone" placeholder="휴대폰 번호를 입력하세요"
+                                     class="form-control" v-model="lecture_info.phone">
+                            </div>
+                          </div>
+                          {% endraw %}
+                        {% endif %}
+                        {% if not current_user.email %}
+                          {% raw %}
+                          <div class="col-lg-6">
+                            <div class="form-group">
+                              <label for="email">이메일</label>
+                              <input type="text" id="email" placeholder="이메일을 입력하세요" class="form-control"
+                                     v-model="lecture_info.email">
+                            </div>
+                          </div>
+                          {% endraw %}
+                        {% endif %}
+                      </div>
+                    {% endif %}
+
+                    {% raw %}
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" v-model="lecture_info.public_yn"> 강연 영상 공개에 동의하십니까?
+                        </label>
+                    </div>
+                    {% endraw %}
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" @click.prevent="reg_lecture">기부 신청하기</button>
+                  </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade host_reg" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    {% raw %}
+                    <h5 class="modal-title" id="host_title_reg_title">진행 기부 신청({{ library_info.area }} {{ library_info.library_name }})</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                    {% endraw %}
+                  </div>
+                  <div class="modal-body">
+                    <div class="row">
+                      <div class="col-lg-6">
+                          <div class="form-group">
+                              <label for="name">이름</label>
+                              <input type="text" readonly id="name" value="{{ current_user.name }}"
+                                     class="form-control-plaintext">
+                          </div>
+                      </div>
+                      {% raw %}
+                      <div class="col-lg-6">
+                        <div class="form-group">
+                          <label for="Belong">소속</label>
+                          <input type="text" id="Belong" placeholder="소속을 입력하세요" class="form-control"
+                                 v-model="host_info.organization">
+                        </div>
+                      </div>
+                      {% endraw %}
+                    </div>
+
+                    {% if (not current_user.phone) or (not current_user.email) %}
+                      <div class="row">
+                        {% if not current_user.phone %}
+                          {% raw %}
+                          <div class="col-lg-6">
+                            <div class="form-group">
+                              <label for="phone">전화번호</label>
+                              <input type="text" id="phone" placeholder="휴대폰 번호를 입력하세요"
+                                     class="form-control" v-model="host_info.phone">
+                            </div>
+                          </div>
+                          {% endraw %}
+                        {% endif %}
+                        {% if not current_user.email %}
+                          {% raw %}
+                          <div class="col-lg-6">
+                            <div class="form-group">
+                              <label for="email">이메일</label>
+                              <input type="text" id="email" placeholder="이메일을 입력하세요" class="form-control"
+                                     v-model="host_info.email">
+                            </div>
+                          </div>
+                          {% endraw %}
+                        {% endif %}
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" @click.prevent="reg_host">기부 신청하기</button>
+                  </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function map_open(lat, long) {
+        $("#map", ".library_map").html('')
+
+        $(".library_map").data('pos', {
+            lat: lat,
+            long: long
+        }).modal('show')
+    }
+
+    function lecture_modal(library_id, session_time) {
+        {% if current_user.is_authenticated and not joined_user %}
+          $(".lecture_reg").modal("show")
+          modal_app.lecture_modal(library_id, session_time)
+        {% elif current_user.is_authenticated and joined_user %}
+          alert('이미 신청하셨습니다')
+        {% else %}
+          alert('로그인 이후 신청해주세요')
+        {% endif %}
+    }
+
+    function host_modal(library_id, session_time) {
+        {% if current_user.is_authenticated and not joined_user %}
+          $(".host_reg").modal("show")
+          modal_app.host_modal(library_id, session_time)
+        {% elif current_user.is_authenticated and joined_user %}
+          alert('이미 신청하셨습니다')
+        {% else %}
+          alert('로그인 이후 신청해주세요')
+        {% endif %}
+    }
+
+    var modal_app = new Vue({
+        el: '#app',
+        data: {
+            roundtable_num: {{ show_roundtable_num }},
+            library_info: {
+                library_name: '',
+                manager_name: '',
+                library_tel: '',
+                library_fax: '',
+                library_homepage: '',
+                manager_hp: '',
+                lat: '',
+                long: '',
+                area: '',
+                library_description: '',
+                expected_audience: '',
+                library_addr: ''
+            },
+            available_session_time: [],
+            lecture_info: {
+                title: '',
+                description: '',
+                organization: '',
+                public_yn: false,
+                session_time: '',
+                roundtable_num: {{ show_roundtable_num }},
+                library_id: '',
+                expectedaudience: '',
+                email: '',
+                phone: ''
+            },
+            host_info: {
+                organization: '',
+                session_time: '',
+                roundtable_num: {{ show_roundtable_num }},
+                library_id: '',
+                email: '',
+                phone: ''
+            }
+        },
+        methods: {
+            lecture_modal: function (library_id, session_time) {
+                var vm = this
+
+                this.lecture_info.library_id = library_id
+
+                axios.get('{{ url_for('public.library_info') }}', { params: {
+                    library_id: library_id,
+                    session_time: session_time,
+                    roundtable_id: this.roundtable_num
+                } }).then(function (resp) {
+                    vm.library_info = resp.data.library
+                    vm.available_session_time = resp.data.available_session_time
+                })
+            },
+            reg_lecture: function (e) {
+                axios.post('{{ url_for('public.reg_lecture') }}', this.lecture_info).then(function (resp) {
+                    if (resp.data.success) {
+                        alert('강연 정보가 등록되었습니다')
+                        location.reload()
+                    } else {
+                        alert(resp.data.msg)
+                        location.reload()
+                    }
+                })
+            },
+            host_modal: function (library_id, session_time) {
+                var vm = this
+
+                this.host_info.library_id = library_id
+                this.host_info.session_time = session_time
+
+                axios.get('{{ url_for('public.library_info') }}', { params: {
+                    library_id: library_id,
+                    session_time: session_time,
+                    roundtable_id: this.roundtable_num
+                } }).then(function (resp) {
+                    vm.library_info = resp.data.library
+                    vm.available_session_time = resp.data.available_session_time
+                })
+            },
+            reg_host: function (e) {
+                axios.post('{{ url_for('public.reg_host') }}', this.host_info).then(function (resp) {
+                    if (resp.data.success) {
+                        alert('진행자 정보가 등록되었습니다')
+                        location.reload()
+                    } else {
+                        alert(resp.data.msg)
+                        location.reload()
+                    }
+                })
+            }
+        }
+    })
+    </script>
+{% endblock %}
+
+{% block footer_script %}
+  <script>
+  $('.library_map').on('shown.bs.modal', function (e) {
+      var pos = $(e.target).data('pos')
+      var container = document.getElementById('map');
+      var lib_latlang = new daum.maps.LatLng(pos.lat, pos.long)
+
+      var options = { center: lib_latlang, level: 2 };
+
+      var map = new daum.maps.Map(container, options);
+      var marker = new daum.maps.Marker({ map: map, position: lib_latlang });
+      marker.setMap(map);
+  })
+  </script>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+    <div class="app-main-container container-fluid">
+
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="index.html">Admin</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">사진첩 조회</li>
+        </ol>
+
+        <!-- Page Content -->
+        <form>
+            <div class="form-group row">
+                <label for="inputEmail3" class="col-sm-2 col-form-label">행사 연도</label>
+                <div class="col-sm-10">
+                    <input type="text" readonly class="form-control-plaintext" id="staticEmail" placeholder="행사연도를 입력하세요.">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="inputEmail3" class="col-sm-2 col-form-label">사진첩명</label>
+                <div class="col-sm-10">
+                    <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="사진첩 이름을 입력하세요.">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="inputPassword3" class="col-sm-2 col-form-label">사진첩 링크</label>
+                <div class="col-sm-10">
+                    <input type="text" readonly class="form-control-plaintext" id="inputPassword3"
+                           placeholder="사진첩 링크를 입력하세요">
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="inputPassword3" class="col-sm-2 col-form-label">대표 이미지 링크</label>
+                <div class="col-sm-10">
+                    <input type="text" readonly class="form-control-plaintext" id="inputPassword3" placeholder="대표 이미지 링크를 입력하세요">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="inputPassword3" class="col-sm-2 col-form-label">사진첩 설명</label>
+                <div class="col-sm-10">
+                    <textarea rows="6" readonly class="form-control-plaintext" id="inputPassword3"
+                              placeholder="사진첩 설명을 입력하세요" style="border: solid 1px grey;"></textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-10">
+                    <a href="{{ url_for('admin.photo_edit', photo_id='1') }}" class="btn btn-warning">수정</a>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <!-- /.container-fluid -->
+{% endblock %}

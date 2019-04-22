@@ -1,0 +1,85 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="//unpkg.com/vue"></script>
+    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+{% endblock %}
+
+{% block content %}
+  <div class="app-main-container container-fluid">
+    <!-- Breadcrumbs-->
+    <ol class="app-main-breadcrumb breadcrumb">
+        <li class="app-main-breadcrumb-item breadcrumb-item">
+            <a class="app-main-breadcrumb-item__a" href="index.html">Admin</a>
+        </li>
+        <li class="app-main-breadcrumb-item--sub breadcrumb-item active">사진첩 등록</li>
+    </ol>
+    <div class="app-main-card">
+        <!-- Page Content -->
+        <form class="app-main-form" id="app">
+            <div class="form-group row">
+                <label for="roundtable_num" class="app-main-form__label col-sm-2 col-form-label">개최회차</label>
+                <div class="col-sm-10">
+                    <input type="number" class="form-control" id="roundtable_num" v-model='roundtable_num' placeholder="개최회차를 입력하세요.">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="album_name" class="app-main-form__label col-sm-2 col-form-label">사진첩명</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="album_name" v-model='album_name' placeholder="사진첩 이름을 입력하세요.">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="album_link" class="app-main-form__label col-sm-2 col-form-label">사진첩 링크</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="album_link" v-model='album_link' placeholder="사진첩 링크를 입력하세요">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="represent_img" class="app-main-form__label col-sm-2 col-form-label">대표 이미지 링크</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="represent_img" v-model='represent_img' placeholder="대표 이미지 링크를 입력하세요">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="description" class="app-main-form__label col-sm-2 col-form-label">사진첩 설명</label>
+                <div class="col-sm-10">
+                    <textarea rows="6" class="form-control" id="description" v-model='description' placeholder="사진첩 설명을 입력하세요"></textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-10">
+                    <button type="button" @click.prevent="submit" class="btn btn-primary">등록</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <script>
+      new Vue({
+        el: '#app',
+        data: {
+          roundtable_num: '',
+          album_name: '',
+          album_link: '',
+          represent_img: '',
+          description: ''
+        },
+        methods: {
+          submit: function (event) {
+            axios.post('/admin/photo/reg', {
+                roundtable_num: this.roundtable_num,
+                album_name: this.album_name,
+                album_link: this.album_link,
+                represent_img: this.represent_img,
+                description: this.description
+            }).then(function (e) {
+                alert('사진첩 등록이 완료되었습니다')
+                location.href = '/admin/photo'
+            })
+          }
+        }
+      })
+    </script>
+  </div>
+  <!-- /.container-fluid -->
+{% endblock %}

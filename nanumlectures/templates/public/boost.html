@@ -1,0 +1,35 @@
+{% extends "public/base.html" %}
+
+{% block css %}
+    <style type="text/css">
+    .donation-content{
+        padding-top: 30px;
+    }
+    .donation-right-desc{}
+    .donation-right-contact {
+        display: flex;
+        flex-direction: column;
+        font-size: 15px;
+    }
+    .donation-right-contact__title{}
+    .donation-right-contact-item{
+        display: flex;
+        justify-content : flex-start;
+        align-items: center;
+    }
+    .donation-right-contact-item__img{
+        max-width: 34px;
+        height: auto;
+        margin: 0 15px 15px 0!important;
+    }
+    .donation-right-contact-item__p{
+        font-weight:600;
+        min-width: 130px;
+    }
+    .donation-right-contact-desc { margin-right: auto; }
+    </style>
+{% endblock %}
+
+{% block container %}
+    {{ donate_body }}
+{% endblock %}

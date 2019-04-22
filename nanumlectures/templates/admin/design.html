@@ -1,0 +1,94 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+    <div class="app-main-container container-fluid">
+
+        <h4 class="app-main-breadcrumb__title">디자인 파일 관리</h4>
+
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="index.html">Admin</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">디자인 파일 관리</li>
+        </ol>
+
+        <!-- Page Content -->
+        <div class="card mb-2">
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">연도</th>
+                        <th scope="col">디자인명</th>
+                        <th scope="col">등록일</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in paginator %}
+                      <tr>
+                        <th scope="row">{{ (total_cnt - (items_per_page * (page - 1))) - loop.index0 }}</th>
+                        <td>{{ row.roundtable.roundtable_num }}회차</td>
+                        <td><a href="{{ url_for('admin.design_view', design=row.id) }}">{{ row.design_name }}</a></td>
+                        <td>{{ row.design_write_date }}</td>
+                      </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col-6">
+                        <nav>
+                            <ul class="pagination justify-content-start">
+                                {{ paginator.pager(
+                                   dotdot_attr={'class':'spacer'},
+                                   symbol_first='',
+                                   symbol_last='',
+                                   symbol_previous='<a href="#"><span>&laquo;</span></a>',
+                                   symbol_next='<a href="#"><span>&raquo;</span></a>',
+                                   link_tag=paginate_link_tag,
+                                   url=page_url|safe) | safe }}
+                            </ul>
+                        </nav>
+                    </div>
+                    {% set error_stack = namespace() %}
+                    {% with messages = get_flashed_messages() %}
+                      {% if messages %}
+                          {% for message in messages %}
+                            {% set error_stack.class = 'is-invalid' %}
+                            {% set error_stack.msg = message %}
+                          {% endfor %}
+                      {% endif %}
+                    {% endwith %}
+                    <div class="col-4">
+                      <form action="{{ url_for('admin.design') }}" method="get">
+                        <input type="hidden" name="page" value="{{ page }}">
+                        <div class="input-group">
+                          <div class="input-group-preped">
+                            <select class="form-control" name="search_option">
+                              <option value="roundtable_num">개최회차</option>
+                              <option value="design_name">디자인명</option>
+                            </select>
+                          </div>
+                          <input type="text" class="form-control {{ error_stack.class }}" placeholder="검색어를 입력하세요" name="search_word">
+                          <div class="input-group-append">
+                            <button class="btn btn-success" type="submit">검색하기</button>
+                          </div>
+                          <div class="invalid-feedback">
+                            {{ error_stack.msg }}
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                    <div class="col-2 text-right">
+                        <a href="{{ url_for('admin.design_reg') }}" class="btn btn-primary">등록</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /.container-fluid -->
+{% endblock %}

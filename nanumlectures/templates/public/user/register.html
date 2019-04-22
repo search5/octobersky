@@ -1,0 +1,144 @@
+{% extends "public/base.html" %}
+
+{% block script %}
+    <script type="text/javascript" src="//unpkg.com/vue"></script>
+{% endblock %}
+
+{% block footer_script %}
+    <script>
+    new Vue({
+        el: '#register_form',
+        data: {
+            name: '',
+            id: '',
+            pw: '',
+            repw: '',
+            email: '',
+            phone: '',
+            agree: false,
+            validated: true
+        },
+        computed: {
+            errors: function () {
+                let password_isvalid = this.pw === this.repw
+
+                return {
+                    name: { 'is-invalid': this.name === '' },
+                    id: { 'is-invalid': this.id === '' },
+                    pw: { 'is-invalid': this.pw === '' || (this.pw !== '' && !password_isvalid) },
+                    repw: { 'is-invalid': this.repw === '' ||  (this.repw !== '' && !password_isvalid) },
+                    agree: { 'is-invalid': this.agree === false }
+                }
+            }
+        },
+        methods: {
+            register: function (e) {
+                this.validated = (this.name !== '' && this.id !== '' &&
+                    this.pw !== '' && this.repw !== '' && this.agree)
+
+                if (this.validated) {
+                    this.$refs.form.submit()
+                }
+            }
+        }
+    })
+    </script>
+{% endblock %}
+
+{% block container %}
+    <ol class="app-main-breadcrumb breadcrumb">
+      <li class="app-main-breadcrumb-item breadcrumb-item">
+        <a class="app-main-breadcrumb-item__a" href="index.html">Home</a>
+      </li>
+      <li class="app-main-breadcrumb-item--sub breadcrumb-item active">회원가입</li>
+    </ol>
+
+    <div class="row mb-3" style="margin-left: 0; margin-right: 0;">
+        <div class="col-md-4 py-5 bg-success text-white text-center">
+            <div>
+                <div class="card-body">
+                    <img src="{{ url_for('public.static', filename='img/registration_bg.svg') }}" style="width:30%">
+                    <h2 class="py-3">회원가입</h2>
+                    <p>10월의 하늘에 가입하시면 행사 정보 및 강연 정보를 받아보실 수 있습니다</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8 py-5 border">
+            <h4 class="pb-4">다음 정보를 입력해주시기 바랍니다.</h4>
+            <form method="post" action="/complete/username/" id="register_form" ref="form">
+                <input type="hidden" name="mode" value="register">
+                <div class="form-group row">
+                    <label for="inputName" class="col-sm-2 col-form-label">이름</label>
+                    <div class="col-sm-10">
+                        <input id="inputName" name="fullname" placeholder="이름을 입력하세요" class="form-control" :class="errors['name']" type="text" v-model="name">
+                        <div class="valid-feedback">
+                          잘하셨어요 *^^*
+                        </div>
+                        <div class="invalid-feedback">
+                          회원가입을 하려면 이름을 입력하셔야 합니다.
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputID" class="col-sm-2 col-form-label">ID</label>
+                    <div class="col-sm-10">
+                        <input id="inputID" name="username" placeholder="ID를 입력하세요" class="form-control" :class="errors['id']" type="text" v-model="id">
+                        <div class="valid-feedback">
+                          잘하셨어요 *^^*
+                        </div>
+                        <div class="invalid-feedback">
+                            10월의 하늘에 로그인 하실때 사용할 ID를 입력하셔야 합니다.
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPW" class="col-sm-2 col-form-label">비밀번호</label>
+                    <div class="col-sm-10">
+                        <input id="inputPW" name="password" placeholder="비밀번호를 입력하세요" class="form-control" :class="errors['pw']" type="password" v-model="pw">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputRPW" class="col-sm-2 col-form-label">비밀번호 확인</label>
+                    <div class="col-sm-10">
+                        <input id="inputRPW" name="re_password" placeholder="한 번 더 비밀번호를 입력하세요" class="form-control" :class="errors['repw']" type="password" v-model="repw">
+                        <div class="valid-feedback">
+                          잘하셨어요 *^^*
+                        </div>
+                        <div class="invalid-feedback">
+                          비밀번호는 입력하신 2개가 일치해야 합니다.
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputEmail" class="col-sm-2 col-form-label">이메일</label>
+                    <div class="col-sm-10">
+                        <input id="inputEmail" name="email" placeholder="E-Mail" class="form-control" type="email" v-model="email">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPhone" class="col-sm-2 col-form-label">전화번호</label>
+                    <div class="col-sm-10">
+                        <input id="inputPhone" name="phone" placeholder="전화번호" class="form-control" type="text" v-model="phone">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="invalidCheck2" :class="errors['agree']" v-model="agree">
+                                <label class="form-check-label" for="invalidCheck2">
+                                    <small>여기를 클릭하셔서 <a href="{{ url_for('public.privacy') }}" target="_blank">약관및 개인정보
+                                        처리방침</a>에 동의 해주세요.
+                                    </small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <button type="button" class="btn btn-danger" v-on:click.prevent="register">가입하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

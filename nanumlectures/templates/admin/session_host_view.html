@@ -1,0 +1,115 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+  <script src="//unpkg.com/vue"></script>
+  <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid">
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="#">진행자 관리</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">상세 화면</li>
+        </ol>
+        <div class="app-main-card">
+            <form class="app-main-form" id="form">
+                <div class="form-group row">
+                    <label for="hostNum" class="app-main-form__label col-1 col-form-label">개최회차</label>
+                    <div class="col-sm-10">
+                        <input type="text" readonly class="form-control-plaintext" id="hostNum"  value="{{ host.roundtable.roundtable_num }}회차">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="LibraryName" class="app-main-form__label col-sm-1 col-form-label">도서관명</label>
+                    <div class="col-sm-10">
+                        <input type="text" readonly class="form-control-plaintext" id="LibraryName"  value="{{ host.library.library_name }}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="SessionTime" class="app-main-form__label col-1 col-form-label">강연 시간</label>
+                    <div class="col-sm-10">
+                        <input type="text" readonly class="form-control-plaintext" id="SessionTime"  value="{{ host.session_time }}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="LectureTitle" class="app-main-form__label col-1 col-form-label">강연 제목</label>
+                    <div class="col-sm-10">
+                        <input type="text" id="LectureTitle" v-model="hostTitle"
+                               placeholder="강연 제목을 입력하세요" class="form-control-plaintext" readonly>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="HostName" class="app-main-form__label col-1 col-form-label">진행자명</label>
+                    <div class="col-sm-5">
+                        <input type="text" id="HostName"
+                               placeholder="진행자명을 입력하세요"
+                               class="form-control-plaintext"
+                               value="{{ host.host_name }}">
+                    </div>
+                    <label for="HostOrganization" class="app-main-form__label col-1 col-form-label">소속</label>
+                    <div class="col-sm-5">
+                        <input type="text" id="HostOrganization"
+                               placeholder="소속을 입력하세요"
+                               class="form-control-plaintext"
+                               value="{{ host.host_belong }}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="HostPhone" class="app-main-form__label col-1 col-form-label">휴대폰</label>
+                    <div class="col-sm-5">
+                        <input type="text" id="HostPhone"
+                               placeholder="휴대폰 번호를 입력하세요"
+                               class="form-control-plaintext"
+                               value="{{ host.host_hp }}">
+                    </div>
+                    <label for="HostEmail" class="app-main-form__label col-1 col-form-label">이메일</label>
+                    <div class="col-sm-5">
+                        <input type="text" id="HostEmail"
+                               placeholder="이메일 주소를 입력하세요"
+                               class="form-control-plaintext"
+                               value="{{ host.host_email }}">
+                    </div>
+                </div>
+                <a href="{{ url_for('admin.session_host_edit', host=host.id) }}" class="btn btn-primary">수정</a>
+                <a href="#" @click.prevent="delete_host" class="btn btn-danger">삭제</a>
+            </form>
+        </div>
+    </div>
+    <!-- /.container-fluid -->
+  <script>
+      new Vue({
+          el: '#form',
+          data: {
+              hostTitle: ''
+          },
+          methods: {
+              delete_host: function () {
+                  if (confirm('정말 진행자 정보를 삭제하시겠습니까?\n되돌릴 수 없습니다')) {
+                      axios.delete("{{ url_for('admin.session_host_view', host=host.id) }}").then(function (resp) {
+                          alert('진행자 정보 삭제가 완료되었습니다.')
+                          location.href = '{{ url_for('admin.session_host') }}'
+                      })
+                  }
+              }
+          },
+          created: function () {
+              var vm = this
+              this.hostTitle = '강연 정보를 불러오는 중입니다.'
+
+              axios.get('{{ url_for('admin.lecture_find') }}', { params: {
+                  roundtable_id: {{ host.roundtable.id }},
+                  lecture_time: {{ host.session_time }}
+              } }).then(function (resp) {
+                  if (resp.data.hasOwnProperty('msg')) {
+                      vm.hostTitle = resp.data.msg
+                  } else {
+                      vm.hostTitle = resp.data.lecture_title
+                  }
+              })
+          }
+      })
+    </script>
+{% endblock %}

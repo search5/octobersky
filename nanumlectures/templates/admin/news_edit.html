@@ -1,0 +1,99 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+  <script src="//unpkg.com/vue"></script>
+  <script src="//unpkg.com/lodash"></script>
+  <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="{{ url_for('admin.static', filename='js/summerNote.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid" id="form">
+
+        <!-- Breadcrumbs-->
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="index.html">10월의 하늘</a>
+            </li>
+            <li class="breadcrumb-item active">언론 홍보</li>
+        </ol>
+
+        <!-- Page Content -->
+        <h1>언론 홍보 수정</h1>
+        <hr>
+        <form action="">
+            <div class="form-group row">
+                <label for="newsCategory" class="col-2">구분</label>
+                <div class="col-4">
+                    <select class="form-control" id="newsCategory" v-model="category">
+                        <option value="">언론보도 자료 구분을 선택하세요</option>
+                        <option value="1">보도자료</option>
+                        <option value="2">뉴스기사</option>
+                    </select>
+                </div>
+                <label for="pressDate" class="col-2">배부일자</label>
+                <div class="col-4">
+                    <input type="date" id="pressDate" class="form-control" placeholder="배부일자" v-model="pressDate">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="newsTitle" class="col-2">제목</label>
+                <div class="col-10">
+                    <input type="text" id="newsTitle" class="form-control" placeholder="기사 제목이 표시됩니다" v-model="newsTitle">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="newsPress" class="col-2">언론사</label>
+                <div class="col-10">
+                    <input type="text" id="newsPress" class="form-control" placeholder="언론사 제목을 입력해야 합니다" v-model="newsPress">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="newsLink" class="col-2">기사링크</label>
+                <div class="col-10">
+                    <input type="text" id="newsLink" class="form-control" placeholder="기사 링크를 입력하세요" v-model="newsLink">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="editor" class="col-2">본문</label>
+                <div class="col-10">
+                    <summer-note id="editor" v-model="newsBody" placeholder="보도자료인 경우 본문을 입력해주세요"></summer-note>
+                </div>
+            </div>
+        </form>
+        <div class="row">
+            <div class="col-12 text-right">
+                <button class="btn btn-primary" @click.prevent="modify">수정</button>
+            </div>
+        </div>
+    </div>
+   <script>
+    new Vue({
+        el: '#form',
+        data: {
+            category: '{{ news.category or '' }}',
+            pressDate: '{{ news.press_date }}',
+            newsTitle: '{{ news.news_title or '' }}',
+            newsPress: '{{ news.news_press or '' }}',
+            newsLink: '{{ news.news_link or '' }}',
+            newsBody: '{{ news.news_body | safe or '' }}'
+        },
+        methods: {
+            modify: function (e) {
+                axios.post('/admin/news/{{ news.id }}/edit', {
+                    pressCategory: this.pressCategory,
+                    pressDate: this.pressDate,
+                    newsTitle: this.newsTitle,
+                    newsPress: this.newsPress,
+                    newsLink: this.newsLink,
+                    newsBody: this.newsBody
+                }).then(function (e) {
+                    alert('언론홍보 등록이 완료되었습니다')
+                    location.href = '/admin/news/{{ news.id }}'
+                })
+            }
+        }
+    })
+    </script>
+    <!-- /.container-fluid -->
+{% endblock %}

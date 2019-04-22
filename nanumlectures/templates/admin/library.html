@@ -1,0 +1,124 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script>
+    $(function () {
+        $('#card-table').cardtable();
+    })
+    </script>
+{% endblock %}
+
+{% block css %}
+    <style>
+        /* RESPONSIVE EXAMPLE */
+        .stacktable.large-only {
+            display: table;
+        }
+
+        .stacktable.small-only {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .stacktable.large-only {
+                display: none;
+            }
+
+            .stacktable.small-only {
+                display: table;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid">
+
+        <h4 class="app-main-breadcrumb__title">도서관 관리</h4>
+
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="index.html">10월의 하늘</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">도서관 관리</li>
+        </ol>
+
+        <!-- Page Content -->
+        <div class="app-main-card card mb-2">
+            <div class="card-body">
+                <table id="card-table" class="table table-hover large-only">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">권역</th>
+                        <th scope="col">도서관명</th>
+                        <th scope="col">사서명</th>
+                        <th scope="col">전화</th>
+                        <th scope="col">주소</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in paginator %}
+                    <tr>
+                        <th scope="row">{{ (total_cnt - (items_per_page * (page - 1))) - loop.index0 }}</th>
+                        <td>{{ row.area }}</td>
+                        <td><a href="{{ url_for('admin.library_view', library=row.id) }}">{{ row.library_name }}</a></td>
+                        <td>{{ row.manager_name or '' }}</td>
+                        <td>{{ row.library_tel or '' }}</td>
+                        <td>{{ row.library_addr }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col-5">
+                        <nav>
+                            <ul class="pagination pagination-sm">
+                                {{ paginator.pager(
+                                       dotdot_attr={'class':'spacer'},
+                                       symbol_first='',
+                                       symbol_last='',
+                                       symbol_previous='<a href="#"><span>&laquo;</span></a>',
+                                       symbol_next='<a href="#"><span>&raquo;</span></a>',
+                                       link_tag=paginate_link_tag,
+                                       url=page_url|safe) | safe }}
+                            </ul>
+                        </nav>
+                    </div>
+                    <div class="col-5">
+                      <form action="{{ url_for('admin.library_list') }}" method="get">
+                        <input type="hidden" name="page" value="{{ page }}">
+                        <div class="input-group">
+                          <div class="input-group-preped">
+                            <select class="form-control" name="area">
+                              <option value="all">전체</option>
+                              {% for area in library_area() %}
+                              <option value="{{ area }}">{{ area }}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                          <div class="input-group-preped">
+                            <select class="form-control" name="search_option">
+                              <option value="library_name">도서관명</option>
+                              <option value="library_addr">주소</option>
+                            </select>
+                          </div>
+                          <input type="text" class="form-control" placeholder="검색어를 입력하세요" name="search_word">
+                          <div class="input-group-append">
+                            <button class="btn btn-success" type="submit">검색하기</button>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                    <div class="col-2 text-right">
+                        <a href="{{ url_for('admin.library_reg') }}" class="btn btn-primary">등록</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /.container-fluid -->
+{% endblock %}

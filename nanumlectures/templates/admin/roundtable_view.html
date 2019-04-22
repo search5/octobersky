@@ -1,0 +1,101 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="//unpkg.com/vue"></script>
+    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid">
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="#">회차 관리</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">상세 화면</li>
+        </ol>
+        <div class="app-main-card">
+            <form class="app-main-form">
+                <div class="form-group row">
+                    <label for="roundtableNum" class="app-main-form__label col-sm-2 col-form-label">개최회차</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control-plaintext" id="roundtableNum"
+                               value="{{ round.roundtable_num }}회차" readonly>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="roundtableYear" class="app-main-form__label col-sm-2 col-form-label">개최년도</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control-plaintext" id="roundtableYear"
+                               value="{{ round.roundtable_year }}" readonly>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="roundtableDate" class="app-main-form__label col-sm-2 col-form-label">개최일</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control-plaintext" id="roundtableDate"
+                               value="{{ round.roundtable_date }}" readonly>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="app-main-form__label col-form-label col-sm-2 pt-0">준비위원회</label>
+                    <div class="col-10">
+                        <textarea class="form-control-plaintext" rows="2"
+                                  style="background-color: #ffffff;border: solid 1px lightgrey;padding: 10px">{{ round.staff }}</textarea>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="app-main-form__label col-form-label col-sm-2 pt-0">도서관</label>
+                    <div class="col-10">
+                        <div class="card">
+                            <div class="card-body" style="height: 400px; overflow-y: auto">
+                                <table class="table table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th>도서관명</th>
+                                        <th>세션 수</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for library_entry in round.library %}
+                                        <tr>
+                                            <td>{{ library_entry.library.library_name }}
+                                                ({{ library_entry.library.library_addr }})
+                                            </td>
+                                            <td>{{ library_entry.round_num }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row" id="btn_app">
+                    <div class="col-sm-10">
+                      {% if roundtable_modifiable(round) %}
+                        <a href="{{ url_for('admin.roundtable_edit', round=round.id) }}" class="btn btn-primary">수정</a>
+                        <a href="#" @click="delete_round" class="btn btn-danger">삭제</a>
+                      {% endif %}
+                    </div>
+                </div>
+                <script>
+                    new Vue({
+                        el: '#btn_app',
+                        methods: {
+                            delete_round: function (e) {
+                                if (confirm('삭제하시겠습니까? 되돌릴 수 없습니다')) {
+                                    axios.delete('/admin/roundtable/{{ round.id }}').then(function (e) {
+                                        alert('개최 회차를 성공적으로 삭제했습니다')
+                                        location.href = '/admin'
+                                    })
+                                }
+                            }
+                        }
+                    })
+                </script>
+            </form>
+        </div>
+    </div>
+    <!-- /.container-fluid -->
+{% endblock %}

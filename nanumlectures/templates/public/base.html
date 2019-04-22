@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>10월의 하늘</title>
+
+    <!-- Bootstrap core CSS -->
+{#    <link href="https://bootswatch.com/4/minty/bootstrap.min.css" rel="stylesheet">#}
+    <link href="https://bootswatch.com/4/cerulean/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="{{ url_for('public.static', filename='css/modern-business.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link href="{{ url_for('public.static', filename='css/public-layout.css') }}" rel="stylesheet">
+
+    {% block css %}
+    {% endblock %}
+
+    {% block script %}
+    {% endblock %}
+</head>
+
+<body>
+
+<header role="banner" class="app-header">
+    <!-- Navigation -->
+    <nav role="navigation" class="app-header-nav navbar fixed-top navbar-dark navbar-expand-lg">
+
+        <a class="app-header-nav__brand navbar-brand" href="{{ url_for('public.main') }}">10월의 하늘</a>
+        <button class="app-header-nav__btn navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <li class="app-header-nav-item nav-item dropdown">
+                    <a class="app-header-nav-item__a nav-link dropdown-toggle" href="#" data-toggle="dropdown">소개</a>
+                    <div class="app-header-nav-dropdown dropdown-menu dropdown-menu-right">
+                        <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.about') }}">10월의 하늘</a>
+                        <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.manifesto') }}">Manifest</a>
+                        <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.news') }}">언론 홍보</a>
+                    </div>
+                </li>
+                <li class="app-header-nav-item nav-item dropdown">
+                    <a class="app-header-nav-item__a nav-link dropdown-toggle" href="#" data-toggle="dropdown">기부참여</a>
+                    <div class="app-header-nav-dropdown dropdown-menu dropdown-menu-right">
+                        <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.together_library') }}">강연/진행 기부</a>
+                        <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.boost') }}">후원 안내</a>
+                        <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.faq') }}">FAQ</a>
+                    </div>
+                </li>
+                <li class="app-header-nav-item nav-item dropdown">
+                    <a class="app-header-nav-item__a nav-link dropdown-toggle" href="#" data-toggle="dropdown">기록</a>
+                    <div class="app-header-nav-dropdown dropdown-menu dropdown-menu-right">
+                        <a class="app-header-nav-dropdown-item dropdown-item" href="https://www.youtube.com/channel/UCHy5R0yFr1KFUqD9Q_5stDQ?feature=mhee" target="_blank">강연/영상</a>
+                        <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.archive_photo') }}">사진</a>
+                        <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.archive_design') }}">디자인</a>
+                        <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.archive_books') }}">도서</a>
+                    </div>
+                </li>
+                {% if not current_user.is_authenticated %}
+                <li class="app-header-nav-item--right nav-item">
+                    <a class="app-header-nav-item__a--inverse nav-link" href="{{ url_for('public.login_page') }}">로그인</a>
+                </li>
+                <li class="app-header-nav-item--right nav-item">
+                    <a class="app-header-nav-item__a--round nav-link" href="{{ url_for('public.user_register') }}">회원가입</a>
+                </li>
+                {% else %}
+                    <li class="app-header-nav-item nav-item">
+                    <a class="app-header-nav-item__a nav-link" href="{{ url_for('public.myinfo') }}">내 정보</a>
+                </li>
+                <li class="app-header-nav-item nav-item">
+                    <a class="app-header-nav-item__a nav-link" href="{{ url_for('public.logout') }}">로그아웃</a>
+                </li>
+                    {% if current_user.usertype == 'A' %}
+                    <li class="app-header-nav-item nav-item">
+                        <a class="app-header-nav-item__a nav-link" href="{{ url_for('admin.main') }}">관리자</a>
+                    </li>
+                    {% endif %}
+                {% endif %}
+            </ul>
+        </div>
+
+    </nav>
+
+</header>
+
+{% block header %}
+{% endblock %}
+
+<div class="app-main-wrapper">
+    <!-- Page Content -->
+    <div role="main" class="app-main container">
+        {% block container %}
+        {% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer container-fluid">
+        <div class="row">
+            <div class="col-sm-6 col-md-6 col-lg-12">
+                <p class="app-footer__title">Copyright &copy; 10월의 하늘 준비위원회</p>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<!-- Bootstrap core JavaScript -->
+<script src="{{ url_for('public.static', filename='vendor/jquery/jquery.min.js') }}"></script>
+<script src="{{ url_for('public.static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+
+{% block footer_script %}
+{% endblock %}
+
+</body>
+
+</html>

@@ -1,0 +1,213 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="//unpkg.com/vue"></script>
+    <script src="//unpkg.com/lodash"></script>
+    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-select/2.6.0/vue-select.js"></script>
+{% endblock %}
+
+{% block css %}
+  <style type="text/css">
+    .v-select .dropdown-toggle {
+      height: 38px !important;
+    }
+
+    .v-select .dropdown-toggle::after {
+      display: none !important;
+    }
+
+    .v-select .spinner, .v-select .spinner:after {
+        width: 3em !important;
+        height: 3em !important;
+    }
+
+    .v-select input[type=search], .v-select input[type=search]:focus {
+        margin: 0 0 0 0 !important;
+    }
+
+    .v-select .d-center {
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .v-select .dropdown li {
+        border-bottom: 1px solid rgba(112, 128, 144, 0.1) !important;
+    }
+
+    .v-select .dropdown li:last-child {
+        border-bottom: none !important;
+    }
+
+    .v-select .dropdown li a {
+        padding: 10px 20px !important;
+        width: 100% !important;
+        font-size: 1.25em !important;
+        color: #3c3c3c !important;
+    }
+
+    .v-select .dropdown-menu .active > a {
+        color: #fff !important;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid">
+        <div id="app">
+            <!-- Breadcrumbs-->
+            <ol class="app-main-breadcrumb breadcrumb">
+                <li class="app-main-breadcrumb-item breadcrumb-item">
+                    <a class="app-main-breadcrumb-item__a" href="index.html">10월의 하늘</a>
+                </li>
+                <li class="app-main-breadcrumb-item--sub breadcrumb-item active">회원정보 수정</li>
+            </ol>
+
+            <!-- Page Content -->
+            <h1>회원 정보 수정</h1>
+            <hr>
+            <form action="">
+                {% if user[4] == 'username' %}
+                <div class="form-group row">
+                    <label for="inputID" class="col-2">ID</label>
+                    <div class="col-10">
+                        <input type="text" id="inputID" class="form-control-plaintext" v-model="record.username" readonly>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPw" class="col-2">비밀번호</label>
+                    <div class="col-10">
+                        <input type="password" id="inputPw" class="form-control" v-model="record.password" autocomplete="false"
+                               placeholder="변경할 비밀번호를 입력하세요. 입력하지 않으면 비밀번호는 유지됩니다">
+                    </div>
+                </div>
+                {% else %}
+                {% endif %}
+                <div class="form-group row">
+                    <label for="inputName" class="col-2">이름</label>
+                    <div class="col-10">
+                        <input type="text" id="inputName" class="form-control" v-model="record.name">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputEmail" class="col-2">이메일</label>
+                    <div class="col-10">
+                        <input type="text" id="inputEmail" class="form-control" v-model="record.email">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPhone" class="col-2">전화번호</label>
+                    <div class="col-10">
+                        <input type="text" id="inputPhone" class="form-control" v-model="record.phone">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputLoginPath" class="col-2">로그인 경로</label>
+                    <div class="col-10">
+                        <input type="text" id="inputLoginPath" class="form-control-plaintext" value="{{ record[4] }}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-2">권한</label>
+                    <div class="col-10">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" v-model="record.usertype" id="isAuthSuper" value="A">
+                            <label class="form-check-label" for="isAuthSuper">슈퍼 관리자</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" v-model="record.usertype" id="isAuthLib" value="B">
+                            <label class="form-check-label" for="isAuthLib">도서관 담당자</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" v-model="record.usertype" id="isAuthGeneral" value="C">
+                            <label class="form-check-label" for="isAuthGeneral">일반 사용자</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row" v-if="record.usertype === 'B'">
+                    <label for="inputEmail3" class="col-sm-2 col-form-label">담당 도서관</label>
+                    <div class="col-sm-10">
+                        {% raw %}
+                        <v-select label="library_name" :filterable="false" :options="library_records"
+                                  @search="onSearch" style="flex: 1" v-model="record.library">
+                            <template slot="no-options">
+                                관리자로 지정할 도서관을 선택하세요.
+                            </template>
+                            <template slot="option" slot-scope="option">
+                                <div class="d-center">
+                                    {{ option.library_name }} ({{ option.library_addr }})
+                                </div>
+                            </template>
+                            <template slot="selected-option" slot-scope="option">
+                                <div class="selected d-center">
+                                    {{ option.library_name }} ({{ option.library_addr }})
+                                </div>
+                            </template>
+                        </v-select>
+                        {% endraw %}
+                    </div>
+                </div>
+            </form>
+            <div class="row">
+                <div class="col-12 text-right">
+                    <button class="btn btn-primary" @click.prevent="update">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /.container-fluid -->
+
+    <script type="text/x-template" id="library-find">
+        <div class="input-group mb-1">
+            <input type="text" class="form-control text" v-model="library_name" placeholder="찾을 도서관 이름을 입력하세요">
+            {% raw %}
+            <select class="form-control" v-model="library_id">
+                <option v-for="(entry, index) in library_records" :key="index" :value="entry.library_id">{{ entry.library_name }}({{ entry.library_addr }})</option>
+            </select>
+            {% endraw %}
+        </div>
+    </script>
+
+    <script>
+    Vue.component('v-select', VueSelect.VueSelect);
+
+    new Vue({
+        el: "#app",
+        data: {
+            record: {
+                username: '{{ record[0] }}',
+                password: '',
+                name: '{{ record[1] }}',
+                email: '{{ record[2] or '' }}',
+                phone: '{{ record[3] or '' }}',
+                usertype: '{{ record[6] }}',
+                library: {{ library2dict(record[-1].library) | tojson or 'None' }}
+            },
+            library_records: []
+        },
+        methods: {
+            onSearch(search, loading) {
+              loading(true);
+              this.search(loading, search, this);
+            },
+            search: _.debounce((loading, search, vm) => {
+              fetch(
+                `/admin/library/search?library_name=${encodeURI(search)}`
+              ).then(res => {
+                res.json().then(json => (vm.library_records = json.items));
+                loading(false);
+              });
+            }, 350),
+            library_select: function (library_id) {
+                this.record.library = library_id
+            },
+            update: function () {
+                axios.post('{{ url_for('admin.member_edit', uid=record[0]) }}', this.record).then(function (resp) {
+                    alert('사용자 정보가 성공적으로 업데이트 되었습니다.')
+                    location.href = '{{ url_for('admin.member_view', uid=record[0]) }}'
+                })
+            }
+        }
+    })
+    </script>
+{% endblock %}

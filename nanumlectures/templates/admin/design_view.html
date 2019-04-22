@@ -1,0 +1,69 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="//unpkg.com/vue"></script>
+    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid">
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="index.html">Admin</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">디자인 조회</li>
+        </ol>
+        <div class="app-main-card">
+            <!-- Page Content -->
+            <form class="app-main-form"  >
+            <div class="form-group row">
+              <label for="roundtable_num" class="app-main-form__label col-sm-2 col-form-label">개최회차</label>
+              <div class="col-sm-10">
+                <input type="text" readonly class="form-control-plaintext" id="roundtable_num" value="{{ design.roundtable.roundtable_num }}회차">
+              </div>
+            </div>
+            <div class="form-group row">
+                <label for="design_name" class="app-main-form__label col-sm-2 col-form-label">디자인명</label>
+                <div class="col-sm-10">
+                    <input type="text" readonly class="form-control-plaintext" id="design_name" value="{{ design.design_name }}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="inputPassword3" class="app-main-form__label col-sm-2 col-form-label">디자인 파일</label>
+                <div class="col-sm-10">
+                  <span class="form-control-static">업로드된 파일: <a href="{{ url_for('admin.design_download', design=design.id, filename=design.design_files.keys() | design_file_name) }}">{{ design.design_files.keys() | design_file_name }}</a></span>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="inputPassword3" class="app-main-form__label col-sm-2 col-form-label">디자인 설명</label>
+                <div class="col-sm-10">
+                    <textarea rows="6" readonly class="form-control-plaintext" id="inputPassword3" style="border: solid 1px grey;">{{ design.design_description }}</textarea>
+                </div>
+            </div>
+            <div class="form-group row" id="app">
+                <div class="col-sm-10">
+                    <a href="{{ url_for('admin.design_edit', design=design.id) }}" class="btn btn-success">수정</a>
+                    <a href="#" @click.prevent="delete_design" class="btn btn-danger">삭제</a>
+                </div>
+            </div>
+        </form>
+        </div>
+        <script>
+        new Vue({
+          el: "#app",
+          methods: {
+            delete_design: function () {
+              if (confirm('정말 디자인 파일을 삭제하시겠습니까?\n되돌릴 수 없습니다')) {
+                axios.delete("{{ url_for('admin.design_view', design=design.id) }}").then(function (resp) {
+                  alert('디자인 파일이 삭제되었습니다.')
+                  location.href = '{{ url_for('admin.design') }}'
+                })
+              }
+            }
+          }
+        })
+        </script>
+    </div>
+    <!-- /.container-fluid -->
+{% endblock %}

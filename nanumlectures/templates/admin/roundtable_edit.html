@@ -1,0 +1,312 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="//unpkg.com/vue"></script>
+    <script src="//unpkg.com/lodash"></script>
+    <script src="//unpkg.com/moment@2.14.1/min/moment.min.js"></script>
+    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-select/2.6.0/vue-select.js"></script>
+{% endblock %}
+
+{% block css %}
+    <style type="text/css">
+      .v-select .dropdown-toggle {
+        height: 38px !important;
+      }
+
+      .v-select .dropdown-toggle::after {
+        display: none !important;
+      }
+
+      .v-select .spinner, .v-select .spinner:after {
+          width: 3em !important;
+          height: 3em !important;
+      }
+
+      .v-select input[type=search], .v-select input[type=search]:focus {
+          margin: 0 0 0 0 !important;
+      }
+
+      .v-select .d-center {
+          display: flex !important;;
+          align-items: center !important;
+      }
+
+      .v-select .dropdown li {
+          border-bottom: 1px solid rgba(112, 128, 144, 0.1) !important;
+      }
+
+      .v-select .dropdown li:last-child {
+          border-bottom: none !important;
+      }
+
+      .v-select .dropdown li a {
+          padding: 10px 20px !important;
+          width: 100% !important;
+          font-size: 1.25em !important;
+          color: #3c3c3c !important;
+      }
+
+      .v-select .dropdown-menu .active > a {
+          color: #fff !important;
+      }
+    </style>
+{% endblock %}
+
+{% block content %}
+  <div class="app-main-container container-fluid">
+    <div id="app">
+      <!-- Breadcrumbs-->
+      <ol class="app-main-breadcrumb breadcrumb">
+        <li class="app-main-breadcrumb-item breadcrumb-item">
+          <a class="app-main-breadcrumb-item__a" href="#">회차 관리</a>
+        </li>
+        <li class="app-main-breadcrumb-item--sub breadcrumb-item active">수정 화면</li>
+      </ol>
+
+      <div class="app-main-card">
+        <form class="app-main-form">
+        <div class="form-group row">
+          <label for="roundtableNum" class="app-main-form__label col-sm-2 col-form-label">개최회차</label>
+          <div class="col-sm-10">
+            <input type="number" class="form-control" v-model="record.roundtableNum" id="roundtableNum" placeholder="개최회차를 숫자로 입력하세요">
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="roundtableYear" class="app-main-form__label col-sm-2 col-form-label">개최년도</label>
+          <div class="col-sm-10">
+            <input type="number" class="form-control" v-model="record.roundtableYear" id="roundtableYear" placeholder="개최년도를 4자리 숫자로 입력하세요">
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="app-main-form__label col-form-label col-sm-2 pt-0">준비위원회</label>
+          <div class="col-10">
+            <textarea class="form-control" v-model="record.staff" placeholder="준비위원회 분들 이름을 입력해주시기 바랍니다" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="app-main-form__label col-form-label col-sm-2 pt-0">도서관</label>
+          <div class="col-10">
+            <div class="card">
+              <div class="card-header">
+                <div class="input-group mb-1">
+                  {% raw %}
+                  <v-select label="library_name" :filterable="false" :options="options"
+                            @search="onSearch" style="flex: 1" v-model="library">
+                    <template slot="no-options">
+                      검색할 도서관 이름을 입력하세요
+                    </template>
+                    <template slot="option" slot-scope="option">
+                      <div class="d-center">
+                        {{ option.library_name }} ({{ option.library_addr }})
+                      </div>
+                    </template>
+                    <template slot="selected-option" slot-scope="option">
+                      <div class="selected d-center">
+                        {{ option.library_name }} ({{ option.library_addr }})
+                      </div>
+                    </template>
+                  </v-select>
+                  {% endraw %}
+                  <select v-model="session_time" class="form-control" style="flex: 0.1">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                  </select>
+                  <div class="input-group-append">
+                    <button class="btn btn-info" @click.prevent="library_add">추가</button>
+                    <button class="btn btn-danger" @click.prevent="library_del">삭제</button>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body" style="height: 400px; overflow-y: auto">
+                  <table class="table table-hover">
+                      <thead>
+                      <tr>
+                          <th>도서관명</th>
+                          <th>세션 수</th>
+                          <th>수정</th>
+                      </tr>
+                      </thead>
+                      <tbody ref="libraries">
+                      {% raw %}
+                      <tr v-for="(item, index) in record.library_list" :key="index" @click.stop="library_select($event, index)">
+                          <td>{{ item.library.library_name }} ({{ item.library.library_addr }})</td>
+                          <td>{{ item.session_time }}</td>
+                          <td>
+                            <button class="btn btn-warning" @click.exact.prevent.stop="library_modify($event, item)">
+                              <i class="far fa-edit"></i>
+                            </button>
+                          </td>
+                      </tr>
+                      {% endraw %}
+                      </tbody>
+                  </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-sm-10">
+            <button type="submit" class="btn btn-primary" @click.prevent="mod">수정</button>
+          </div>
+        </div>
+      </form>
+      </div>
+      <!-- /.container-fluid -->
+      <!-- Modal -->
+      <div class="modal fade" id="libraryModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">참여 도서관 정보 수정</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form>
+                <div class="form-group">
+                  <label for="inputLibraryName">도서관명</label>
+                  <input type="text" class="form-control" id="inputLibraryName" v-model="modal_record.library.library_name"
+                       placeholder="참여 도서관 이름이 표시됩니다" readonly>
+                </div>
+                <div class="form-group">
+                  <label for="inputSessionTime">세션 수</label>
+                  <select id="inputSessionTime" class="form-control" v-model="modal_record.session_time">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                  </select>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal">닫기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    Vue.component('v-select', VueSelect.VueSelect);
+
+    new Vue({
+      el: "#app",
+      data: {
+        record: {
+          library_list: {{ round.library_modify_list | tojson }},
+          roundtableNum: {{ round.roundtable_num }},
+          roundtableYear: {{ round.roundtable_year }},
+          staff: '{{ round.staff }}'
+        },
+        options: [],
+        library: '',
+        session_time: 2,
+        modal_record: {
+          library: {
+            library_name: ''
+          },
+          session_time: ''
+        }
+      },
+      methods: {
+        onSearch(search, loading) {
+          loading(true);
+          this.search(loading, search, this);
+        },
+        search: _.debounce((loading, search, vm) => {
+          fetch(
+            `/admin/library/search?library_name=${encodeURI(search)}`
+          ).then(res => {
+            res.json().then(json => (vm.options = json.items));
+            loading(false);
+          });
+        }, 350),
+        library_add (e) {
+          let library_info = _.clone(this.record)
+
+          this.record.library_list.push({
+            library: this.library,
+            session_time: this.session_time
+          })
+
+          this.library = ''
+          this.session_time = 2
+        },
+        library_select (e, index) {
+          let tbody = e.target.parentElement.parentElement
+          let selected = false
+
+          for (let i = 0; i < tbody.children.length; i++) {
+            let tr = tbody.children[i]
+
+            if (tr.dataset.hasOwnProperty('selected')) {
+              selected = true
+
+              if (index === i) {
+                delete tr.dataset['selected']
+                tr.style.backgroundColor = '#ffffff'
+                tr.style.color = '#495057'
+              }
+
+              break
+            }
+          }
+
+          if (!selected) {
+            e.target.parentElement.dataset['selected'] = 'selected'
+            e.target.parentElement.style.backgroundColor = '#094D92'
+            e.target.parentElement.style.color = '#ffffff'
+          }
+        },
+        library_del (e) {
+          if (confirm('선택하신 도서관을 목록에서 빼시겠습니까?')) {
+            const libraries = this.$refs.libraries.children
+
+            for (let i = 0; i < libraries.length; i++) {
+              let tr = libraries[i]
+
+              if (tr.dataset.hasOwnProperty('selected')) {
+                this.record.library_list.splice(i, 1)
+              }
+            }
+
+            for (let i = 0; i < libraries.length; i++) {
+              let tr = libraries[i]
+
+              delete tr.dataset['selected']
+              tr.style.backgroundColor = '#ffffff'
+              tr.style.color = '#495057'
+            }
+          }
+        },
+        mod (e) {
+            var send_data = _.clone(this.record)
+            send_data.roundtableDate = this.roundtableDate
+
+          axios.post('/admin/roundtable/{{ round.id }}/edit', send_data).then(function (e) {
+            alert('개최 회차 수정이 완료되었습니다')
+            location.href = '/admin/roundtable/{{ round.id }}'
+          })
+        },
+        library_modify (e, item) {
+          this.modal_record = item
+          $("#libraryModal").modal("show")
+        }
+      },
+      computed: {
+        roundtableDate: function () {
+          var roundDate = moment().year(this.record.roundtableYear).month(9).date(1).add(4, 'w').day("Saturday")
+          if (roundDate.month() === 10) {
+            roundDate = roundDate.subtract(1, 'w').day("Saturday")
+          }
+
+          return roundDate.format('YYYY-MM-DD')
+        }
+      }
+    })
+    </script>
+  </div>
+{% endblock %}

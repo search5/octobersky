@@ -1,0 +1,79 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+  <script src="//unpkg.com/vue"></script>
+  <script src="//unpkg.com/lodash"></script>
+  <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="{{ url_for('admin.static', filename='js/summerNote.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid" id="form">
+
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="index.html">10월의 하늘</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">FAQ</li>
+        </ol>
+
+
+        <div class="app-main-card">
+
+            <form class="app-main-form" action="">
+                <!-- Page Content -->
+                <h1>FAQ 수정</h1>
+                <hr>
+                <div class="form-group row">
+                    <label for="inputPw" class="app-main-form__label col-2">유형</label>
+                    <div class="col-10">
+                        <input type="text" id="faqClassify" class="form-control" placeholder="FAQ 유형을 입력하세요" v-model="faqClassify">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputEmail" class="app-main-form__label col-2">제목</label>
+                    <div class="col-10">
+                        <input type="text" id="faqSubject" class="form-control" placeholder="FAQ 제목이 표시됩니다" v-model="faqSubject">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="editor" class="app-main-form__label col-2">본문</label>
+                    <div class="col-10">
+                        <summer-note v-model="faqBody" id="editor" placeholder="FAQ 본문을 입력하여 주세요"></summer-note>
+                    </div>
+                </div>
+            </form>
+            <div class="row">
+                <div class="col-12 text-right">
+                    <button class="btn btn-primary" @click.prevent="modify">수정</button>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+     <script>
+        new Vue({
+            el: '#form',
+            data: {
+                faqClassify: '{{ faq.classify or '' }}',
+                faqSubject: '{{ faq.subject or '' }}',
+                faqBody: '{{ faq.body | safe or '' }}'
+            },
+            methods: {
+                modify: function (e) {
+                    axios.post('/admin/faq/{{ faq.id }}/edit', {
+                        faqClassify: this.faqClassify,
+                        faqSubject: this.faqSubject,
+                        faqBody: this.faqBody
+                    }).then(function (e) {
+                        alert('FAQ 수정이 완료되었습니다')
+                        location.href = '/admin/faq/{{ faq.id }}'
+                    })
+                }
+            }
+        })
+    </script>
+    <!-- /.container-fluid -->
+{% endblock %}

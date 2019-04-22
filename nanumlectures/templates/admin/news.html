@@ -1,0 +1,94 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="//unpkg.com/vue"></script>
+    <script src="//unpkg.com/lodash"></script>
+    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid">
+
+        <h4 class="app-main-breadcrumb__title">언론 홍보</h4>
+
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="index.html">10월의 하늘</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">언론 홍보</li>
+        </ol>
+
+        <!-- Page Content -->
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-hover">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">날짜</th>
+                <th scope="col">유형</th>
+                <th scope="col">제목</th>
+                <th scope="col">언론사</th>
+                <th scope="col">작성자</th>
+                <th scope="col">작성일</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in paginator %}
+                <tr>
+                    <th scope="row">{{ (total_cnt - (items_per_page * (page - 1))) - loop.index0 }}</th>
+                    <td>{{ row.press_date }}</td>
+                    <td>{{ row.category | category_name }}</td>
+                    <td><a href="{{ url_for('admin.news_view', news=row.id) }}">{{ row.news_title }}</a></td>
+                    <td>{{ row.news_press }}</td>
+                    <td>{{ row.writer.name }}</td>
+                    <td>{{ row.news_write_date }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+            </div>
+            <div class="card-footer">
+                <div class="row">
+                     <div class="col-6">
+                        <nav>
+                            <ul class="pagination justify-content-start">
+                                  {{ paginator.pager(
+                                       dotdot_attr={'class':'spacer'},
+                                       symbol_first='',
+                                       symbol_last='',
+                                       symbol_previous='<a href="#"><span>&laquo;</span></a>',
+                                       symbol_next='<a href="#"><span>&raquo;</span></a>',
+                                       link_tag=paginate_link_tag,
+                                       url=page_url|safe) | safe }}
+                            </ul>
+                        </nav>
+                    </div>
+                    <div class="col-4">
+                      <form action="{{ url_for('admin.news') }}" method="get">
+                        <input type="hidden" name="page" value="{{ page }}">
+                        <div class="input-group">
+                          <div class="input-group-preped">
+                            <select class="form-control" name="search_option">
+                              <option value="press_date">날짜</option>
+                              <option value="news_title">제목</option>
+                              <option value="news_press">언론사</option>
+                            </select>
+                          </div>
+                          <input type="text" class="form-control" placeholder="검색어를 입력하세요" name="search_word">
+                          <div class="input-group-append">
+                            <button class="btn btn-success" type="submit">검색하기</button>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                    <div class="col-2 text-right">
+                        <a href="{{ url_for('admin.news_reg') }}" class="btn btn-primary">등록</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /.container-fluid -->
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="//unpkg.com/vue"></script>
+    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid">
+        <h4 class="app-main-breadcrumb__title">후원안내 수정</h4>
+
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="index.html">Admin</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">후원안내 수정</li>
+        </ol>
+
+        <!-- Page Content -->
+        <h1>후원안내 페이지 수정</h1>
+        <hr>
+        <form id="app">
+          <div class="row">
+            <div class="col-12">
+              <textarea rows="20" class="form-control" v-model="page_content"></textarea>
+            </div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-12">
+              <button @click.prevent="submit" class="btn btn-primary">수정</button>
+              <button @click.prevent="preview" class="btn btn-primary">미리보기</button>
+            </div>
+          </div>
+        </form>
+
+        <script>
+          new Vue({
+            el: '#app',
+            data: {
+              page_content: `{{ page_content }}`
+            },
+            methods: {
+              submit: function (e) {
+                axios.post('/admin/donate', {
+                    page_content: this.page_content
+                }).then(function (e) {
+                    alert('후원 정보 페이지 수정이 완료되었습니다')
+                    location.href = '/admin/donate'
+                })
+              },
+              preview: function (e) {
+                  var popOption = "width=800, height=760, resizable=no, scrollbars=no, status=no;";
+                  window.open('/admin/donate/preview', '', popOption)
+              }
+            }
+          })
+        </script>
+    </div>
+    <!-- /.container-fluid -->
+{% endblock %}

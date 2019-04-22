@@ -1,0 +1,42 @@
+{% extends "public/base.html" %}
+
+{% block container %}
+<!-- Page Heading/Breadcrumbs -->
+    <header class="app-main-header">
+        <h1 class="app-main-header__title">사진</h1>
+    </header>
+
+    <ol class="app-main-breadcrumb breadcrumb">
+      <li class="app-main-breadcrumb-item breadcrumb-item">
+        <a class="app-main-breadcrumb-item__a" href="index.html">Home</a>
+      </li>
+      <li class="app-main-breadcrumb-item--sub breadcrumb-item active">기록</li>
+      <li class="app-main-breadcrumb-item--sub breadcrumb-item active">사진</li>
+    </ol>
+
+    <ul class="list-unstyled">
+     {% for row in paginator %}
+        <li class="media mb-3">
+            <a href="#" onclick="window.open('{{ row.album_link }}')"><img src="{{ row.representation_image_link | safe }}" style="width: 400px;height: 220px" class="mr-3"></a>
+            <div class="media-body">
+                <a href="#" onclick="window.open('{{ row.album_link }}')"><h5 class="mt-0 mb-1">{{ row.album_name }}</h5></a>
+                {{ row.album_description }}<br>
+                {{ row.news_write_date }}<br>
+            </div>
+        </li>
+     {% endfor %}
+    </ul>
+
+    <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-start">
+          {{ paginator.pager(
+               dotdot_attr={'class':'spacer'},
+               symbol_first='',
+               symbol_last='',
+               symbol_previous='<a href="#"><span>&laquo;</span></a>',
+               symbol_next='<a href="#"><span>&raquo;</span></a>',
+               link_tag=paginate_link_tag,
+               url=page_url|safe) | safe }}
+        </ul>
+    </nav>
+{% endblock %}

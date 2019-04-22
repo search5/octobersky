@@ -1,0 +1,99 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="//unpkg.com/vue"></script>
+    <script src="//unpkg.com/lodash"></script>
+    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="{{ url_for('admin.static', filename='js/summerNote.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid" id="form">
+
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="index.html">10월의 하늘</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">언론 홍보 등록</li>
+        </ol>
+        <div class="app-main-card">
+            <form class="app-main-form">
+                <div class="form-group row">
+                    <label for="pressCategory" class="app-main-form__label col-2">구분</label>
+                    <div class="col-4">
+                        <select class="form-control" id="pressCategory" v-model="pressCategory">
+                            <option value="">언론보도 자료 구분을 선택하세요</option>
+                            <option value="1">보도자료</option>
+                            <option value="2">뉴스기사</option>
+                        </select>
+                    </div>
+                    <label for="pressDate" class="app-main-form__label col-2">발행일자</label>
+                    <div class="col-4">
+                        <input type="date" id="pressDate" class="form-control" placeholder="발행일자" v-model="pressDate">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="newsTitle" class="app-main-form__label col-2">제목</label>
+                    <div class="col-10">
+                        <input type="text" id="newsTitle" class="form-control" placeholder="기사 제목이 표시됩니다"
+                               v-model="newsTitle">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="newsPress" class="app-main-form__label col-2">언론사</label>
+                    <div class="col-10">
+                        <input type="text" id="newsPress" class="form-control" placeholder="언론사 제목을 입력해야 합니다"
+                               v-model="newsPress">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="newsLink" class="app-main-form__label col-2">기사링크</label>
+                    <div class="col-10">
+                        <input type="text" id="newsLink" class="form-control" placeholder="기사 링크를 입력하세요" v-model="newsLink">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="editor" class="app-main-form__label col-2">본문</label>
+                    <div class="col-10">
+                        <summer-note id="editor" v-model="newsBody" placeholder="보도자료인 경우 본문을 입력해주세요"></summer-note>
+                    </div>
+                </div>
+            </form>
+            <div class="row">
+                <div class="col-12 text-right">
+                    <button class="btn btn-primary" @click.prevent="register">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        new Vue({
+            el: '#form',
+            data: {
+                pressCategory: '',
+                pressDate: '',
+                newsTitle: '',
+                newsPress: '',
+                newsLink: '',
+                newsBody: ''
+            },
+            methods: {
+                register: function (e) {
+                    axios.post('/admin/news/reg', {
+                        pressCategory: this.pressCategory,
+                        pressDate: this.pressDate,
+                        newsTitle: this.newsTitle,
+                        newsPress: this.newsPress,
+                        newsLink: this.newsLink,
+                        newsBody: this.newsBody
+                    }).then(function (e) {
+                        alert('언론홍보 등록이 완료되었습니다')
+                        location.href = '/admin/news'
+                    })
+                }
+            }
+        })
+    </script>
+    <!-- /.container-fluid -->
+{% endblock %}

@@ -1,0 +1,214 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+  <script src="//unpkg.com/vue"></script>
+  <script src="//unpkg.com/lodash"></script>
+  <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-select/2.6.0/vue-select.js"></script>
+{% endblock %}
+
+{% block css %}
+   <style type="text/css">
+    .v-select .dropdown-toggle {
+      height: 38px !important;
+    }
+
+    .v-select .dropdown-toggle::after {
+      display: none !important;
+    }
+
+    .v-select .spinner, .v-select .spinner:after {
+        width: 3em !important;
+        height: 3em !important;
+    }
+
+    .v-select input[type=search], .v-select input[type=search]:focus {
+        margin: 0 0 0 0 !important;
+    }
+
+    .v-select .d-center {
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .v-select .dropdown li {
+        border-bottom: 1px solid rgba(112, 128, 144, 0.1) !important;
+    }
+
+    .v-select .dropdown li:last-child {
+        border-bottom: none !important;
+    }
+
+    .v-select .dropdown li a {
+        padding: 10px 20px !important;
+        width: 100% !important;
+        font-size: 1.25em !important;
+        color: #3c3c3c !important;
+    }
+
+    .v-select .dropdown-menu .active > a {
+        color: #fff !important;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid" id="form">
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="#">진행자 관리</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">수정 화면</li>
+        </ol>
+        <div class="app-main-card">
+            <form class="app-main-form">
+            <div class="form-group row">
+                <label for="hostNum" class="app-main-form__label col-1">개최회차</label>
+                <div class="col-sm-10">
+                  <input type="text" readonly class="form-control-plaintext" id="hostNum" v-model="roundtable_num">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="inputEmail3" class="app-main-form__label col-sm-1 col-form-label">도서관명</label>
+                <div class="col-sm-10">
+                  {% raw %}
+                  <v-select v-model="library" :options="library_list" label="library_name">
+                    <template slot="option" slot-scope="option">
+                      <div class="d-center">
+                        {{ option.library_name }} ({{ option.library_addr }})
+                      </div>
+                    </template>
+                  </v-select>
+                  {% endraw %}
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="hostTime" class="app-main-form__label col-1">강연 시간</label>
+                <div class="col-sm-10">
+                    <!-- TODO: 도서관 및 강연 시간을 선택했을때 이미 입력된 것인지를 확인해야 함(물론 폼을 보여줬을때부터 체크되면 좋겠지만 어차피 관리자 모드라서..) -->
+                    <select id="hostTime" class="form-control" v-model="hostTime">
+                        {% raw %}
+                        <template v-if="library !== null">
+                          <option :value="time" v-for="time in library.session_time">강연 {{ time }} ({{ time + 1 }}시)</option>
+                        </template>
+                        {% endraw %}
+                        <option value='' v-if="library === null">선택 가능한 강연 시간이 없습니다.</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="hostTitle" class="app-main-form__label col-1">강연 제목</label>
+                <div class="col-sm-10">
+                    <input type="text" id="hostTitle"
+                           placeholder="강연 제목을 입력하세요" class="form-control-plaintext" v-model="hostTitle" value="{{ host.host_title }}">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="form-group row">
+                        <label for="hostName" class="app-main-form__label col-2">진행자명</label>
+                        <div class="col-sm-8">
+                            <input type="text" id="hostName" v-model="hostName"
+                                   placeholder="진행자명을 입력하세요"
+                                   class="form-control"
+                                   value="{{ host.host_name }}"
+                            >
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="form-group row">
+                        <label for="hostBelong" class="app-main-form__label col-2">소속</label>
+                        <div class="col-sm-8">
+                            <input type="text" id="hostBelong"
+                                   placeholder="소속을 입력하세요"
+                                   class="form-control" value="{{ host.host_belong }}" v-model="hostBelong">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="form-group row">
+                        <label for="hostHp" class="app-main-form__label col-2">휴대폰</label>
+                        <div class="col-sm-8">
+                            <input type="text" id="hostHp"
+                                   placeholder="휴대폰 번호를 입력하세요"
+                                   class="form-control"  value="{{ host.host_hp }}" v-model="hostHp">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="form-group row">
+                        <label for="hostEmail" class="app-main-form__label col-2">이메일</label>
+                        <div class="col-sm-8">
+                            <input type="text" id="hostEmail"
+                                   placeholder="이메일 주소를 입력하세요"
+                                   class="form-control" value="{{ host.host_email }}" v-model="hostEmail">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary"  @click.prevent="modify">수정</button>
+        </form>
+        </div>
+    </div>
+    <script>
+        Vue.component('v-select', VueSelect.VueSelect);
+
+        new Vue({
+            el: '#form',
+            data: {
+                roundtable_num: '{{ host.roundtable.roundtable_num }}',
+                library_list: {{ host.roundtable.reg_available_library | tojson }},
+                library: null,
+                hostTime: '{{ host.session_time or '' }}',
+                hostName: '{{ host.host_name }}',
+                hostBelong: '{{ host.host_belong or '' }}',
+                hostHp: '{{ host.host_hp or '' }}',
+                hostEmail: '{{ host.host_email or '' }}',
+                hostTitle: ''
+            },
+            methods: {
+                modify: function (e) {
+                    axios.post('/admin/session_host/{{ host.id }}/edit', {
+                        hostNum: this.hostNum,
+                        hostLibraryName: this.hostLibraryName,
+                        hostTime: this.hostTime,
+                        hostTitle: this.hostTitle,
+                        hostName: this.hostName,
+                        hostBelong: this.hostBelong,
+                        hostHp: this.hostHp,
+                        hostEmail: this.hostEmail
+                    }).then(function (e) {
+                        alert('진행자 수정이 완료되었습니다')
+                        location.href = '/admin/session_host/{{ host.id }}'
+                    })
+                }
+            },
+            created: function () {
+                var vm = this
+                this.hostTitle = '강연 정보를 불러오는 중입니다.'
+
+                axios.get('{{ url_for('admin.lecture_find') }}', { params: {
+                    roundtable_id: {{ host.roundtable.id }},
+                    lecture_time: {{ host.session_time }}
+                } }).then(function (resp) {
+                    if (resp.data.hasOwnProperty('msg')) {
+                        vm.hostTitle = resp.data.msg
+                    } else {
+                        vm.hostTitle = resp.data.lecture_title
+                    }
+                })
+
+                this.library = _.filter(this.library_list, function (o, collection) {
+                    if ({{ host.library.id }} === o.id) {
+                        return true
+                    }
+                })[0]
+            }
+        })
+    </script>
+    <!-- /.container-fluid -->
+{% endblock %}

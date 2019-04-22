@@ -1,0 +1,53 @@
+{% extends "public/base.html" %}
+
+{% block container %}
+    <!-- Page Heading/Breadcrumbs -->
+    <header class="app-main-header">
+        <h1 class="app-main-header__title">디자인
+            <small>10월의 하늘 공식 디자인 포스터/이미지</small>
+        </h1>
+    </header>
+
+
+
+    <ol class="app-main-breadcrumb breadcrumb">
+      <li class="app-main-breadcrumb-item breadcrumb-item">
+        <a class="app-main-breadcrumb-item__a" href="index.html">Home</a>
+      </li>
+      <li class="app-main-breadcrumb-item--sub breadcrumb-item active">기록</li>
+      <li class="app-main-breadcrumb-item--sub breadcrumb-item active">디자인</li>
+    </ol>
+
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>회차</th>
+            <th>디자인명</th>
+            <th>디자인 파일</th>
+        </tr>
+        </thead>
+        <tbody>
+         {% for row in paginator %}
+            <tr>
+              <td width="10%">{{ row.roundtable.roundtable_num }} 회차</td>
+              <td width="30%"><span class="form-control-static"><a href="{{ url_for('public.archive_design_download', design=row.id, filename=row.design_files.keys() | design_file_name) }}">{{ row.design_name }}</a></span></td>
+              <td width="60%"><span class="form-control-static"><a href="{{ url_for('public.archive_design_download', design=row.id, filename=row.design_files.keys() | design_file_name) }}">{{ row.design_files.keys() | design_file_name }}</a></span></td>
+            </tr>
+         {% endfor %}
+        </tbody>
+
+
+    </table>
+     <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-start">
+          {{ paginator.pager(
+               dotdot_attr={'class':'spacer'},
+               symbol_first='',
+               symbol_last='',
+               symbol_previous='<a href="#"><span>&laquo;</span></a>',
+               symbol_next='<a href="#"><span>&raquo;</span></a>',
+               link_tag=paginate_link_tag,
+               url=page_url|safe) | safe }}
+        </ul>
+    </nav>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="//unpkg.com/vue"></script>
+    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid">
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="index.html">Admin</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">디자인 등록</li>
+        </ol>
+
+        <div class="app-main-card">
+            <!-- Page Content -->
+            <form class="app-main-form" id="app" enctype="multipart/form-data">
+                <div class="form-group row">
+                    <label for="roundtable_num" class="app-main-form__label col-sm-2 col-form-label">개최회차</label>
+                    <div class="col-sm-10">
+                        <input type="number" class="form-control" id="roundtable_num" v-model='roundtable_num' placeholder="개최회차를 입력하세요.">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="design_name" class="app-main-form__label col-sm-2 col-form-label">디자인명</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="design_name" v-model="design_name" placeholder="디자인 이름을 입력하세요.">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="design_file" class="app-main-form__label col-sm-2 col-form-label">디자인 파일</label>
+                    <div class="col-sm-10">
+                        <input type="file" class="form-control" id="design_file" @change="file_select" placeholder="디자인 파일을 선택하세요">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="description" class="app-main-form__label col-sm-2 col-form-label">디자인 설명</label>
+                    <div class="col-sm-10">
+                        <textarea rows="6" class="form-control" id="description" v-model="description" placeholder="디자인 설명을 입력하세요"></textarea>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-10">
+                        <button type="button" @click.prevent="submit" class="btn btn-primary">등록</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <script>
+          new Vue({
+              el: '#app',
+              data: {
+                  roundtable_num: '',
+                  design_name: '',
+                  design_file: '',
+                  description: ''
+              },
+              methods: {
+                  submit: function (e) {
+                      var bodyFormData = new FormData();
+                      bodyFormData.append('roundtable_num', this.roundtable_num)
+                      bodyFormData.append('design_name', this.design_name)
+                      bodyFormData.append('description', this.description)
+                      bodyFormData.append('img', this.design_file, this.design_file.name)
+
+                      axios({
+                        method: 'post',
+                        url: '/admin/design/reg',
+                        data: bodyFormData,
+                        config: { headers: {'Content-Type': 'multipart/form-data' }}
+                        })
+                        .then(function (response) {
+                            alert('디자인 파일이 등록되었습니다')
+                            location.href = '/admin/design'
+                        })
+                  },
+                  file_select: function (e) {
+                      this.design_file = e.target.files[0]
+                  }
+              }
+          })
+        </script>
+    </div>
+    <!-- /.container-fluid -->
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="//unpkg.com/vue"></script>
+    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid" id="form">
+
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="index.html">Admin</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">도서 등록</li>
+        </ol>
+        <div class="app-main-card">
+            <!-- Page Content -->
+            <form class="app-main-form" >
+            <div class="form-group row">
+                <label for="roundtable_num" class="app-main-form__label col-sm-2 col-form-label">개최회차</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="booksYear" placeholder="개최회차를 입력하세요." v-model="roundtable_num">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="booksTitle" class="app-main-form__label col-sm-2 col-form-label">도서명</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="booksTitle" placeholder="도서명을 입력하세요." v-model="booksTitle">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="booksLink" class="app-main-form__label col-sm-2 col-form-label">도서 이미지 링크</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="booksLink" placeholder="도서 이미지 링크를 입력하세요" v-model="booksLink">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="booksISBN" class="app-main-form__label col-sm-2 col-form-label">ISBN</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="booksISBN" placeholder="도서 ISBN을 입력하세요" v-model="booksISBN">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="booksDate" class="app-main-form__label col-sm-2 col-form-label">출간일</label>
+                <div class="col-sm-10">
+                    <input type="date" class="form-control" id="booksDate" placeholder="도서 출간일을 입력하세요" v-model="booksDate">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="booksCompany" class="app-main-form__label col-sm-2 col-form-label">출판사</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="booksCompany" placeholder="출판사를 입력하세요" v-model="booksCompany">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="booksBody" class="app-main-form__label col-sm-2 col-form-label">도서 설명</label>
+                <div class="col-sm-10">
+                    <textarea rows="6" class="form-control" id="booksBody" placeholder="도서 설명을 입력하세요" v-model="booksBody"></textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="booksKyobo" class="app-main-form__label col-sm-2 col-form-label">교보문고</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="booksKyobo" placeholder="교보문고 링크를 입력하세요" v-model="shopLink.kyobo">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="booksYPBooks" class="app-main-form__label col-sm-2 col-form-label">영풍문고</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="booksYPBooks" placeholder="영풍문고 링크를 입력하세요" v-model="shopLink.ypbook">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="booksYes24" class="app-main-form__label col-sm-2 col-form-label">YES24</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="booksYes24" placeholder="YES24 링크를 입력하세요" v-model="shopLink.yes24">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="booksAladdin" class="app-main-form__label col-sm-2 col-form-label">알라딘</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="booksAladin" placeholder="알라딘 링크를 입력하세요" v-model="shopLink.aladin">
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-10">
+                    <button type="button" class="btn btn-primary" @click.prevent="register">제출</button>
+                </div>
+            </div>
+        </form>
+        </div>
+    </div>
+    <script>
+        new Vue({
+            el: '#form',
+            data: {
+                roundtable_num: '',
+                booksTitle: '',
+                booksLink: '',
+                booksISBN: '',
+                booksDate: '',
+                booksCompany: '청어람출판사',
+                booksBody: '',
+                shopLink: {
+                    kyobo: '',
+                    ypbook: '',
+                    yes24: '',
+                    aladin: ''
+                }
+            },
+            methods: {
+                register: function (e) {
+                    axios.post('/admin/books/reg', {
+                        roundtable_num: this.roundtable_num,
+                        booksTitle: this.booksTitle,
+                        booksLink: this.booksLink,
+                        booksISBN: this.booksISBN,
+                        booksDate: this.booksDate,
+                        booksCompany: this.booksCompany,
+                        booksBody: this.booksBody,
+                        shopLink: this.shopLink
+                    }).then(function (e) {
+                        alert('도서 등록이 완료되었습니다')
+                        location.href = '/admin/books'
+                    })
+                }
+            }
+        })
+    </script>
+    <!-- /.container-fluid -->
+{% endblock %}

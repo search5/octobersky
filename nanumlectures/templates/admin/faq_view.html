@@ -1,0 +1,66 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="//unpkg.com/vue"></script>
+    <script src="//unpkg.com/lodash"></script>
+    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid">
+
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="index.html">10월의 하늘</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">FAQ 상세화면</li>
+        </ol>
+
+        <!-- Page Content -->
+        <div class="app-main-card">
+            <form class="app-main-form" action="">
+                <div class="form-group row">
+                    <label for="classify" class="app-main-form__label col-2">유형</label>
+                    <div class="col-10">
+                      <input type="text" id="classify" class="form-control-plaintext" placeholder="FAQ 유형이 표시됩니다" readonly value="{{ faq.classify }}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="subject" class="app-main-form__label col-2">제목</label>
+                    <div class="col-10">
+                        <input type="text" id="subject" class="form-control-plaintext" placeholder="FAQ 제목이 표시됩니다" readonly value="{{ faq.subject }}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="body" class="app-main-form__label col-2">본문</label>
+                    <div class="col-10">
+                        <div id="summernote" style="width: 100%; height: 280px; overflow-y: scroll;border: solid 1px #ffd9ce;">{{ faq.body | safe }}</div>
+                    </div>
+                </div>
+                <div class="row" id="app">
+                    <div class="col-12 text-right">
+                        <a href="{{ url_for('admin.faq_edit', faq=faq.id) }}" class="btn btn-primary">수정</a>
+                        <a href="#" @click.prevent="delete_faq" class="btn btn-danger">삭제</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <script>
+            new Vue({
+                el: "#app",
+                methods: {
+                    delete_faq: function () {
+                        if (confirm('정말 FAQ를 삭제하시겠습니까?\n되돌릴 수 없습니다')) {
+                            axios.delete("{{ url_for('admin.faq_view', faq=faq.id) }}").then(function (resp) {
+                                alert('FAQ 내용이 삭제되었습니다.')
+                                location.href = '{{ url_for('admin.faq') }}'
+                            })
+                        }
+                    }
+                }
+            })
+        </script>
+    </div>
+    <!-- /.container-fluid -->
+{% endblock %}

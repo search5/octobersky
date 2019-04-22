@@ -1,0 +1,200 @@
+{% extends "public/base.html" %}
+
+{% block css %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-social/5.1.1/bootstrap-social.min.css" type="text/css">
+    <style>
+        body {
+            background-image: url('/public/img/login-bg2.png');
+            background-repeat: no-repeat;
+            background-size: unset;
+        }
+
+        .app-main{
+            display: flex;
+            justify-content: center;
+            align-content: center;
+        }
+
+        .login-form-wrapper{}
+
+
+        .login-form-left {
+            display: flex;
+            flex-direction:column;
+            align-items: center;
+            justify-content: center;
+            background-color: #0000006b;
+        }
+        .login-form-right {
+            display: flex;
+            align-items: center;
+        }
+        .login-form-left_inner{  color: #fff; }
+        .login-form-left__title { font-weight: 300; font-size: 1.8rem;}
+        .login-form-left__p {}
+        .login-form__input {}
+        .login-form-group{}
+        .login-form-group__label{ color: #fff;}
+
+
+        .login-btn {
+            background-color: #1D7CEE !important;
+            color: #fff;
+        }
+        .login-btn:hover{
+        background-color: #216bd3 !important;
+    }
+
+        .btn-facebook {
+            color: #fff;
+            font-weight: bold;
+            background-color: #3b5998;
+            border-color: rgba(0, 0, 0, 0.2);
+            opacity: 0.8;
+        }
+
+        .btn-google {
+            color: #fff;
+            font-weight: bold;
+            background-color: #c23321;
+            border-color: rgba(0, 0, 0, 0.2);
+            opacity: 0.8;
+        }
+
+        .btn-naver {
+            color: #fff;
+            font-weight: bold;
+            background-color: #1ec800;
+            border-color: rgba(0, 0, 0, 0.2);
+            opacity: 0.8;
+        }
+
+        .btn-kakao {
+            color: #fff;
+            font-weight: bold;
+            background-color: #ffea00;
+            border-color: rgba(0, 0, 0, 0.2);
+            opacity: 0.8;
+        }
+
+        .fa-naver {
+            background-image: url(/public/img/naver.png);
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover;
+        }
+
+        .fa-kakao {
+            background-image: url(/public/img/kakao.png);
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover;
+        }
+
+        .btn-social {
+            position: relative;
+            padding-left: 44px;
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .btn-social:hover {
+            color: #eee;
+        }
+
+        .btn-social :first-child {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 40px;
+            padding: 7px;
+            font-size: 1.6em;
+            text-align: center;
+            border-right: 1px solid rgba(0, 0, 0, 0.2);
+        }
+    </style>
+
+{% endblock %}
+
+{% block container %}
+
+
+    <div class="login-form-wrapper row">
+        <div class="login-form-left col-sm-12 col-md-4 col-lg-4">
+            <div class="login-form-left_inner">
+                <h2 class="login-form-left__title">10월의 하늘<br>로그인 페이지</h2>
+                <p class="login-form-left__p">로그인하거나 가입하려면 여기로 오세요.</p>
+            </div>
+        </div>
+        <div class="login-form-right col-sm-12 col-md-8 col-lg-6">
+            <div class="login-form">
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <div class="alert alert-danger" role="alert" style="padding: 0.75rem 1.25rem 0 1.25rem">
+                            <ul class="flashes">
+                                {% for message in messages %}
+                                    <li>{{ message }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <form method="post" action="/complete/username/">
+                    <input type="hidden" name="mode" value="login">
+                    <input type="hidden" name="next" value="{{ request.args.get('next') }}">
+                    <div class="login-form-group form-group">
+                        <label class="login-form-group__label" >ID</label>
+                        <input type="text" id="username" name="username" class="login-form__input form-control"
+                               placeholder="로그인 ID">
+                    </div>
+                    <div class="form-group">
+                        <label class="login-form-group__label">Password</label>
+                        <input type="password" name="password" id="password" class="login-form__input form-control"
+                               placeholder="비밀번호">
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-12 col-md-12 col-lg-12 ">
+                            <button type="submit" class="btn login-btn btn-block">Login</button>
+                            <a class="btn btn btn-light btn-block" href="{{ url_for('public.user_register') }}">Register</a>
+                        </div>
+                    </div>
+                </form>
+                <hr class="hr--white">
+                <div class="d-flex flex-wrap">
+                    <div class="col-md-6 col-sm-12 mb-2">
+                        <a href="/login/facebook" class="btn btn-block btn-social btn-facebook"
+                           style="color: white;">
+                            <i class="fab fa-facebook-f"></i>&nbsp;&nbsp;Sign in with Facebook
+                        </a>
+                    </div>
+                    <!--</div>
+                    <div class="row mb-2">-->
+                    <div class="col-md-6 col-sm-12 mb-2">
+                        <a href="/login/google-oauth2" class="btn btn-block btn-social btn-google"
+                           style="color: white;">
+                            <i class="fab fa-google"></i>&nbsp;&nbsp;Sign in with Google
+                        </a>
+                    </div>
+                    <!--</div>
+                    <div class="row mb-2">-->
+                    <div class="col-md-6 col-sm-12 mb-2">
+                        <a href="/login/naver" class="btn btn-block btn-social btn-naver" style="color: white;">
+                            <i class="fa fa-naver fa-fw"></i>&nbsp;&nbsp;Sign in with Naver
+                        </a>
+                    </div>
+                    <!--</div>
+                    <div class="row mb-2">-->
+                    <div class="col-md-6 col-sm-12 mb-2">
+                        <a href="/login/kakao" class="btn btn-block btn-social btn-kakao" style="color: #222;">
+                            <i class="fa fa-kakao fa-fw"></i>&nbsp;&nbsp;Sign in with Kakao
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

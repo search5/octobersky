@@ -1,0 +1,42 @@
+{% extends "public/base.html" %}
+
+{% block css %}
+    <style type="text/css">
+    div.card {
+        border: none !important;
+    }
+    </style>
+{% endblock %}
+
+{% block container %}
+    <!-- Page Heading/Breadcrumbs -->
+    <header class="app-main-header">
+        <h1 class="app-main-header__title">FAQ</h1>
+    </header>
+
+    <ol class="app-main-breadcrumb breadcrumb">
+        <li class="app-main-breadcrumb-item breadcrumb-item">
+            <a class="app-main-breadcrumb-item__a" href="index.html">Home</a>
+        </li>
+        <li class="app-main-breadcrumb-item--sub breadcrumb-item active">기부참여</li>
+        <li class="app-main-breadcrumb-item--sub breadcrumb-item active">FAQ</li>
+    </ol>
+
+    <div class="mb-4" id="accordion" role="tablist" aria-multiselectable="true">
+    {% for row in faqs %}
+        <div class="card">
+            <div class="card-header" role="tab" id="heading{{ row.id }}">
+                <h5 class="mb-0">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{ row.id }}">[{{ row.classify }}] {{ row.subject }}1</a>
+                </h5>
+            </div>
+
+            <div id="collapse{{ row.id }}" class="collapse show" role="tabpanel">
+                <div class="card-body">
+                   {{ row.body }}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+{% endblock %}

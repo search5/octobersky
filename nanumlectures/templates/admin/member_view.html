@@ -1,0 +1,149 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="//unpkg.com/vue"></script>
+    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid">
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="index.html">10월의 하늘</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">회원정보 조회</li>
+        </ol>
+
+        <div class="app-main-card" id="app">
+            <!-- Page Content -->
+            <form class="app-main-form">
+                <h1>회원 정보 조회</h1>
+                <hr>
+                <div class="form-group row">
+                    {% if record[4] == 'username' %}
+                    <label for="inputID" class="col-2">ID</label>
+                    <div class="col-4">
+                        <input type="text" id="inputID" class="form-control-plaintext" value="{{ record[9].social_auth.first().uid }}" readonly>
+                    </div>
+                    {% endif %}
+                    <label for="inputName" class="col-2">이름</label>
+                    <div class="col-4">
+                        <input type="text" id="inputName" class="form-control-plaintext" value="{{ record[1] }}"
+                               readonly>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputEmail" class="col-2">이메일</label>
+                    <div class="col-4">
+                        <input type="text" id="inputEmail" class="form-control-plaintext" value="{{ record[2] or '' }}"
+                               readonly>
+                    </div>
+                    <label for="inputPhone" class="col-2">전화번호</label>
+                    <div class="col-4">
+                        <input type="text" id="inputPhone" class="form-control-plaintext" value="{{ record[3] or '' }}"
+                               readonly>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputLoginPath" class="col-2">로그인 경로</label>
+                    <div class="col-4">
+                        <input type="text" id="inputLoginPath" class="form-control-plaintext" value="{{ record[4] }}"
+                               readonly>
+                    </div>
+                    <label for="inputLastLogin" class="col-2">마지막 로그인</label>
+                    <div class="col-4">
+                        <input type="text" id="inputLastLogin" class="form-control-plaintext"
+                               value="{{ record[5] or '' }}"
+                               readonly>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputLoginPath" class="col-2">권한</label>
+                    <div class="col-10">
+                        <span class="form-control-static">{{ dict(A='슈퍼 관리자', B='도서관 담당자', C='일반 사용자')[record[6]] }}</span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputLoginPath" class="col-2">담당 도서관</label>
+                    <div class="col-10">
+                        <span class="form-control-static">{{ record[8] or '없음' }}</span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 text-right">
+                        {% if record[4] == "username" %}
+                            <button class="btn btn-info" @click.prevent="password_reset">비밀번호 초기화</button>
+                        {% endif %}
+                        <button class="btn btn-danger" @click.prevent="remove_account">계정 삭제</button>
+                        <a href="{{ url_for('admin.member_edit', uid=record[0]) }}" class="btn btn-warning">수정</a>
+                    </div>
+                </div>
+                <hr style="border-top: 3px double #8c8b8b;">
+                <h4>참여기록</h4>
+                <div class="row">
+                    <div class="col-12">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>참여회차</th>
+                                <th>도서관</th>
+                                <th>강연명</th>
+                                <th>강연일</th>
+                                <th>참여구분</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for entry in record[9].lecture %}
+                            <tr>
+                              <td>{{ loop.index }}</td>
+                              <td>{{ entry.roundtable.roundtable_num }} 회차</td>
+                              <td>{{ entry.library.library_name }}</td>
+                              <td>{{ entry.lecture_title }}</td>
+                              <td>{{ entry.roundtable.roundtable_date }}</td>
+                              <td>강연기부</td>
+                            </tr>
+                            {% endfor %}
+                            {% for entry in record[9].host %}
+                            <tr>
+                              <td>{{ loop.index }}</td>
+                              <td>{{ entry.roundtable.roundtable_num }} 회차</td>
+                              <td>{{ entry.library.library_name }}</td>
+                              <td>-</td>
+                              <td>{{ entry.roundtable.roundtable_date }}</td>
+                              <td>진행기부</td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <script>
+            new Vue({
+                el: "#app",
+                methods: {
+                    password_reset: function () {
+                        if (confirm('정말 비밀번호를 초기화 하시겠습니까?')) {
+                            axios.post("{{ url_for('admin.member_password_reset', uid=record[0]) }}").then(function (resp) {
+                                alert('비밀번호 초기화가 완료되었습니다\n초기화된 비밀번호는 1234입니다.')
+                            })
+                        }
+                    },
+                    remove_account: function () {
+                        if (confirm('정말 계정을 삭제하시겠습니까?\n되돌릴 수 없습니다')) {
+                            axios.delete("{{ url_for('admin.member_view', uid=record[0]) }}").then(function (resp) {
+                                alert('계정 삭제가 완료되었습니다.')
+                                location.href = '{{ url_for('admin.member_list') }}'
+                            })
+                        }
+                    }
+                }
+            })
+        </script>
+    </div>
+    <!-- /.container-fluid -->
+{% endblock %}

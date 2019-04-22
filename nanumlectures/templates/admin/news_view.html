@@ -1,0 +1,87 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="//unpkg.com/vue"></script>
+    <script src="//unpkg.com/lodash"></script>
+    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid">
+
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="index.html">10월의 하늘</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">언론 홍보</li>
+        </ol>
+        <div class="app-main-card">
+            <form class="app-main-form" action="">
+                <!-- Page Content -->
+                <h1>언론 홍보 조회</h1>
+                <hr>
+                <div class="form-group row">
+                    <label for="category" class="app-main-form__label col-2">구분</label>
+                    <div class="col-4">
+                      <input type="text" id="category" class="form-control-plaintext" placeholder="유형" readonly  value="{{ news.category | category_name }}">
+                    </div>
+                    <label for="pressDate" class="app-main-form__label col-2">배부일자</label>
+                    <div class="col-4">
+                        <input type="text" id="pressDate" class="form-control-plaintext" placeholder="배부일자" readonly  value="{{ news.press_date }}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="newsTitle" class="app-main-form__label col-2">제목</label>
+                    <div class="col-10">
+                        <input type="text" id="newsTitle" class="form-control-plaintext" placeholder="기사 제목이 표시됩니다" readonly  value="{{ news.news_title }}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="newsCompany" class="app-main-form__label col-2">언론사</label>
+                    <div class="col-10">
+                        <input type="text" id="newsCompany" class="form-control-plaintext" placeholder="언론사 제목을 입력해야 합니다" readonly  value="{{ news.news_press }}">
+                    </div>
+                </div>
+              {% if not news.news_body %}
+                <div class="form-group row">
+                    <label for="newsLink" class="app-main-form__label col-2">기사링크</label>
+                    <div class="col-10">
+                      <a href="{{ news.news_link }}">{{ news.news_link }}</a>
+                    </div>
+                </div>
+              {% else %}
+                <div class="form-group row">
+                    <label class="app-main-form__label col-2">본문</label>
+                    <div class="col-10" style="border: solid 1px lightgrey;height: 300px;">
+                        {{ news.news_body | safe }}
+                    </div>
+                </div>
+              {% endif %}
+                <div class="row" id="app">
+                    <div class="col-12 text-right">
+                        <a href="{{ url_for('admin.news_edit', news=news.id) }}" class="btn btn-primary">수정</a>
+                        <a href="#" @click.prevent="delete_news" class="btn btn-danger">삭제</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <script>
+            new Vue({
+                el: "#app",
+                methods: {
+                    delete_news: function () {
+                        if (confirm('정말 언론보도를 삭제하시겠습니까?\n되돌릴 수 없습니다')) {
+                            axios.delete("{{ url_for('admin.news_view', news=news.id) }}").then(function (resp) {
+                                alert('언론보도 내용이 삭제되었습니다.')
+                                location.href = '{{ url_for('admin.news') }}'
+                            })
+                        }
+                    }
+                }
+            })
+        </script>
+    </div>
+    <!-- /.container-fluid -->
+{% endblock %}

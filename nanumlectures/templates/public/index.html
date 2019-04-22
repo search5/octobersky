@@ -1,0 +1,212 @@
+{% extends "public/base.html" %}
+
+{% block css %}
+<style type="text/css">
+.csi-countdown-area #csi-countdown .csi-days {
+    color: #fff200;
+}
+
+.csi-countdown-area #csi-countdown .csi-hr {
+    color: #ff8a00;
+}
+
+.csi-countdown-area #csi-countdown .csi-min {
+    color: #00b9ff;
+}
+
+.csi-countdown-area #csi-countdown span:last-child {
+    margin-right: 0;
+}
+
+.csi-countdown-area #csi-countdown span {
+  text-align: center;
+  font-family: 'Oswald', sans-serif;
+  font-size: 60px;
+  line-height: 69px;
+  /*font-size: 4.4rem;
+  line-height: 10.2rem;*/
+  font-weight: 900;
+  display: inline-block;
+  margin-bottom: 0;
+  margin-right: 39px;
+  letter-spacing: 0.16rem;
+  position: relative;
+  bottom: 0;
+}
+
+.csi-countdown-area #csi-countdown i {
+  font-family: 'Lato', sans-serif;
+  font-size: 23px;
+  line-height: 48px;
+  color: cadetblue;
+  text-transform: uppercase;
+  font-weight: 300;
+  letter-spacing: normal;
+  -ms-transform: rotate(-90deg);
+  -webkit-transform: rotate(-90deg);
+  transform: rotate(-90deg);
+  font-style: normal;
+  display: inline-block;
+  position: absolute;
+  bottom: 8px;
+  right: -40px;
+}
+</style>
+{% endblock %}
+
+{% block header %}
+    <header>
+        <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+            <ol class="carousel-indicators">
+                <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+                <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+                <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+            </ol>
+            <div class="carousel-inner" role="listbox">
+                <!-- Slide One - Set the background image for this slide in the line below -->
+                <div class="carousel-item active" style="background-image: url({{ url_for('public.static', filename='img/slide1.png') }})">
+                    <div class="carousel-caption d-none d-md-block">
+                        <h3>오늘의 과학자가 내일의 과학자를 만나다</h3>
+                        <p>매년 10월 네번째주 토요일에 만나는 과학 콘서트</p>
+                    </div>
+                </div>
+                <!-- Slide Two - Set the background image for this slide in the line below -->
+                <div class="carousel-item" style="background-image: url({{ url_for('public.static', filename='img/slide2.jpg') }})">
+                    <div class="carousel-caption d-none d-md-block">
+                        <h3>Second Slide</h3>
+                        <p>This is a description for the second slide.</p>
+                    </div>
+                </div>
+                <!-- Slide Three - Set the background image for this slide in the line below -->
+                <div class="carousel-item" style="background-image: url({{ url_for('public.static', filename='img/slide3.jpg') }})">
+                    <div class="carousel-caption d-none d-md-block">
+                        <h3>Third Slide</h3>
+                        <p>This is a description for the third slide.</p>
+                    </div>
+                </div>
+            </div>
+            <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+            </a>
+            <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+            </a>
+        </div>
+    </header>
+{% endblock %}
+
+{% block container %}
+  <h4>10월의 하늘에 오신 것을 환영합니다.</h4>
+  <div class="row mb-3">
+    <div class="col-6">
+      <div class="mt-4">
+        <h5>2019년 10월의 하늘까지 남은 시간:</h5>
+        <div class="csi-countdown-area">
+          <div class="csi-countdown-area-inner">
+            <!-- Date Format :"Y/m/d" || For Example: 1017/10/5  -->
+            <div id="csi-countdown" data-date="2019/10/26">
+              <span class="csi-days">00 <i> Days </i></span>
+              <span class="csi-hr">00 <i> Hour </i></span>
+              <span class="csi-min">00 <i> Minu </i></span>
+              <span class="csi-sec">00 <i> Seco </i></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="text mt-4 text-success">
+        「10월의 하늘」은 재능기부를 통해 나눔을 실천하고자 하는 분들을 위한 성실한 매개자가 되며, 나아가 나눔 문화가 우리 사회 전반으로 확산될 수 있도록 기여하고자 합니다.<br><br>
+
+        나눔은 일상을 풍요롭게 만들고 자기 자신을 성장시키며, 사회와 공동체를 아름답게 변화시키는 실천입니다. 재능 기부는 나눔의 훌륭한 방법입니다. 자기가 가진 재능을 다른 이들과 나눔으로써 그들의 삶의
+        질을 향상시키고, 영감과 희망을 줄 수 있습니다. 이를 통해 그 재능은 개인적 차원을 넘어서 사회적 재능으로 확대되는 것입니다.
+      </p>
+    </div>
+    <div class="col-4">
+      <div id="fb-root"></div>
+      <script async defer crossorigin="anonymous" src="https://connect.facebook.net/ko_KR/sdk.js#xfbml=1&version=v3.2&appId=752168481818155&autoLogAppEvents=1"></script>
+      <div class="fb-page" data-href="https://www.facebook.com/10sky/" data-tabs="timeline" data-width="500" data-height="400" data-small-header="false" data-adapt-container-width="false" data-hide-cover="false" data-show-facepile="true"><blockquote cite="https://www.facebook.com/10sky/" class="fb-xfbml-parse-ignore"><a href="https://www.facebook.com/10sky/">10월의 하늘</a></blockquote></div>
+    </div>
+  </div>
+
+    <!-- Marketing Icons Section -->
+    <h2>최근 언론보도</h2>
+
+    <div class="row">
+      {% for news in latest_news %}
+        <div class="col-lg-4 mb-4">
+          <div class="card h-100">
+            <h4 class="card-header">{{ news.news_title or '등록된 자료가 없습니다' }}</h4>
+            <div class="card-body">
+              <p class="card-text">
+                {% if not news %}
+                  등록된 내용이 없습니다
+                {% else %}
+                  보도일자: {{ news.press_date }}<br>
+                  {{ news.news_body | safe or news.news_link }}
+                {% endif %}
+              </p>
+            </div>
+            <div class="card-footer">
+              {% if news.category == 1 %}
+                <a class="btn btn-primary" href="{{ url_for('public.news_view', news=news.id) }}">더보기</a>
+              {% elif news %}
+                <a class="btn btn-primary" href="{{ news.news_link }}">더보기</a>
+              {% else %}
+                &nbsp;
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <!-- /.row -->
+
+    <!-- Portfolio Section -->
+    <h2>최근 사진첩</h2>
+
+    <div class="row">
+      {% for photo in latest_photo %}
+        <div class="col-lg-4 col-sm-6 portfolio-item">
+            <div class="card h-100">
+                <a href="{{ photo.album_link or '#' }}" {% if photo  %}target="_blank"{% endif %}><img class="card-img-top" src="{{ photo.representation_image_link or 'https://placehold.it/700x400' }}" alt="" width="700" height="200"></a>
+                <div class="card-body">
+                    <h4 class="card-title">
+                        <a href="{{ photo.album_link or '#' }}" {% if photo  %}target="_blank"{% endif %}>{{ photo.album_name or '등록된 사진첩이 없습니다' }}</a>
+                    </h4>
+                    <p class="card-text">{{ photo.album_description or '등록된 사진첩이 없습니다' }}</p>
+                </div>
+            </div>
+        </div>
+      {% endfor %}
+    </div>
+    <!-- /.row -->
+{% endblock %}
+
+{% block footer_script %}
+  <script src="{{ url_for('public.static', filename='js/countdown.js') }}"></script>
+  <script>
+  var jQ = window.jQuery
+  /*=========================================================================
+   ===  countdown
+   ========================================================================== */
+  if ( jQ('#csi-countdown').length ) {
+
+      var dataTime = jQ('#csi-countdown').data('date'); // Date Format : Y/m/d
+
+      jQ('#csi-countdown').countdown(dataTime, function(event) {
+          var $this = jQ(this).html(event.strftime(''
+              /*+ '<span class="csi-weecks">%w <i> weeks </i></span> '*/
+              + '<span class="csi-days">%D <i> Days </i></span> '
+              + '<span class="csi-hr">%H <i> Hour </i></span> '
+              + '<span class="csi-min">%M <i> Minu </i></span> '
+              + '<span class="csi-sec">%S <i> Seco </i></span>'
+          ));
+      });
+  }
+
+  /*=========================================================================
+   ===  countdown END
+   ========================================================================== */
+  </script>
+{% endblock %}

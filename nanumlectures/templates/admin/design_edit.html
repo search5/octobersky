@@ -1,0 +1,88 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="//unpkg.com/vue"></script>
+    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <!-- Breadcrumbs-->
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="index.html">Admin</a>
+            </li>
+            <li class="breadcrumb-item active">디자인 수정</li>
+        </ol>
+
+        <!-- Page Content -->
+        <form id="app">
+            <div class="form-group row">
+                <label for="roundtable_num" class="col-sm-2 col-form-label">개최회차</label>
+                <div class="col-sm-10">
+                    <input type="number" class="form-control" id="roundtable_num" v-model='roundtable_num' placeholder="개최회차를 입력하세요.">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="design_name" class="col-sm-2 col-form-label">디자인명</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="design_name" v-model="design_name" placeholder="디자인 이름을 입력하세요.">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="design_file" class="col-sm-2 col-form-label">디자인 파일</label>
+                <div class="col-sm-10">
+                    <input type="file" class="form-control" id="design_file" @change="file_select" placeholder="디자인 파일을 선택하세요">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="description" class="col-sm-2 col-form-label">디자인 설명</label>
+                <div class="col-sm-10">
+                    <textarea rows="6" class="form-control" id="description" v-model="description" placeholder="디자인 설명을 입력하세요"></textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-10">
+                    <button type="button" @click.prevent="submit" class="btn btn-primary">수정</button>
+                </div>
+            </div>
+        </form>
+        <script>
+          new Vue({
+              el: '#app',
+              data: {
+                  roundtable_num: '{{ design.roundtable.roundtable_num }}',
+                  design_name: '{{ design.design_name }}',
+                  design_file: '',
+                  description: '{{ design.design_description }}'
+              },
+              methods: {
+                  submit: function (e) {
+                      var bodyFormData = new FormData();
+                      bodyFormData.append('roundtable_num', this.roundtable_num)
+                      bodyFormData.append('design_name', this.design_name)
+                      bodyFormData.append('description', this.description)
+                      if (this.design_file !== '') {
+                          bodyFormData.append('img', this.design_file, this.design_file.name)
+                      }
+
+                      axios({
+                        method: 'post',
+                        url: '/admin/design/{{ design.id }}/edit',
+                        data: bodyFormData,
+                        config: { headers: {'Content-Type': 'multipart/form-data' }}
+                        })
+                        .then(function (response) {
+                            alert('디자인 파일이 수정되었습니다')
+                            location.href = '/admin/design/{{ design.id }}'
+                        })
+                  },
+                  file_select: function (e) {
+                      this.design_file = e.target.files[0]
+                  }
+              }
+          })
+        </script>
+    </div>
+    <!-- /.container-fluid -->
+{% endblock %}

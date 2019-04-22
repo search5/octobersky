@@ -1,0 +1,212 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="//unpkg.com/vue"></script>
+    <script src="//unpkg.com/lodash"></script>
+    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=8261b81cbd781be8d8c51fc4018f64c0&libraries=services"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid">
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="#">도서관 관리</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">기본 화면</li>
+        </ol>
+        <div class="app-main-card" id="form">
+            <form class="app-main-form">
+                    <div class="form-group row">
+                        <label for="libraryName" class="app-main-form__label col-sm-2 col-form-label">도서관명</label>
+                        <div class="col-sm-10">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="libraryName" placeholder="도서관 이름을 입력하세요" v-model="libraryName">
+                                <div class="input-group-append">
+                                    <button class="btn btn-info" @click.prevent="inFormLibrary">정보 가져오기</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="libraryAddr" class="app-main-form__label col-sm-2 col-form-label">도서관 주소</label>
+                        <div class="col-sm-10">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="libraryAddr" placeholder="도서관 주소를 입력하세요"
+                                       v-model="libraryAddr">
+                                <div class="input-group-append">
+                                    <button class="btn btn-info" @click.prevent="inFormAddr">위치 정보 설정</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="managerName" class="app-main-form__label col-sm-2 col-form-label">사서명</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="managerName" placeholder="사서 선생님 이름을 입력하세요" v-model="managerName">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="libraryTel" class="app-main-form__label col-sm-2 col-form-label">대표전화</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="libraryTel" placeholder="도서관 대표 전화번호를 입력하세요" v-model="libraryTel">
+                        </div>
+                        <label for="managerHp" class="app-main-form__label col-sm-2 col-form-label">휴대전화</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="managerHp" placeholder="사서 선생님 개인 연락처를 입력하세요" v-model="managerHp">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="libraryFax" class="app-main-form__label col-sm-2 col-form-label">팩스</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="libraryFax" placeholder="도서관 팩스 번호를 입력하세요" v-model="libraryFax">
+                        </div>
+                        <label for="libraryHomepage" class="app-main-form__label col-sm-2 col-form-label">홈페이지</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="libraryHomepage"
+                                   placeholder="도서관 홈페이지 주소를 입력하세요" v-model="libraryHomepage">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="libraryDescription" class="app-main-form__label col-sm-2 col-form-label">강연장 정보</label>
+                        <div class="col-sm-10">
+                            <textarea class="form-control" rows="2" id="libraryDescription" :placeholder="placeholder.libraryDescription" v-model="libraryDescription"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="expectedAudience" class="app-main-form__label col-sm-2 col-form-label">예상청중</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="expectedAudience" :placeholder="placeholder.expectedAudience" v-model="expectedAudience">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-10">
+                            <button type="button" class="btn btn-primary" @click.prevent="register">등록</button>
+                        </div>
+                    </div>
+                </form>
+            <div class="modal fade" id="findMoreLibrary" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="findMoreLibraryLabel">찾아진 도서관</h5>
+                                <button type="button" class="close" data-dismiss="modal">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <ul class="list-group" style="height: 300px;overflow-y: auto">
+                                    {% raw %}
+                                    <li class="list-group-item" v-for="(item, index) in findLibrary" :key="index" @click="selectLibrary(item)" style="cursor: pointer">{{ item.place_name }} ({{ item.road_address_name }})</li>
+                                    {% endraw %}
+                                </ul>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        </div>
+
+            <script>
+                new Vue({
+                    el: '#form',
+                    data: {
+                        libraryName: '',
+                        libraryAddr: '',
+                        managerName: '',
+                        managerHp: '',
+                        libraryTel: '',
+                        libraryFax: '',
+                        libraryHomepage: '',
+                        libraryDescription: '',
+                        expectedAudience: '',
+                        libraryLat: '',
+                        libraryLong: '',
+                        placeholder: {
+                            libraryDescription: '예시) 시청각실(120석)<br>\n' +
+                                '빔프로젝터, 노트북 사용가능, 음향시설 사용 가능',
+                            expectedAudience: '예시) 초등 고학년~청소년(50명)'
+                        },
+                        findLibrary: []
+                    },
+                    methods: {
+                        register: function (e) {
+                            axios.post('/admin/library/reg', {
+                                libraryName: this.libraryName,
+                                libraryAddr: this.libraryAddr,
+                                managerName: this.managerName,
+                                managerHp: this.managerHp,
+                                libraryTel: this.libraryTel,
+                                libraryFax: this.libraryFax,
+                                libraryHomepage: this.libraryHomepage,
+                                libraryDescription: this.libraryDescription,
+                                expectedAudience: this.expectedAudience,
+                                libraryLat: this.libraryLat,
+                                libraryLong: this.libraryLong
+                            }).then(function (e) {
+                                alert('도서관 등록이 완료되었습니다')
+                                location.href = '/admin/library'
+                            })
+                        },
+                        inFormLibrary: function (e) {
+                            var vm = this
+                            var places = new daum.maps.services.Places();
+
+                            var callback = function (result, status) {
+                                if (status === daum.maps.services.Status.OK) {
+                                    var filtered_list = _.filter(result, function (entry) { return ['PK6', 'CT1'].indexOf(entry.category_group_code) === -1 })
+
+                                    if (filtered_list.length > 1) {
+                                        vm.findLibrary = filtered_list;
+                                        $("#findMoreLibrary").modal("show")
+                                    } else {
+                                        vm.libraryAddr = result[0].road_address_name
+                                        vm.libraryLat = result[0].y
+                                        vm.libraryLong = result[0].x
+                                        vm.libraryTel = result[0].phone
+                                    }
+                                } else {
+                                    alert('도서관 정보를 찾지 못했습니다.\n다시 검색하거나 수동으로 입력해주세요')
+                                }
+                            };
+
+                            places.keywordSearch(this.libraryName, callback);
+                        },
+                        inFormAddr: function (e) {
+                            var vm = this
+                            var geocoder = new daum.maps.services.Geocoder();
+
+                            var callback = function (result, status) {
+                                if (status === daum.maps.services.Status.OK) {
+                                    if (result.length === 1) {
+                                        vm.libraryLat = result[0].y
+                                        vm.libraryLong = result[0].x
+
+                                        alert('도서관 위치 정보가 입력되었습니다')
+                                    } else {
+                                        alert('도서관 주소는 도로명 주소로 정확하게 입력해주세요')
+                                    }
+                                } else {
+                                    alert('주소가 정확하지 않은 것 같습니다. 확인하여 주세요')
+                                }
+                            };
+
+                            geocoder.addressSearch(this.libraryAddr, callback);
+                        },
+                        selectLibrary(item) {
+                            this.libraryAddr = item.road_address_name
+                            this.libraryLat = item.y
+                            this.libraryLong = item.x
+                            this.libraryTel = item.phone
+
+                            $("#findMoreLibrary").modal("hide")
+                        }
+                    }
+                })
+            </script>
+    </div>
+    <!-- /.container-fluid -->
+{% endblock %}

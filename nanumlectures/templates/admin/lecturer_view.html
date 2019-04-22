@@ -1,0 +1,119 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="//unpkg.com/vue"></script>
+    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid">
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="#">강연자 관리</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">상세 화면</li>
+        </ol>
+        <div class="app-main-card">
+            <form class="app-main-form">
+                <div class="form-group row">
+                    <label for="roundNum" class="app-main-form__label col-1 col-form-label">개최회차</label>
+                    <div class="col-sm-10">
+                        <input type="text" readonly class="form-control-plaintext" id="roundNum" value="{{ lecturer.roundtable.roundtable_num }}회">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputLibraryName" class="app-main-form__label col-sm-1 col-form-label">도서관명</label>
+                    <div class="col-sm-10">
+                        <input type="text" readonly class="form-control-plaintext" id="inputLibraryName"
+                               value="{{ lecturer.library.library_name }}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputSessionTime" class="app-main-form__label col-1 col-form-label">강연 시간</label>
+                    <div class="col-sm-10">
+                      <input type="text" readonly class="form-control-plaintext" id="inputSessionTime"
+                               value="{{ lecturer.session_time + 1 }} 시">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputTitle" class="app-main-form__label col-1 col-form-label">강연 제목</label>
+                    <div class="col-sm-10">
+                        <input type="text" id="inputTitle" readonly  value="{{ lecturer.lecture_title }}"
+                               class="form-control-plaintext">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputSummary" class="app-main-form__label col-1 col-form-label">강연개요</label>
+                    <div class="col-sm-10">
+                        <textarea type="text" id="inputSummary" readonly
+                                  class="form-control-plaintext" style="height:150px;border: solid 1px #d0f1e4">{{ lecturer.lecture_summary }}</textarea>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="inputAudience" class="app-main-form__label col-1 col-form-label">예상 청중</label>
+                    <div class="col-sm-10">
+                        <input type="text" id="inputAudience" readonly value="{{ lecturer.lecture_expected_audience }}"
+                               class="form-control-plaintext">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputUser" class="app-main-form__label col-1 col-form-label">강연자명</label>
+                    <div class="col-sm-5">
+                        <input type="text" id="inputUser"  value="{{ lecturer.lecture_name }}" readonly
+                               class="form-control-plaintext">
+                    </div>
+                    <label for="inputOrgnization" class="app-main-form__label col-1 col-form-label">소속</label>
+                    <div class="col-sm-5">
+                        <input type="text" id="inputOrgnization"  value="{{ lecturer.lecture_belong }}" readonly
+                               class="form-control-plaintext">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPhone" class="app-main-form__label col-1 col-form-label">휴대폰</label>
+                    <div class="col-sm-5">
+                        <input type="text" id="inputPhone" value="{{ lecturer.lecture_hp }}" readonly
+                               class="form-control-plaintext">
+                    </div>
+                    <label for="inputEmail" class="app-main-form__label col-1 col-form-label">이메일</label>
+                    <div class="col-sm-5">
+                        <input type="text" id="inputEmail" readonly  value="{{ lecturer.lecture_email }}"
+                               class="form-control-plaintext">
+                    </div>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        강연 영상 공개에 동의하십니까?
+                        {% if lecturer.lecture_public_yn == true %}
+                        <span style="font-weight: bold;">네</span>
+                        {% else %}
+                        <span style="font-weight: bold;color: red;">아니오</span>
+                        {% endif  %}
+                    </label>
+                </div>
+        </form>
+        </div>
+        <div id="app">
+          <a href="{{ url_for('admin.lecturer_edit', lecturer=lecturer.id) }}" class="btn btn-primary">수정</a>
+          <a href="#" @click.prevent="delete_lecture" class="btn btn-danger">삭제</a>
+        </div>
+    </div>
+    <!-- /.container-fluid -->
+
+    <script>
+        new Vue({
+            el: "#app",
+            methods: {
+                delete_lecture: function () {
+                    if (confirm('정말 강연 정보를 삭제하시겠습니까?\n되돌릴 수 없습니다')) {
+                        axios.delete("{{ url_for('admin.lecturer_view', lecturer=lecturer.id) }}").then(function (resp) {
+                            alert('강연 정보 삭제가 완료되었습니다.')
+                            location.href = '{{ url_for('admin.lecturer') }}'
+                        })
+                    }
+                }
+            }
+        })
+    </script>
+{% endblock %}
