@@ -47,24 +47,6 @@ def dropdb():
     click.echo(click.style("데이터베이스의 내용이 전부 지워졌습니다.", fg='red'))
 
 
-@cli.command()
-def upload():
-    """구글에 데이터 업로드 하기"""
-    proc = Popen(shlex.split("gcloud app deploy --project=nanumlectures-167211 --version=20190213t165629"), stdout=PIPE)
-    proc.communicate()
-
-
-@cli.command()
-def cloud_sql_proxy():
-    """클라우드 SQL에 프록시 설정"""
-    if platform.system() == "Linux":
-        proc = Popen(shlex.split("cloudsql/cloud_sql_proxy -instances=nanumlectures-167211:asia-south1:nanumlectures=tcp:5434 -credential_file=cloudsql/nanumlectures-167211-4efa3a840326.json"))
-    else:
-        proc = Popen(shlex.split("cloudsql/cloud_sql_proxy_x64 -instances=nanumlectures-167211:asia-south1:nanumlectures=tcp:5434 -credential_file=cloudsql/nanumlectures-167211-4efa3a840326.json"))
-    proc.communicate()
-    proc.wait()
-
-
 @cli.command(name="calc_line")
 def calc_line():
     import os
