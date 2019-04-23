@@ -11,7 +11,7 @@
 
 ## 설치 방법
 
-```python
+```bash
 $ git clone https://github.com/search5/octobersky.git
 $ python3 -m venv venv
 $ source venv/bin/activate (Not Windows)
