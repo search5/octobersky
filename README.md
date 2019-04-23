@@ -31,5 +31,5 @@ $ python manage.py run
 
 10월의 하늘은 소셜 연동 기준하여 구글, 페이스북, 카카오, 네이버가 연동 대상이며 nanumlectures/settings.py 파일에 해당 내용을 기록하시면 됩니다.
 
-''감사합니다''
+**감사합니다**
 
