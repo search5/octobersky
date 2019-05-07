@@ -11,7 +11,7 @@ from nanumlectures.models import Library
 
 
 class LibraryListView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         current_page = request.args.get("page", 1, type=int)
@@ -26,7 +26,9 @@ class LibraryListView(MethodView):
         if search_word:
             page_url = url_for("admin.library_list", search_option=search_option, search_word=search_word)
 
-        page_url = str(page_url) + "?page=$page"
+            page_url = str(page_url) + "&page=$page"
+        else:
+            page_url = str(page_url) + "?page=$page"
 
         items_per_page = 10
 
@@ -49,7 +51,7 @@ class LibraryListView(MethodView):
 
 
 class LibraryRegView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         return render_template("admin/library_reg.html")
@@ -77,7 +79,7 @@ class LibraryRegView(MethodView):
 
 
 class LibraryEditView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, library):
         return render_template("admin/library_edit.html", library=library)
@@ -101,14 +103,14 @@ class LibraryEditView(MethodView):
 
 
 class LibraryDetailView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, library):
         return render_template("admin/library_view.html", library=library)
 
 
 class LibrarySearchView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         library_name = request.args.get('library_name', '')

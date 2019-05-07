@@ -12,7 +12,7 @@ from nanumlectures.models import Roundtable, Lecture, Library
 
 
 class LectureListView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         current_page = request.args.get("page", 1, type=int)
@@ -30,7 +30,9 @@ class LectureListView(MethodView):
         if search_word:
             page_url = url_for("admin.lecturer", search_option=search_option, search_word=search_word)
 
-        page_url = str(page_url) + "&page=$page"
+            page_url = str(page_url) + "&page=$page"
+        else:
+            page_url = str(page_url) + "?page=$page"
 
         items_per_page = 10
 
@@ -58,7 +60,7 @@ class LectureListView(MethodView):
 
 
 class LectureFindView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         roundtable_id = request.args.get("roundtable_id", -1, type=int)
@@ -76,7 +78,7 @@ class LectureFindView(MethodView):
 
 
 class LectureRegView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         # 새로 입력할 회차 정보를 받아와서 넘겨준다
@@ -114,7 +116,7 @@ class LectureRegView(MethodView):
 
 
 class LectureEditView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, lecturer):
         return render_template("admin/lecturer_edit.html", lecturer=lecturer)
@@ -137,7 +139,7 @@ class LectureEditView(MethodView):
 
 
 class LectureDetailView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, lecturer):
         return render_template("admin/lecturer_view.html", lecturer=lecturer)

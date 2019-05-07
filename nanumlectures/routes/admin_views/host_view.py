@@ -11,7 +11,7 @@ from nanumlectures.models import Roundtable, SessionHost, Library
 
 
 class SessionHostListView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         current_page = request.args.get("page", 1, type=int)
@@ -29,7 +29,9 @@ class SessionHostListView(MethodView):
         if search_word:
             page_url = url_for("admin.session_host", search_option=search_option, search_word=search_word)
 
-        page_url = str(page_url) + "&page=$page"
+            page_url = str(page_url) + "&page=$page"
+        else:
+            page_url = str(page_url) + "?page=$page"
 
         items_per_page = 10
 
@@ -57,7 +59,7 @@ class SessionHostListView(MethodView):
 
 
 class SessionHostRegView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
     
     def get(self):
         # 새로 입력할 회차 정보를 받아와서 넘겨준다
@@ -92,7 +94,7 @@ class SessionHostRegView(MethodView):
 
 
 class SessionHostEditView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, host):
         return render_template("admin/session_host_edit.html", host=host)
@@ -116,7 +118,7 @@ class SessionHostEditView(MethodView):
 
 
 class SessionHostDetailView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, host):
         return render_template("admin/session_host_view.html", host=host)

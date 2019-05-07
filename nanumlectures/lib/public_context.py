@@ -23,6 +23,7 @@ def short2long_name(short_name):
 def library2dict(library_record):
     if not library_record:
         return {}
+
     return dict(
         library_name=library_record.library_name,
         manager_name=library_record.manager_name,

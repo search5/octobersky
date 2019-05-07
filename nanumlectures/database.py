@@ -1,20 +1,17 @@
+from nanumlectures import settings
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import os
 
-db_user, db_password, db_name = ('october_sky', 'db_user_password', 'october_sky')
-db_connection_name = '<db_connection_name>'
-engine_url = 'postgresql+psycopg2://{0}:{1}@'.format(db_user, db_password)
+DB_CONN_PARAMS = ('<db_user>', '<user pass>', '<host>',
+                  5432, '<db_name>')
 
-if os.environ.get('GAE_ENV') == 'standard':
-    # If deployed, use the local socket interface for accessing Cloud SQL
-    host = '/cloudsql/{}'.format(db_connection_name)
-    engine_url = '{0}/{1}?host={2}'.format(engine_url, db_name, host)
-else:
-    host, db_user, db_password, db_name = (
-        "localhost", 'october_sky', 'db_user_password', 'october_sky')
-    engine_url = '{0}{1}:5434/{2}'.format(engine_url, host, db_name)
+if not settings.INIT:
+    DB_CONN_PARAMS = (os.environ['RDS_USERNAME'], os.environ['RDS_PASSWORD'], os.environ['RDS_HOSTNAME'],
+                      os.environ['RDS_PORT'], os.environ['RDS_DB_NAME'])
+
+engine_url = 'postgresql+psycopg2://{0}:{1}@{2}:{3}/{4}'.format(*DB_CONN_PARAMS)
 
 engine = create_engine(engine_url, convert_unicode=True, echo=True)
 db_session = scoped_session(

@@ -13,7 +13,7 @@ from nanumlectures.models import PhotoAlbum, Roundtable
 
 
 class PhotoListView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         current_page = request.args.get("page", 1, type=int)
@@ -31,7 +31,9 @@ class PhotoListView(MethodView):
         if search_word:
             page_url = url_for("admin.photo", search_option=search_option, search_word=search_word)
 
-        page_url = str(page_url) + "?page=$page"
+            page_url = str(page_url) + "&page=$page"
+        else:
+            page_url = str(page_url) + "?page=$page"
 
         items_per_page = 10
 
@@ -55,7 +57,7 @@ class PhotoListView(MethodView):
 
 
 class PhotoRegView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         return render_template("admin/photo_reg.html")
@@ -77,7 +79,7 @@ class PhotoRegView(MethodView):
 
 
 class PhotoEditView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, photo):
         return render_template("admin/photo_edit.html", photo=photo)
@@ -96,7 +98,7 @@ class PhotoEditView(MethodView):
 
 
 class PhotoDetailView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, photo):
         return render_template("admin/photo_view.html", photo=photo)

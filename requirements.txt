@@ -16,4 +16,4 @@ psycopg2-binary
 wtforms
 paginate
 paginate_sqlalchemy
-google-cloud-storage
+boto3

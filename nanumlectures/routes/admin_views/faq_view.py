@@ -13,7 +13,7 @@ from nanumlectures.models import FAQ
 
 
 class FaqListView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         current_page = request.args.get("page", 1, type=int)
@@ -27,7 +27,9 @@ class FaqListView(MethodView):
         if search_word:
             page_url = url_for("admin.faq", search_option=search_option, search_word=search_word)
 
-        page_url = str(page_url) + "?page=$page"
+            page_url = str(page_url) + "&page=$page"
+        else:
+            page_url = str(page_url) + "?page=$page"
 
         items_per_page = 10
 
@@ -48,7 +50,7 @@ class FaqListView(MethodView):
 
 
 class FaqRegView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         return render_template("admin/faq_reg.html")
@@ -68,7 +70,7 @@ class FaqRegView(MethodView):
 
 
 class FaqEditView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, faq):
         return render_template("admin/faq_edit.html",faq=faq)
@@ -84,7 +86,7 @@ class FaqEditView(MethodView):
 
 
 class FaqDetailView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, faq):
         return render_template("admin/faq_view.html",faq=faq)

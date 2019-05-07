@@ -9,7 +9,7 @@ from nanumlectures.models import PageTemplate
 
 
 class DonateEditView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         page_record = db_session.query(PageTemplate).filter(
@@ -29,7 +29,7 @@ class DonateEditView(MethodView):
 
 
 class DonatePreviewView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         page_record = db_session.query(PageTemplate).filter(

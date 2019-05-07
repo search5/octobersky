@@ -13,7 +13,7 @@ from nanumlectures.models import News
 
 
 class NewsListView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         current_page = request.args.get("page", 1, type=int)
@@ -27,7 +27,9 @@ class NewsListView(MethodView):
         if search_word:
             page_url = url_for("admin.news", search_option=search_option, search_word=search_word)
 
-        page_url = str(page_url) + "?page=$page"
+            page_url = str(page_url) + "&page=$page"
+        else:
+            page_url = str(page_url) + "?page=$page"
 
         items_per_page = 10
 
@@ -48,7 +50,7 @@ class NewsListView(MethodView):
 
 
 class NewsRegView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         return render_template("admin/news_reg.html")
@@ -71,7 +73,7 @@ class NewsRegView(MethodView):
 
 
 class NewsEditView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, news):
         return render_template("admin/news_edit.html", news=news)
@@ -91,7 +93,7 @@ class NewsEditView(MethodView):
 
 
 class NewsDetailView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, news):
         return render_template("admin/news_view.html", news=news)

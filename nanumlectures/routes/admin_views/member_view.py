@@ -12,7 +12,7 @@ from nanumlectures.models import Library, User
 
 
 class MemberList(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         current_page = request.args.get("page", 1, type=int)
@@ -26,7 +26,9 @@ class MemberList(MethodView):
         if search_word:
             page_url = url_for("admin.member_list", search_option=search_option, search_word=search_word)
 
-        page_url = str(page_url) + "?page=$page"
+            page_url = str(page_url) + "&page=$page"
+        else:
+            page_url = str(page_url) + "?page=$page"
 
         items_per_page = 10
 
@@ -54,7 +56,7 @@ class MemberList(MethodView):
 
 
 class MemberDetailView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, uid):
         return render_template("admin/member_view.html", record=uid)
@@ -68,7 +70,7 @@ class MemberDetailView(MethodView):
 
 
 class MemberEditView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, uid):
         return render_template("admin/member_modify.html", record=uid)
@@ -92,7 +94,7 @@ class MemberEditView(MethodView):
 
 
 class MemberPasswordResetView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def post(self, uid):
         uid.set_password('1234')

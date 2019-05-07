@@ -17,6 +17,7 @@ from nanumlectures.routes import public, admin
 from flask import Flask, render_template, g, redirect, url_for, flash, request
 from flask_login import current_user
 from markupsafe import Markup
+from nanumlectures.settings import KAKAO_APPKEY
 from social_core.exceptions import AuthException
 from social_flask.routes import social_auth
 from nanumlectures.database import db_session
@@ -49,19 +50,12 @@ init_social(app, db_session)
 # flask_login.set_login_view('main', public.page)
 login_manager = flask_login.LoginManager()
 login_manager.login_view = 'public.login_page'
-login_manager.login_message = ''
+login_manager.login_message = '로그인하셔야 이용 가능합니다.'
 login_manager.init_app(app)
-
-
-@app.route('/.well-known/acme-challenge/<challenge_id>')
-def acme_challenge(challenge_id):
-    """Let's Encrypt SSL Cerificate"""
-    return "<let's encrypt key>"
 
 
 @app.errorhandler(404)
 def not_found(e):
-    print(request.path)
     if request.path.startswith('/public'):
         return render_template("public/404.html")
     elif request.path.startswith('/admin'):
@@ -76,31 +70,10 @@ def interval_server(e):
         flash("로그인에 실패했습니다. Username 또는 Password를 확인하여 주십시오")
         return redirect(url_for('public.login_page'))
 
-    tb = sys.exc_info()
-
     if request.path.startswith('/public'):
         return render_template("500.html", error_stack=Markup('\n'.join(traceback.format_exc().split('\n')).strip()))
     elif request.path.startswith('/admin'):
         return render_template("admin/500.html", error_stack=Markup('\n'.join(traceback.format_exc().split('\n')).strip()))
-
-
-# @app.errorhandler(builtins.AttributeError)
-# def builtins_attr_error(e):
-#     interval_server(e)
-#
-#
-# @app.errorhandler(builtins.TypeError)
-# def builtins_type_error(e):
-#     interval_server(e)
-
-
-@app.before_request
-def before_request():
-    if os.environ.get('GAE_ENV', 'development') == 'standard':
-        if not request.is_secure:
-            url = request.url.replace('http://', 'https://', 1)
-            code = 301
-            return redirect(url, code=code)
 
 
 @app.teardown_appcontext
@@ -154,7 +127,8 @@ def context_util():
     return {
         "date_format": date_format,
         "zip": zip,
-        "tuple": tuple
+        "tuple": tuple,
+        "kakao_key": KAKAO_APPKEY
     }
 
 

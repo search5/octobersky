@@ -11,7 +11,7 @@ from nanumlectures.models import Books, Roundtable
 
 
 class BooksListView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         current_page = request.args.get("page", 1, type=int)
@@ -29,7 +29,9 @@ class BooksListView(MethodView):
         if search_word:
             page_url = url_for("admin.books", search_option=search_option, search_word=search_word)
 
-        page_url = str(page_url) + "?page=$page"
+            page_url = str(page_url) + "&page=$page"
+        else:
+            page_url = str(page_url) + "?page=$page"
 
         items_per_page = 10
 
@@ -53,7 +55,7 @@ class BooksListView(MethodView):
 
 
 class BooksRegView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         return render_template("admin/books_reg.html")
@@ -79,7 +81,7 @@ class BooksRegView(MethodView):
 
 
 class BooksEditView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, book):
         return render_template("admin/books_edit.html", book=book)
@@ -102,7 +104,7 @@ class BooksEditView(MethodView):
 
 
 class BooksDetailView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, book):
         return render_template("admin/books_view.html", book=book)

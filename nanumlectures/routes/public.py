@@ -226,7 +226,9 @@ def together_library():
 
     opened_area = [entry[0] for entry in area_opened_library]
 
-    area = request.args.get('area', None) or opened_area[0]
+    first_area_name = opened_area[0] if len(opened_area) > 0 else ''
+
+    area = request.args.get('area', None) or first_area_name
 
     opened_library = db_session.query(Library, RoundtableAndLibrary).join(
         RoundtableAndLibrary).filter(

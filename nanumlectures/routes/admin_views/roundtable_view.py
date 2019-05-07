@@ -11,7 +11,7 @@ from nanumlectures.models import Roundtable, RoundtableAndLibrary, Library, Lect
 
 
 class RoundtableListView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         current_page = request.args.get("page", 1, type=int)
@@ -29,7 +29,9 @@ class RoundtableListView(MethodView):
         if search_word:
             page_url = url_for("admin.main", search_option=search_option, search_word=search_word)
 
-        page_url = str(page_url) + "?page=$page"
+            page_url = str(page_url) + "&page=$page"
+        else:
+            page_url = str(page_url) + "?page=$page"
 
         items_per_page = 10
 
@@ -50,7 +52,7 @@ class RoundtableListView(MethodView):
 
 
 class RoundtableRegView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         return render_template("admin/roundtable_reg.html")
@@ -75,7 +77,7 @@ class RoundtableRegView(MethodView):
 
 
 class RoundtableEditView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, round):
         return render_template("admin/roundtable_edit.html", round=round)
@@ -111,7 +113,7 @@ class RoundtableEditView(MethodView):
 
 
 class RoundtableDetailView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, round):
         return render_template("admin/roundtable_view.html", round=round)

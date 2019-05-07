@@ -15,7 +15,7 @@ from nanumlectures.models import DesignData, Roundtable
 
 
 class DesignListView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         current_page = request.args.get("page", 1, type=int)
@@ -33,7 +33,9 @@ class DesignListView(MethodView):
         if search_word:
             page_url = url_for("admin.design", search_option=search_option, search_word=search_word)
 
-        page_url = str(page_url) + "?page=$page"
+            page_url = str(page_url) + "&page=$page"
+        else:
+            page_url = str(page_url) + "?page=$page"
 
         items_per_page = 10
 
@@ -57,7 +59,7 @@ class DesignListView(MethodView):
 
 
 class DesignRegView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self):
         return render_template("admin/design_reg.html")
@@ -80,7 +82,7 @@ class DesignRegView(MethodView):
 
 
 class DesignEditView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, design):
         return render_template("admin/design_edit.html", design=design)
@@ -104,7 +106,7 @@ class DesignEditView(MethodView):
 
 
 class DesignDetailView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, design):
         return render_template("admin/design_view.html", design=design)
@@ -118,7 +120,7 @@ class DesignDetailView(MethodView):
 
 
 class DesignFileDownloadView(MethodView):
-    decorators = [login_required, is_admin_role]
+    decorators = [is_admin_role, login_required]
 
     def get(self, design, filename):
         download_file = BytesIO()
