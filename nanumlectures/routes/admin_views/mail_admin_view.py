@@ -88,15 +88,14 @@ class MailSendView(MethodView):
         mail_addr = []
         if req_json.get('receive_type') == 'F':
             # 별도 메일 전송
-            to_addr = {}
-            if req_json.get('mail_addr').find("<") > 0:
-                to_addr_split = req_json.get("mail_addr").split("<")
-                to_addr["name"] = to_addr_split[0].strip()
-                to_addr["addr"] = to_addr_split[1].strip("<>")
-            else:
-                to_addr["name"] = ""
-                to_addr["addr"] = req_json.get('mail_addr')
-            mail_addr = [to_addr]
+            mail_addr = []
+            for receiver in req_json.get("mail_addr").splitlines():
+                if receiver.find("<") > 0:
+                    to_addr_split = receiver.split("<")
+                    to_addr = dict(name=to_addr_split[0].strip(), addr=to_addr_split[1].strip("<>"))
+                else:
+                    to_addr = dict(name='', addr=receiver)
+                mail_addr.append(to_addr)
         elif req_json.get('receive_type') == 'E':
             # 도서관 섭외일때
             to_addr = {}

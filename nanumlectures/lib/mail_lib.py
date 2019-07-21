@@ -16,17 +16,19 @@ class SESMail:
         self.reply_addr = "october10sky@gmail.com"
         self.subject = subject
         self.content = content
+        self.files = files
 
         self.smtp = smtplib.SMTP(SES_HOST, 587)
         self.smtp.ehlo()
         self.smtp.starttls()
         self.smtp.login(SES_ID, SES_PASS)
 
-        self.msg = MIMEMultipart()
+    def send(self, to_addr, name_replace=False):
+        msg = MIMEMultipart()
 
-        self.msg['From'] = self.header_format('시월의하늘준비모임', self.reply_addr)
+        msg['From'] = self.header_format('시월의하늘준비모임', self.reply_addr)
 
-        for entry in files:
+        for entry in self.files:
             ctype, encoding = mimetypes.guess_type(entry)
             if ctype is None or encoding is not None:
                 ctype = 'application/octet-stream'
@@ -41,16 +43,15 @@ class SESMail:
                     part = MIMEBase(maintype, subtype)
                     part.set_payload(fp.read())
                 part.add_header('Content-Disposition', 'attachment', filename=os.path.basename(entry))
-                self.msg.attach(part)
+                msg.attach(part)
 
-    def send(self, to_addr, name_replace=False):
-        self.msg['Subject'] = Header(self.subject.format(name=to_addr["name"]), 'utf-8').encode('latin1')
+        msg['Subject'] = Header(self.subject.format(name=to_addr["name"]), 'utf-8').encode('latin1')
 
         # 본문 이름 치환
-        self.msg.attach(MIMEText(self.content.format(name=to_addr["name"]), 'html'))
+        msg.attach(MIMEText(self.content.format(name=to_addr["name"]), 'html'))
 
-        self.msg['To'] = self.header_format(to_addr["name"], to_addr["addr"])
-        self.smtp.send_message(self.msg, from_addr=self.reply_addr, to_addrs=[to_addr["addr"]])
+        msg['To'] = self.header_format(to_addr["name"], to_addr["addr"])
+        self.smtp.send_message(msg, from_addr=self.reply_addr, to_addrs=[to_addr["addr"]])
 
     def header_format(self, name, value):
         return "{} <{}>".format(Header(name, 'utf-8').encode('latin1'), value)
