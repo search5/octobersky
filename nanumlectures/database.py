@@ -1,11 +1,10 @@
-from nanumlectures import settings
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import os
+from nanumlectures import settings
 
-DB_CONN_PARAMS = ('<db_user>', '<user pass>', '<host>',
-                  5432, '<db_name>')
+DB_CONN_PARAMS = ('username', 'password', 'host', 5432, 'db')
 
 if not settings.INIT:
     DB_CONN_PARAMS = (os.environ['RDS_USERNAME'], os.environ['RDS_PASSWORD'], os.environ['RDS_HOSTNAME'],
@@ -13,7 +12,7 @@ if not settings.INIT:
 
 engine_url = 'postgresql+psycopg2://{0}:{1}@{2}:{3}/{4}'.format(*DB_CONN_PARAMS)
 
-engine = create_engine(engine_url, convert_unicode=True, echo=True)
+engine = create_engine(engine_url, convert_unicode=True, echo=False)
 db_session = scoped_session(
     sessionmaker(autocommit=False, autoflush=False, bind=engine))
 Base = declarative_base()

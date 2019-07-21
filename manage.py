@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import glob
+import os
 import re
+import zipfile
 from functools import partial
 
 import click
@@ -45,6 +47,60 @@ def dropdb():
     drop_db()
 
     click.echo(click.style("데이터베이스의 내용이 전부 지워졌습니다.", fg='red'))
+
+
+def version_up(version, update_item):
+    next_item = dict(patch='minor', minor='major')
+
+    if version[update_item] < 100:
+        version[update_item] += 1
+    else:
+        version[update_item] = 0
+        if update_item != 'major':
+            return version
+        version_up(version, next_item[update_item])
+
+    return version
+
+
+@cli.command()
+def export_aws():
+    """아마존으로 쉽게 내보낼 수 있도록 zip 파일 생성"""
+    # 생성할 압축 파일명 지정
+    version_file = open("export_aws_version.yml")
+    version_info = yaml.load(version_file)
+    new_version = version_up(version_info, 'patch')
+
+    new_zip_file = 'octobersky-v{major}.{minor}.{patch}.zip'.format(**dict(new_version))
+
+    aws_export_file_re = re.compile('octobersky-v([0-9]+)\.([0-9]+)\.([0-9]+)\.zip')
+
+    octobersky_export_zip = zipfile.ZipFile(new_zip_file, 'w')
+
+    for root, folders, files in os.walk("."):
+        for entry in files:
+            full_path = os.path.join(root, entry)
+
+            if ".git/" in full_path:
+                continue
+            elif ".idea/" in full_path:
+                continue
+            elif "__pycache__/" in full_path:
+                continue
+            elif ".gitignore" in full_path:
+                continue
+            elif ".elasticbeanstalk" in full_path:
+                continue
+            elif aws_export_file_re.match(entry):
+                continue
+
+            octobersky_export_zip.write(full_path, full_path, compress_type=zipfile.ZIP_DEFLATED)
+
+    octobersky_export_zip.close()
+
+    yaml.dump(new_version, open("export_aws_version.yml", "w"), default_flow_style=False)
+
+    click.echo("아마존으로 내보낼 파일명: {}".format(new_zip_file))
 
 
 @cli.command(name="calc_line")

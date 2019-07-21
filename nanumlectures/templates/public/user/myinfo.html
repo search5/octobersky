@@ -1,8 +1,23 @@
-<style type="text/css">
+{% extends "public/base.html" %}
+
+{% block script %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-select/2.6.0/vue-select.js"></script>
+{% endblock %}
+
+{% block css %}
+  <link rel="stylesheet" type="text/css" href="{{ url_for('public.static', filename='css/mobile-table.css') }}">
+  <style type="text/css">
     .my-info-form {
         padding: 30px !important;
         box-shadow: 1px 1px 4px 0px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
         border-radius: 5px;
+    }
+
+    .app-main-wrapper {
+        height: calc(100vh - 56px);
     }
 
     .my-info-form__fieldset {
@@ -39,20 +54,88 @@
     .history-participation__wrapper{}
     .history-participation__table {}
 
+    .list-group-item-action.active h5 {
+      color: white !important;
+    }
 
+    .list-group-item-action:not(.active) {
+      color: black;
+    }
 
-</style>
+    .btn-facebook {
+        color: #fff;
+        font-weight: bold;
+        background-color: #3b5998;
+        border-color: rgba(0, 0, 0, 0.2);
+    }
 
-{% block script %}
-  <script src="//unpkg.com/vue"></script>
-  <script src="//unpkg.com/lodash"></script>
-  <script src="//unpkg.com/axios/dist/axios.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-select/2.6.0/vue-select.js"></script>
-{% endblock %}
+    .btn-google {
+        color: #747474;
+        font-weight: bold;
+        background-color: #ffffff;
+        border-color: rgba(0, 0, 0, 0.2);
+    }
 
-{% extends "public/base.html" %}
+    .btn-naver {
+        color: #fff;
+        font-weight: bold;
+        background-color: #1ec800;
+        border-color: rgba(0, 0, 0, 0.2);
+    }
 
-{% block css %}
+    .btn-kakao {
+        color: #fff;
+        font-weight: bold;
+        background-color: #ffea00;
+        border-color: rgba(0, 0, 0, 0.2);
+    }
+
+    .fa-naver {
+        background-image: url(/public/img/naver.png);
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: cover;
+    }
+
+    .fa-kakao {
+        background-image: url(/public/img/kakao.png);
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: cover;
+    }
+
+    .fa-google2 {
+        background-image: url(/public/img/btn_google_dark_focus_ios.png);
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: cover;
+    }
+
+    .btn-social {
+        position: relative;
+        padding-left: 44px;
+        text-align: left;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .btn-social:hover {
+        color: #eee;
+    }
+
+    .btn-social :first-child {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 40px;
+        padding: 7px;
+        font-size: 1.6em;
+        text-align: center;
+        border-right: 1px solid rgba(0, 0, 0, 0.2);
+    }
+  </style>
 {% endblock %}
 
 {% block container %}
@@ -64,107 +147,245 @@
 
     <ol class="app-main-breadcrumb breadcrumb">
         <li class="app-main-breadcrumb-item breadcrumb-item">
-            <a class="app-main-breadcrumb-item__a" href="index.html">Home</a>
+            <a class="app-main-breadcrumb-item__a" href="/">Home</a>
         </li>
         <li class="app-main-breadcrumb-item--sub breadcrumb-item active">내 정보</li>
     </ol>
 
-    <form id="form" class="my-info-form container">
-        <header>
-            <h5 class="history-participation__title">회원 정보 수정</h5>
-        </header>
-
-        <hr>
-
-        <fieldset class="my-info-form__fieldset">
-          {% if user[4] == 'username' %}
-            <div class="my-info-form-group form-group row">
+    <div class="card text-center history-participation container">
+      <div class="">
+        <div class="card-header">
+          <ul class="nav nav-tabs card-header-tabs">
+            <li class="nav-item">
+              <a class="nav-link" :class="{active: tab_state.member}" href="#" @click.prevent="tab_select('member')">회원 정보 수정</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" :class="{active: tab_state.lecture}" href="#" @click.prevent="tab_select('lecture')">참여기록 조회</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" :class="{active: tab_state.vote}" href="#" @click.prevent="tab_select('vote')">추천도서 조회</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" :class="{active: tab_state.donation}" href="#" @click.prevent="tab_select('donation')">기부 조회</a>
+            </li>
+          </ul>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-primary" role="alert" v-if="is_librarian">
+            {{ librarian_office.library_name }} 사서님이세요? 반갑습니다. 도서관 관리자로 등록하시겠어요? <button class="btn btn-sm btn-success" @click.prevent="librarian_reg">등록합니다</button>
+          </div>
+          <fieldset class="my-info-form__fieldset" v-show="tab_state.member">
+            {% if user[4] == 'username' %}
+              <div class="my-info-form-group form-group row">
                 <label class="my-info-form__label col-sm-12 col-md-12 col-lg-2">ID</label>
                 <div class="col-sm-12 col-md-12 col-lg-10">
-                    <span class="form-control-static">{{ user[-2].uid }}</span>
+                  <span class="form-control-static">{{ user[-2].uid }}</span>
                 </div>
-            </div>
-            <div class="my-info-form-group form-group row">
+              </div>
+              <div class="my-info-form-group form-group row">
                 <label for="password" class="my-info-form__label col-sm-12 col-md-12 col-lg-2">현재 비밀번호</label>
                 <div class="col-sm-12 col-md-12 col-lg-10">
-                    <input type="password" id="password" class="form-control form-control-sm" v-model="password">
+                  <input type="password" id="password" class="form-control form-control-sm" v-model="password">
                 </div>
-            </div>
-            <div class="my-info-form-group form-group row">
+              </div>
+              <div class="my-info-form-group form-group row">
                 <label for="newPassword" class="my-info-form__label col-sm-12 col-md-12 col-lg-2">새 비밀번호</label>
                 <div class="col-sm-12 col-md-12 col-lg-4">
-                    <input type="password" id="newPassword" class="form-control form-control-sm" v-model="newPassword" :class="errors['pw']">
-                    <div class="invalid-feedback">
-                      비밀번호는 입력하신 2개가 일치해야 합니다.
-                    </div>
+                  <input type="password" id="newPassword" class="form-control form-control-sm" v-model="newPassword"
+                         :class="errors['pw']">
+                  <div class="invalid-feedback">
+                    비밀번호는 입력하신 2개가 일치해야 합니다.
+                  </div>
                 </div>
-                <label for="newPasswordConfirm" class="my-info-form__label col-sm-12 col-md-12 col-lg-2">새 비밀번호 확인</label>
+                <label for="newPasswordConfirm" class="my-info-form__label col-sm-12 col-md-12 col-lg-2">새 비밀번호
+                  확인</label>
                 <div class="col-sm-12 col-md-12 col-lg-4">
-                    <input type="password" id="newPasswordConfirm" class="form-control form-control-sm" v-model="newPasswordConfirm" :class="errors['repw']">
-                    <div class="valid-feedback">
-                      잘하셨어요 *^^*
-                    </div>
-                    <div class="invalid-feedback">
-                      비밀번호는 입력하신 2개가 일치해야 합니다.
-                    </div>
+                  <input type="password" id="newPasswordConfirm" class="form-control form-control-sm"
+                         v-model="newPasswordConfirm" :class="errors['repw']">
+                  <div class="valid-feedback">
+                    잘하셨어요 *^^*
+                  </div>
+                  <div class="invalid-feedback">
+                    비밀번호는 입력하신 2개가 일치해야 합니다.
+                  </div>
                 </div>
-            </div>
-          {% elif user[4] != 'username' %}
-            <div class="my-info-form-group form-group row">
+              </div>
+            {% elif user[4] != 'username' %}
+              <div class="my-info-form-group form-group row">
                 <label class="my-info-form__label col-sm-12 col-md-12 col-lg-2">소셜 로그인 경로</label>
                 <div class="col-sm-12 col-md-12 col-lg-10">
-                    <span class="form-control-static">{{ user[4] | social_name }}</span>
+                  <span class="form-control-static">{{ user[4] | social_name }}</span>
                 </div>
-            </div>
-          {% endif %}
+              </div>
+            {% endif %}
             <div class="my-info-form-group form-group row">
-                <label for="name" class="my-info-form__label col-sm-12 col-md-12 col-lg-2">이름</label>
-                <div class="col-sm-12 col-md-12 col-lg-10">
-                    <input type="text" id="name" class="form-control form-control-sm" v-model="name">
-                </div>
-            </div>
-            <div class="my-info-form-group form-group row">
-                <label for="email" class="my-info-form__label col-sm-12 col-md-12 col-lg-2">이메일</label>
-                <div class="col-sm-12 col-md-12 col-lg-10">
-                    <input type="email" id="email" class="form-control form-control-sm" v-model="email">
-                </div>
+              <label for="name" class="my-info-form__label col-sm-12 col-md-12 col-lg-2">이름</label>
+              <div class="col-sm-12 col-md-12 col-lg-10">
+                <input type="text" id="name" class="form-control form-control-sm" v-model="name">
+              </div>
             </div>
             <div class="my-info-form-group form-group row">
-                <label for="phone" class="my-info-form__label col-sm-12 col-md-12 col-lg-2">전화번호</label>
-                <div class="col-sm-12 col-md-12 col-lg-10">
-                    <input type="text" id="phone" class="form-control form-control-sm" v-model="phone">
-                </div>
+              <label for="email" class="my-info-form__label col-sm-12 col-md-12 col-lg-2">이메일</label>
+              <div class="col-sm-12 col-md-12 col-lg-10">
+                <input type="email" id="email" class="form-control form-control-sm" v-model="email">
+              </div>
             </div>
             <div class="my-info-form-group form-group row">
-                <div class="col-sm-12 col-md-12 col-lg-12 text-right">
-                    <button class="col-sm-12 col-md-3 col-lg-3 btn btn-sm my-info-form-group__btn" @click.prevent="modify">수정</button>
-                </div>
+              <label for="phone" class="my-info-form__label col-sm-12 col-md-12 col-lg-2">전화번호</label>
+              <div class="col-sm-12 col-md-12 col-lg-10">
+                <input type="text" id="phone" class="form-control form-control-sm" v-model="phone">
+              </div>
             </div>
-        </fieldset>
-    </form>
+            <div class="my-info-form-group form-group row">
+              <div class="col-sm-12 col-md-12 col-lg-12 text-right">
+                <button class="col-sm-12 col-md-3 col-lg-3 btn btn-sm my-info-form-group__btn" @click.prevent="modify">
+                  수정
+                </button>
+              </div>
+            </div>
+            <div class="my-info-form-group form-group row">
+              <div class="col-12">
+                <div class="d-flex flex-wrap">
+                {% set association = associated.get('facebook') %}
+                {% if association %}
+                  <div class="col-md-6 col-sm-12 mb-2">
+                    <form class="disconnect-form"
+                          action="{{ url_for("social.disconnect", backend=association.provider, association_id=association.id) }}"
+                          method="post">
+                      <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                      <input type="hidden" name="next" value="/myinfo">
+                      <button type="submit" class="btn btn-danger" name="facebook">
+                        <i class="fa fa-facebook"></i>
+                        Disconnect Facebook
+                      </button>
+                    </form>
+                  </div>
+                {% else %}
+                  <div class="col-md-6 col-sm-12 mb-2">
+                      <a href="/login/facebook" class="btn btn-block btn-social btn-facebook"
+                         style="color: white;">
+                          <i class="fab fa-facebook-f"></i>&nbsp;&nbsp;Sign in with Facebook
+                      </a>
+                  </div>
+                {% endif %}
 
-    <div class="history-participation container">
-        <header>
-            <h5 class="history-participation__title">참여기록 조회</h5>
-        </header>
+                {% set association = associated.get('google-oauth2') %}
+                {% if association %}
+                  <div class="col-md-6 col-sm-12 mb-2">
+                    <form class="disconnect-form"
+                          action="{{ url_for("social.disconnect", backend=association.provider, association_id=association.id) }}"
+                          method="post">
+                      <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                      <input type="hidden" name="next" value="/myinfo">
+                      <button type="submit" class="btn btn-danger" name="google-oauth2">
+                        <i class="fa fa-google-oauth2"></i>
+                        Disconnect Google
+                      </button>
+                    </form>
+                  </div>
+                {% else %}
+                  <div class="col-md-6 col-sm-12 mb-2">
+                      <a href="/login/google-oauth2" class="btn btn-block btn-social btn-google"
+                         style="color: #747474;">
+                          <i class="fa fa-google2 fa-fw"></i>&nbsp;&nbsp;Sign in with Google
+                      </a>
+                  </div>
+                {% endif %}
 
-        <hr>
+                {% set association = associated.get('naver') %}
+                {% if association %}
+                  <div class="col-md-6 col-sm-12 mb-2">
+                    <form class="disconnect-form"
+                          action="{{ url_for("social.disconnect", backend=association.provider, association_id=association.id) }}"
+                          method="post">
+                      <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                      <input type="hidden" name="next" value="/myinfo">
+                      <button type="submit" class="btn btn-danger" name="naver">
+                        <i class="fa fa-naver"></i>
+                        Disconnect Naver
+                      </button>
+                    </form>
+                  </div>
+                {% else %}
+                  <div class="col-md-6 col-sm-12 mb-2">
+                      <a href="/login/naver" class="btn btn-block btn-social btn-naver" style="color: white;">
+                          <i class="fa fa-naver fa-fw"></i>&nbsp;&nbsp;Sign in with Naver
+                      </a>
+                  </div>
+                {% endif %}
 
-        <div class="history-participation__wrapper table-responsive-sm">
-            <table class="history-participation__table table table-hover">
-                <thead>
-                <tr>
-                    <th>#</th>
-                    <th>참여회차</th>
-                    <th>도서관</th>
-                    <th>강연명</th>
-                    <th>강연일</th>
-                    <th>참여구분</th>
-                    <th>취소</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for entry in user[8].lecture %}
+                {% set association = associated.get('kakao') %}
+                {% if association %}
+                  <div class="col-md-6 col-sm-12 mb-2">
+                    <form class="disconnect-form"
+                          action="{{ url_for("social.disconnect", backend=association.provider, association_id=association.id) }}"
+                          method="post">
+                      <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                      <button type="submit" class="btn btn-danger" name="kakao">
+                        <input type="hidden" name="next" value="/myinfo">
+                        <i class="fa fa-kakao"></i>
+                        Disconnect Kakao
+                      </button>
+                    </form>
+                  </div>
+                {% else %}
+                  <div class="col-md-6 col-sm-12 mb-2">
+                      <a href="/login/kakao" class="btn btn-block btn-social btn-kakao" style="color: #222;">
+                          <i class="fa fa-kakao fa-fw"></i>&nbsp;&nbsp;Sign in with Kakao
+                      </a>
+                  </div>
+                {% endif %}
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="history-participation__wrapper table-responsive-sm" v-show="tab_state.lecture">
+            {% if latest_is_donation() %}
+              <div class="text-left">
+                <h4>10월의 하늘 OT 및 뒤풀이 참석 여부</h4>
+
+                <fieldset class="mt-2">
+                  <legend style="font-size: 12pt;" class="font-weight-bold">오리엔테이션에 참석하시나요?</legend>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" v-model="ot1_join" id="ot1_join">
+                    <label class="form-check-label" for="ot1_join">
+                      1차 오리엔테이션(9월 8일 서울(미정) 오후 4시 ~ 6시)
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" v-model="ot2_join" id="ot2_join">
+                    <label class="form-check-label" for="ot2_join">
+                      2차 오리엔테이션(9월 28일 대전 카이스트 내 오후 2시 ~ 4시)
+                    </label>
+                  </div>
+                </fieldset>
+
+                <fieldset class="mt-2 mb-3">
+                  <legend style="font-size: 12pt;" class="font-weight-bold">뒤풀이 파티에 참석하시나요?</legend>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" v-model="party_join" id="party_join">
+                    <label class="form-check-label" for="party_join">
+                      10월 26일 서울(미정) 오후 7시 ~ 오후 10시
+                    </label>
+                  </div>
+                </fieldset>
+              </div>
+            {% endif %}
+            <table class="history-participation__table table table-hover is-responsive">
+              <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">참여회차</th>
+                <th scope="col">도서관</th>
+                <th scope="col" scope="col">강연명</th>
+                <th scope="col">강연일</th>
+                <th scope="col">참여구분</th>
+                <th scope="col">취소</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for entry in user[8].lecture %}
                 <tr>
                   <td>{{ loop.index }}</td>
                   <td>{{ entry.roundtable.roundtable_num }} 회차</td>
@@ -173,14 +394,16 @@
                   <td>{{ entry.roundtable.roundtable_date }}</td>
                   <td>강연기부</td>
                   <td class="btn-group">
-                    {% if modifed_allow_date(entry) %}
-                    <button class="btn btn-info btn-sm" @click.prevent="modify_lecture_show('{{ entry.id }}')">수정</button>
-                    <button class="btn btn-danger btn-sm" @click.prevent="cancel('lecture', '{{ entry.id }}')">취소</button>
+                    {% if modified_allow_date(entry) %}
+                      <button class="btn btn-info btn-sm" @click.prevent="modify_lecture_show('{{ entry.id }}')">수정
+                      </button>
+                      <button class="btn btn-danger btn-sm" @click.prevent="cancel('lecture', '{{ entry.id }}')">취소
+                      </button>
                     {% endif %}
                   </td>
                 </tr>
-                {% endfor %}
-                {% for entry in user[8].host %}
+              {% endfor %}
+              {% for entry in user[8].host %}
                 <tr>
                   <td>{{ loop.index }}</td>
                   <td>{{ entry.roundtable.roundtable_num }} 회차</td>
@@ -189,15 +412,136 @@
                   <td>{{ entry.roundtable.roundtable_date }}</td>
                   <td>진행기부</td>
                   <td class="btn-group">
-                    {% if modifed_allow_date(entry) %}
-                    <button class="btn btn-danger btn-sm" @click.prevent="cancel('host', '{{ entry.id }}')">취소</button>
+                    {% if modified_allow_date(entry) %}
+                      <button class="btn btn-danger btn-sm" @click.prevent="cancel('host', '{{ entry.id }}')">취소
+                      </button>
                     {% endif %}
                   </td>
                 </tr>
-                {% endfor %}
-                </tbody>
+              {% endfor %}
+              </tbody>
             </table>
+          </div>
+
+          <div class="history-participation__wrapper table-responsive-sm" v-show="tab_state.vote">
+            <div class="row mb-2">
+              <div class="col-12 text-right">
+                <button class="btn btn-success" @click="addon_vote" v-if="is_vote_btn">추가 입력</button>
+              </div>
+            </div>
+            <table class="history-participation__table table table-hover is-responsive">
+              <thead>
+              <tr>
+                <th>#</th>
+                <th style="width: 11%;">참여회차</th>
+                <th>첫번째 도서</th>
+                <th>도서 추천이유</th>
+                <th>취소</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for entry in user[8].vote %}
+                <tr>
+                  <td>{{ loop.index }}</td>
+                  <td>{{ entry.roundtable.roundtable_num }} 회차</td>
+                  <td>{{ entry.book_info.book1 }}</td>
+                  <td>{{ entry.book_info.book1_desc }}</td>
+                  <td class="btn-group">
+                      <button class="btn btn-info btn-sm" @click.prevent="modify_vote_show({{ entry.id }}, {{ entry.book_info }})">수정
+                      </button>
+                  </td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="history-participation__wrapper" v-show="tab_state.donation">
+            <div class="row">
+              <div class="col-12 text-left">
+                <div class="list-group">
+                  {% for entry in user[8].donation | sort %}
+                    <a class="list-group-item list-group-item-action mb-3" id="list-{{ loop.index }}">
+                      <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ entry.donation_type | donation_type }}</h5>
+                        <small>{{ entry.roundtable.roundtable_num }} 회차</small>
+                      </div>
+                      <p class="mb-1">{{ entry.donation_description }}</p>
+                      <small>어떻게 주시겠어요? : {{ entry.donation_transport | donation_transport }}</small>
+
+                      {% if modified_allow_date(entry) %}
+                      <div class="mt-2" style="display: block;">
+                        <div class="btn-group mb-1">
+                          <button class="btn btn-info btn-sm" data-value='{{ dict(entry) | tojson }}' @click.prevent="modify_donation_show">
+                            수정
+                          </button>
+                          <button class="btn btn-danger btn-sm" @click.prevent="donation_cancel('{{ entry.id }}')">
+                            취소
+                          </button>
+                        </div>
+                      </div>
+                    </a>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+    </div>
+
+    <div class="modal fade donation_goods_modify" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          {% raw %}
+          <div class="modal-header">
+            <h5 class="modal-title" id="lecture_title">기부 내역 수정</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% endraw %}
+          <div class="modal-body">
+            <form class="needs-validation" novalidate="">
+              <div class="form-check form-check-inline custom-radio" style="padding: 20px;">
+                <input class="custom-control-input" type="radio" name="donation_type" id="donation_type1" value="A"
+                       v-model="goods.donation_type">
+                <label class="custom-control-label" for="donation_type1">도서 기부</label>
+              </div>
+              <div class="form-check form-check-inline custom-radio">
+                <input class="custom-control-input" type="radio" name="donation_type" id="donation_type2" value="B"
+                       v-model="goods.donation_type">
+                <label class="custom-control-label" for="donation_type2">뒷풀이 기부</label>
+              </div>
+
+              <div class="row">
+                <div class="col-md-12 mb-3">
+                  <label for="donation_goods_description">기부 항목</label>
+                  <textarea class="form-control" id="donation_goods_description" placeholder="기부하실 항목을 간략히 입력해주세요"
+                            rows="10" v-model="goods.donation_description"></textarea>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label style="margin-right: 40px;">물품 전송 수단</label>
+                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                  <label class="btn btn-outline-success" @click="goods.donation_transport_type = 'A'" :class="{active: goods.donation_transport_type === 'A'}">
+                    <input type="radio" name="donation_transport_type" autocomplete="off"> 택배, 방문 등으로 미리 전달하겠습니다
+                  </label>
+                  <label class="btn btn-outline-success" @click="goods.donation_transport_type = 'B'" :class="{active: goods.donation_transport_type === 'B'}">
+                    <input type="radio" name="donation_transport_type" autocomplete="off"> 뒷풀이 장소 등에 직접 가져갑니다
+                  </label>
+                </div>
+              </div>
+
+              <hr class="mb-4">
+              <button class="btn btn-primary btn-lg btn-block" type="button" @click.prevent="modify_donation">기부 수정 하기
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="modal fade lecture_modify" tabindex="-1" role="dialog">
@@ -217,7 +561,7 @@
               <div class="form-control-static">
                 {% raw %}
                 <ul>
-                  <li>강연장 환경: {{ lecture_info.library.library_description }}</li>
+                  <li>강연장 환경: {{ lecture_info.library.lib_description }}</li>
                   <li>청중 연령: {{ lecture_info.library.expected_audience }}</li>
                 </ul>
                 {% endraw %}
@@ -226,22 +570,34 @@
 
             {% raw %}
             <div class="form-group">
-              <label for="exampleInputEmail2">강연 시간</label>
-              <select id="Time" class="form-control" v-model="lecture_info.session_time">
+              <label for="Time">강연 시간</label>
+              <select id="Time" class="form-control" v-model="lecture_info.session_time" :class="validation_lecture.session_time">
                 <option value="">선택하세요</option>
-                <option v-for="(item, index) in available_session_time" :key="index" :value="item">강연 {{ item }}({{ item + 1 }}시)</option>
+                <option v-for="(item, index) in available_session_time" :key="index" :value="item">
+                  강연 {{ item }}({{ item + 1 }}시)
+                </option>
               </select>
+              <div class="invalid-feedback">
+                강연 시간을 선택하셔야 합니다.
+              </div>
             </div>
             <div class="form-group">
               <label for="Title">강연 제목</label>
               <input type="text" id="Title" placeholder="강연 제목을 입력하세요" class="form-control"
-                     v-model="lecture_info.title">
+                     v-model="lecture_info.title" :class="validation_lecture.title">
+              <div class="invalid-feedback">
+                강연 제목을 입력하세요
+              </div>
             </div>
 
             <div class="form-group">
               <label for="Summary">강연개요</label>
               <textarea type="text" id="Summary" placeholder="강연개요를 입력하세요" rows="5"
-                        v-model="lecture_info.description" class="form-control"></textarea>
+                        v-model="lecture_info.description" class="form-control"
+                        :class="validation_lecture.description"></textarea>
+              <div class="invalid-feedback">
+                강연 개요를 입력하세요
+              </div>
             </div>
             {% endraw %}
 
@@ -250,18 +606,32 @@
                 <div class="form-group">
                   <label for="ExpectedAudience">예상청중</label>
                   <input type="text" id="ExpectedAudience" v-model="lecture_info.expectedaudience"
-                         class="form-control" placeholder="예상 청중을 입력하세요">
+                         class="form-control" placeholder="예상 청중을 입력하세요"
+                         :class="validation_lecture.expectedaudience">
+                  <div class="invalid-feedback">
+                    예상 청중을 입력하세요
+                  </div>
                 </div>
               </div>
+              {% raw %}
+              <div class="col-lg-6">
+                <div class="form-group">
+                  <label for="Belong">소속</label>
+                  <input type="text" id="Belong" placeholder="소속을 입력하세요" class="form-control"
+                         v-model="lecture_info.organization" :class="validation_lecture.organization">
+                  <div class="invalid-feedback">
+                    소속 정보를 입력하세요
+                  </div>
+                </div>
+              </div>
+              {% endraw %}
             </div>
 
-            {% raw %}
-            <div class="checkbox">
+            <div class="checkbox" v-if="lecture_info.library.lecture_video_recording_yn">
               <label>
                 <input type="checkbox" v-model="lecture_info.public_yn"> 강연 영상 공개에 동의하십니까?
               </label>
             </div>
-            {% endraw %}
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
@@ -270,8 +640,112 @@
         </div>
       </div>
     </div>
+    <div class="modal fade vote_modify" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          {% raw %}
+          <div class="modal-header">
+            <h5 class="modal-title" id="lecture_title">추천 도서 수정</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% endraw %}
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-12">
+                <div class="row">
+                  <div class="col-12">
+                    <span class="font-weight-bold">10월의하늘 10주년을 기념하는 북 컬렉션에 함께해주세요.</span>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-12">
+                    <span class="">과학의 꿈을 키워가는 청소년들이 강연으로 생긴 호기심을 한 단계 깊고 넓은 탐구심으로
+                      이어갈 수 있는 책을 추천해주세요. 추천 도서를 담은 북 컬렉션 리스트는 10월의 하늘 홈페이지에서
+                      만나실 수 있으며 북컬렉션 가운데 일부는 희망하는 도서관을 대상으로 배포됩니다.</span>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-12">
+                    <span>(도서 후원: (재)도서문화재단 씨앗)</span>
+                  </div>
+                </div>
+                <div class="row mt-3">
+                  <div class="col-12">
+                    <div class="form-group">
+                        <label for="book1">추천하고 싶은 도서</label>
+                        <input type="text" id="book1" v-model="vote_book.book1"
+                               class="form-control" :placeholder="vote_book_placeholder.book"
+                               :class="validation_vote.book">
+                        <div class="invalid-feedback">
+                          추천하고 싶은 도서 정보를 입력해주세요
+                        </div>
+                      </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-12">
+                    <div class="form-group">
+                        <label for="book1_desc">추천하고 싶은 이유</label>
+                        <textarea rows="3" id="book1_desc" v-model="vote_book.book1_desc"
+                               class="form-control" :placeholder="vote_book_placeholder.desc"
+                                  :class="validation_vote.desc"></textarea>
+                        <div class="invalid-feedback">
+                          추천하고 싶은 이유를 적어주세요
+                        </div>
+                      </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col">
+                    <span>그 외에 추천하고 싶은 도서가 있다면 남겨주세요</span>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-12">
+                    <div class="d-flex flex-column">
+                      <div>
+                        <input type="text" id="book2" v-model="vote_book.book2"
+                               class="form-control" :placeholder="vote_book_placeholder.book">
+                      </div>
+                      <div class="mt-1">
+                        <input type="text" id="book3" v-model="vote_book.book3"
+                               class="form-control" :placeholder="vote_book_placeholder.book">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row mt-3">
+                  <div class="col">
+                    <span>강연 시에 청중들에게 나눠드릴 책을 후원합니다(강연자 1명당 10권)</span><br>
+                    <span>원하시는 책이 있다면 남겨주세요.(작성하지 않으시면 추천도서로 드립니다)</span>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-12">
+                    <input type="text" id="book_etc" v-model="vote_book.etc"
+                           class="form-control" :placeholder="vote_book_placeholder.book">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">취소</button>
+            <button type="button" class="btn btn-primary" @click.prevent="mod_votebook" v-if="votebook_action === 'mod'">추천 도서 수정하기</button>
+            <button type="button" class="btn btn-primary" @click.prevent="add_votebook" v-if="votebook_action === 'add'">추천 도서 저장하기</button>
+          </div>
+         </div>
+      </div>
+    </div>
   </div>
-  <script>
+{% endblock %}
+
+{% block footer_script %}
+<script>
+  Vue.devtools = true
+  Vue.productionTip = true
   new Vue({
     el: '#app',
     data: {
@@ -293,14 +767,66 @@
         roundtable_num: '',
         library_id: '',
         expectedaudience: '',
+        organization: '',
+        vote_book: ['', '', ''],
         library: {
           library_name: '',
           area: '',
           library_description: '',
           expected_audience: '',
-          library_addr: ''
+          library_addr: '',
+          lecture_video_recording_yn: ''
         }
-      }
+      },
+      tab_state: {
+          member: true,
+          lecture: false,
+          donation: false,
+          vote: ''
+      },
+      goods: {
+        donation_type: '',
+        donation_description: '',
+        donation_transport_type: '',
+      },
+      validation_lecture: {
+          title: '',
+          description: '',
+          organization: '',
+          session_time: '',
+          expectedaudience: ''
+      },
+      validation_lecture_init: {
+          title: '',
+          description: '',
+          organization: '',
+          session_time: '',
+          expectedaudience: ''
+      },
+      vote_book: {
+          vote_id: 0,
+          book1: '',
+          book1_desc: '',
+          book2: '',
+          book3: '',
+          etc: '',
+          enter_path: 'mypage'
+      },
+      vote_book_placeholder: {
+          book: '도서명, 저자, 출판사를 적어주세요',
+          desc: '컬렉션 리스트에 추천하신 분과 추천이유도 함께 적어드리려고 합니다. 추천하고 싶은 이유, 특히' +
+              ' 관심가지면 좋을 부분 등을 적어주세요. 강연에 참석한 청소년들에게 이 책은 어떤 의미가 있을까요?'
+      },
+      validation_vote: {
+          book: '',
+          desc: ''
+      },
+      votebook_action: 'mod',
+      is_vote_btn: {{ is_vote_btn | tojson }},
+      ot1_join: false,
+      ot2_join: false,
+      party_join: false,
+      is_librarian: {{ is_librarian | tojson }}
     },
     computed: {
       errors: function () {
@@ -323,6 +849,14 @@
       }
     },
     methods: {
+      tab_select: function (menu) {
+        this.tab_state.member = false
+        this.tab_state.lecture = false
+        this.tab_state.donation = false
+        this.tab_state.vote = false
+
+        this.tab_state[menu] = true
+      },
       modify: function (e) {
         this.is_submited = true
 
@@ -368,6 +902,19 @@
           })
         }
       },
+      donation_cancel: function (cancel_id) {
+        var question_name = '기부 신청을 취소하시겠습니까? 되돌릴 수 없습니다'
+        var success_message = '기부 신청이 취소되었습니다'
+
+        if (confirm(question_name)) {
+          axios.post('{{ url_for('public.delete_donation_goods') }}', {
+            cancel_id: cancel_id
+          }).then(function (resp) {
+            alert(success_message)
+              location.reload()
+          })
+        }
+      },
       modify_lecture_show: function (donate_id) {
         $(".lecture_modify").modal('show')
 
@@ -384,18 +931,155 @@
           vm.lecture_info.roundtable_num = record.roundtable
           vm.lecture_info.library_id = record.library.id
           vm.lecture_info.expectedaudience = record.lecture_expected_audience
+          vm.lecture_info.organization = record.lecture_belong
           vm.lecture_info.library = record.library
+          vm.lecture_info.vote_book = resp.data.vote_books.book_info
 
           vm.available_session_time = resp.data.available_session_time
         })
       },
+      modify_vote_show: function (id, vote_info) {
+        $(".vote_modify").modal('show')
+
+        // 추천도서 창의 동작 여부 결정(수정인지, 추가인지)
+        this.votebook_action = 'mod'
+
+        Object.assign(this.vote_book, vote_info, {vote_id: id})
+      },
+      addon_vote: function () {
+          Object.assign(this.vote_book, {vote_id: 0, book1: '', book1_desc: '', book2: '', book3: '', etc: ''})
+
+          // 추천도서 창의 동작 여부 결정(수정인지, 추가인지)
+          this.votebook_action = 'add'
+
+          $(".vote_modify").modal('show')
+      },
+      modify_donation_show: function (e) {
+        $(".donation_goods_modify").modal('show')
+
+        Object.assign(this.goods, JSON.parse(e.target.dataset.value))
+      },
       modify_lecture: function () {
+        Object.assign(this.validation_lecture, this.validation_lecture_init)
+
+        if (!_.trim(this.lecture_info.title)) {
+            this.validation_lecture.title = 'is-invalid'
+        }
+
+        if (!_.trim(this.lecture_info.description)) {
+            this.validation_lecture.description = 'is-invalid'
+        }
+
+        if (!_.trim(this.lecture_info.organization)) {
+            this.validation_lecture.organization = 'is-invalid'
+        }
+
+        if (!_.trim(this.lecture_info.session_time)) {
+            this.validation_lecture.session_time = 'is-invalid'
+        }
+
+        if (!_.trim(this.lecture_info.expectedaudience)) {
+            this.validation_lecture.expectedaudience = 'is-invalid'
+        }
+
+        if (this.validation_lecture.title !== '' || this.validation_lecture.description !== '' ||
+            this.validation_lecture.organization !== '' || this.validation_lecture.session_time !== '' ||
+            this.validation_lecture.expectedaudience !== '') {
+            return false;
+        }
+
         axios.post('/donation/lecture/' + this.lecture_info.id, this.lecture_info).then(function (resp) {
           alert('성공적으로 업데이트 되었습니다.')
           $(".lecture_modify").modal('hide')
           location.reload()
         })
+      },
+      mod_votebook: function () {
+        this.validation_vote.book = ''
+        if (!_.trim(this.vote_book.book1)) {
+          this.validation_vote.book = 'is-invalid'
+          return false
+        }
+
+        this.validation_vote.desc = ''
+        if (!_.trim(this.vote_book.book1_desc)) {
+          this.validation_vote.desc = 'is-invalid'
+          return false
+        }
+
+        axios.post('{{ url_for('public.mod_votebook') }}', this.vote_book).then(function (resp) {
+          if (resp.data.success) {
+            alert('추천도서 수정을 완료했습니다.')
+            location.reload()
+          } else {
+            alert(resp.data.msg)
+          }
+        })
+      },
+      add_votebook: function () {
+        this.validation_vote.book = ''
+        if (!_.trim(this.vote_book.book1)) {
+          this.validation_vote.book = 'is-invalid'
+          return false
+        }
+
+        this.validation_vote.desc = ''
+        if (!_.trim(this.vote_book.book1_desc)) {
+          this.validation_vote.desc = 'is-invalid'
+          return false
+        }
+
+        axios.post('{{ url_for('public.add_votebook') }}', this.vote_book).then(function (resp) {
+          if (resp.data.success) {
+            alert('추천도서 정보를 추가 했습니다.')
+            location.reload()
+          } else {
+            alert(resp.data.msg)
+          }
+        })
+      },
+      modify_donation: function () {
+        axios.post('/donation_goods/' + this.goods.id, this.goods).then(function (resp) {
+          alert('성공적으로 업데이트 되었습니다.')
+          $(".donation_goods_modify").modal('hide')
+          location.reload()
+        })
+      },
+      librarian_reg: function () {
+        axios.post('/librarian_reg', {library_id: '{{ librarian_office.id }}'}).then(function (resp) {
+          alert('성공적으로 {{ librarian_office.library_name }} 사서님으로 등록 되었습니다.')
+          location.reload()
+        })
       }
+    },
+    watch: {
+      ot1_join: function(newValue, oldValue) {
+        if (newValue === oldValue) return false
+        axios.post("/ot_and_party", {join_type: 'ot1_join', value: newValue}).then(function (resp) {
+          // console.log(resp)
+        })
+      },
+      ot2_join: function(newValue, oldValue) {
+        if (newValue === oldValue) return false
+        axios.post("/ot_and_party", {join_type: 'ot2_join', value: newValue}).then(function (resp) {
+          // console.log(resp)
+        })
+      },
+      party_join: function(newValue, oldValue) {
+        if (newValue === oldValue) return false
+        axios.post("/ot_and_party", {join_type: 'party_join', value: newValue}).then(function (resp) {
+          // console.log(resp)
+        })
+      }
+    },
+    created: function () {
+      const vm = this
+
+      axios.get("/ot_and_party").then(function (resp) {
+        vm.ot1_join = resp.data.ot1_join
+        vm.ot2_join = resp.data.ot2_join
+        vm.party_join = resp.data.party_join
+      })
     }
   })
   </script>

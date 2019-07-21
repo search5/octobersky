@@ -1,9 +1,9 @@
 {% extends "admin/base.html" %}
 
 {% block script %}
-  <script src="//unpkg.com/vue"></script>
-  <script src="//unpkg.com/lodash"></script>
-  <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-select/2.6.0/vue-select.js"></script>
 {% endblock %}
 
@@ -109,11 +109,16 @@
                     <div class="form-group row">
                         <label for="hostName" class="app-main-form__label col-2">진행자명</label>
                         <div class="col-sm-8">
+                          <div class="input-group">
+                            <div class="input-group-prepend">
+                              <input type="text" placeholder="진행자 ID" ID="hostId"
+                                     class="form-control" v-model="hostId">
+                            </div>
                             <input type="text" id="hostName" v-model="hostName"
                                    placeholder="진행자명을 입력하세요"
                                    class="form-control"
-                                   value="{{ host.host_name }}"
-                            >
+                                   value="{{ host.host_name }}">
+                          </div>
                         </div>
                     </div>
                 </div>
@@ -164,6 +169,7 @@
                 library_list: {{ host.roundtable.reg_available_library | tojson }},
                 library: null,
                 hostTime: '{{ host.session_time or '' }}',
+                hostId: '{{ (host.host_user and host.host_user.social_auth.scalar().uid) or '' }}',
                 hostName: '{{ host.host_name }}',
                 hostBelong: '{{ host.host_belong or '' }}',
                 hostHp: '{{ host.host_hp or '' }}',
@@ -177,6 +183,7 @@
                         hostLibraryName: this.hostLibraryName,
                         hostTime: this.hostTime,
                         hostTitle: this.hostTitle,
+                        hostId: this.hostId,
                         hostName: this.hostName,
                         hostBelong: this.hostBelong,
                         hostHp: this.hostHp,

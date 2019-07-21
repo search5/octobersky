@@ -1,0 +1,64 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+    <script src="{{ url_for('admin.static', filename='js/summerNote.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid" id="form">
+
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="/admin">10월의 하늘</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">준비위 회의록</li>
+        </ol>
+        <div class="app-main-card">
+            <form class="app-main-form">
+                <div class="form-group row">
+                    <label for="title" class="app-main-form__label col-2">제목</label>
+                    <div class="col-10">
+                        <input type="text" id="title" class="form-control" placeholder="회의록 제목을 입력하세요"
+                               v-model="title">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="editor" class="app-main-form__label col-2">내용</label>
+                    <div class="col-10">
+                        <summer-note id="editor" v-model="content" placeholder="회의록 내용을 입력하세요"></summer-note>
+                    </div>
+                </div>
+            </form>
+            <div class="row">
+                <div class="col-12 text-right">
+                    <button class="btn btn-primary" @click.prevent="register">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        new Vue({
+            el: '#form',
+            data: {
+                title: '',
+                content: ''
+            },
+            methods: {
+                register: function (e) {
+                    axios.post('/admin/board/reg', {
+                        title: this.title,
+                        content: this.content
+                    }).then(function (e) {
+                        alert('회의록 등록이 완료되었습니다')
+                        location.href = '/admin/board'
+                    })
+                }
+            }
+        })
+    </script>
+    <!-- /.container-fluid -->
+{% endblock %}

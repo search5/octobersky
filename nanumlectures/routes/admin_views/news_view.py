@@ -26,7 +26,6 @@ class NewsListView(MethodView):
         page_url = url_for("admin.news")
         if search_word:
             page_url = url_for("admin.news", search_option=search_option, search_word=search_word)
-
             page_url = str(page_url) + "&page=$page"
         else:
             page_url = str(page_url) + "?page=$page"

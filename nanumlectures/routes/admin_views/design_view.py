@@ -32,7 +32,6 @@ class DesignListView(MethodView):
         page_url = url_for("admin.design")
         if search_word:
             page_url = url_for("admin.design", search_option=search_option, search_word=search_word)
-
             page_url = str(page_url) + "&page=$page"
         else:
             page_url = str(page_url) + "?page=$page"
@@ -62,7 +61,10 @@ class DesignRegView(MethodView):
     decorators = [is_admin_role, login_required]
 
     def get(self):
-        return render_template("admin/design_reg.html")
+        # 회차 정보만 모아오기(유효성 검증용)
+        roundtable = map(lambda x: x[0], db_session.query(Roundtable.roundtable_num))
+
+        return render_template("admin/design_reg.html", roundtable=roundtable)
 
     def post(self):
         new_filename = str(uuid.uuid4())
@@ -85,7 +87,10 @@ class DesignEditView(MethodView):
     decorators = [is_admin_role, login_required]
 
     def get(self, design):
-        return render_template("admin/design_edit.html", design=design)
+        # 회차 정보만 모아오기(유효성 검증용)
+        roundtable = map(lambda x: x[0], db_session.query(Roundtable.roundtable_num))
+
+        return render_template("admin/design_edit.html", design=design, roundtable=roundtable)
 
     def post(self, design):
         design.roundtable = db_session.query(Roundtable).filter(

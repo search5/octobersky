@@ -3,11 +3,12 @@ from flask import request, render_template, jsonify, flash, redirect, url_for
 from flask.views import MethodView
 from flask_login import login_required
 from paginate_sqlalchemy import SqlalchemyOrmWrapper
+from social_flask_sqlalchemy.models import UserSocialAuth
 from sqlalchemy import func, desc
 
 from nanumlectures.common import is_admin_role, paginate_link_tag
 from nanumlectures.database import db_session
-from nanumlectures.models import Roundtable, SessionHost, Library
+from nanumlectures.models import Roundtable, SessionHost, Library, User, OTandParty
 
 
 class SessionHostListView(MethodView):
@@ -28,7 +29,6 @@ class SessionHostListView(MethodView):
         page_url = url_for("admin.session_host")
         if search_word:
             page_url = url_for("admin.session_host", search_option=search_option, search_word=search_word)
-
             page_url = str(page_url) + "&page=$page"
         else:
             page_url = str(page_url) + "?page=$page"
@@ -64,24 +64,26 @@ class SessionHostRegView(MethodView):
     def get(self):
         # 새로 입력할 회차 정보를 받아와서 넘겨준다
         # 단, 지난 회차에 강연자 정보를 등록할 일이 없다고 가정한다.
-        latest_round_num = db_session.query(Roundtable.id, func.max(Roundtable.roundtable_num)).group_by(
-            Roundtable.id).first()
-        latest_roundtable_record = db_session.query(Roundtable).filter(Roundtable.id == latest_round_num[0]).first()
+        main_roundtable = db_session.query(Roundtable).filter(Roundtable.is_active == True).first()
 
         # 만약 개최회차 등록되지 않았을 경우 개최회차 등록 화면으로 돌려보낸다.
-        if not latest_roundtable_record:
+        if not main_roundtable:
             flash('진행기부를 등록하시려면 개최회차 등록부터 하셔야 합니다')
             return redirect(url_for('admin.roundtable_reg'))
 
-        return render_template("admin/session_host_reg.html", latest_roundtable=latest_roundtable_record)
+        return render_template("admin/session_host_reg.html", latest_roundtable=main_roundtable)
 
     def post(self):
         req_json = request.get_json()
+
+        user_record = db_session.query(User).outerjoin(UserSocialAuth).filter(
+            UserSocialAuth.uid == req_json.get("hostId")).first()
 
         session_host_obj = SessionHost()
         session_host_obj.roundtable_id = req_json.get('roundtable_id')
         session_host_obj.library_id = req_json.get('library').get('id')
         session_host_obj.session_time = req_json.get('hostTime')
+        session_host_obj.host_user_id = (user_record and user_record.id) or None
         session_host_obj.host_name = req_json.get('hostName')
         session_host_obj.host_belong = req_json.get('hostBelong')
         session_host_obj.host_hp = req_json.get('hostHp')
@@ -102,10 +104,14 @@ class SessionHostEditView(MethodView):
     def post(self, host):
         req_json = request.get_json()
 
+        user_record = db_session.query(User).outerjoin(UserSocialAuth).filter(
+            UserSocialAuth.uid == req_json.get("hostId")).first()
+
         host.host_num = req_json.get('hostNum')
         host.host_library_name = req_json.get('hostLibraryName')
         host.host_time = req_json.get('hostTime')
         host.host_title = req_json.get('hostTitle')
+        host.host_user_id = (user_record and user_record.id) or None
         host.host_name = req_json.get('hostName')
         host.host_belong = req_json.get('hostBelong')
         host.host_hp = req_json.get('hostHp')
@@ -124,6 +130,10 @@ class SessionHostDetailView(MethodView):
         return render_template("admin/session_host_view.html", host=host)
 
     def delete(self, host):
+        db_session.query(OTandParty).filter(
+            OTandParty.party_user_id == host.host_user_id,
+            OTandParty.roundtable_id == host.roundtable_id).delete()
+
         db_session.delete(host)
 
         return jsonify(success=True)

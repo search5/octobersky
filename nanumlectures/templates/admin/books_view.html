@@ -1,9 +1,17 @@
 {% extends "admin/base.html" %}
 
 {% block script %}
-    <script src="//unpkg.com/vue"></script>
-    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
 {% endblock %}
+
+{% macro book_link(bookstore_name, link='') -%}
+  {% if link %}
+    <a href="{{ link or '#' }}" class="btn btn-info" target="_blank">{{ bookstore_name }}</a>
+  {% else %}
+    <a href="{{ link or '#' }}" class="btn btn-info">{{ bookstore_name }}</a>
+  {% endif %}
+{%- endmacro %}
 
 {% block content %}
     <div class="app-main-container container-fluid">
@@ -11,7 +19,7 @@
         <!-- Breadcrumbs-->
         <ol class="app-main-breadcrumb breadcrumb">
             <li class="app-main-breadcrumb-item breadcrumb-item">
-                <a class="app-main-breadcrumb-item__a" href="index.html">Admin</a>
+                <a class="app-main-breadcrumb-item__a" href="/admin">Admin</a>
             </li>
             <li class="app-main-breadcrumb-item--sub breadcrumb-item active">도서 조회</li>
         </ol>
@@ -19,80 +27,74 @@
         <div class="app-main-card">
             <!-- Page Content -->
             <form class="app-main-form">
-                <div class="form-group row">
-                    <label for="roundtable_num" class="app-main-form__label col-sm-2 col-form-label">개최회차</label>
-                    <div class="col-sm-10">
-                        <input type="text" readonly class="form-control-plaintext" id="roundtable_num" value="{{ book.roundtable.roundtable_num }}회차">
+                <div class="row">
+                  <div class="col-3">
+                    <img src="{{ book.books_link }}" width="300">
+                  </div>
+                  <div class="col-9">
+                    <div class="form-group row">
+                      <label for="roundtable_num" class="app-main-form__label col-sm-2 col-form-label">개최회차</label>
+                      <div class="col-sm-10">
+                        <input type="text" readonly class="form-control-plaintext" id="roundtable_num"
+                               value="{{ book.roundtable.roundtable_num }}회차">
+                      </div>
                     </div>
-                </div>
-                <div class="form-group row">
-                    <label for="bookName" class="app-main-form__label col-sm-2 col-form-label">도서명</label>
-                    <div class="col-sm-10">
-                        <input type="text" readonly class="form-control-plaintext" id="bookName" placeholder="도서명을 입력하세요." value="{{ book.books_title }}">
+                    <div class="form-group row">
+                      <label for="bookName" class="app-main-form__label col-sm-2 col-form-label">도서명</label>
+                      <div class="col-sm-10">
+                        <input type="text" readonly class="form-control-plaintext" id="bookName"
+                               placeholder="도서명을 입력하세요." value="{{ book.books_title }}">
+                      </div>
                     </div>
-                </div>
-                <div class="form-group row">
-                    <label for="bookImageLink" class="app-main-form__label col-sm-2 col-form-label">도서 이미지 링크</label>
-                    <div class="col-sm-10">
-                        <input type="text" readonly class="form-control-plaintext" id="bookImageLink" placeholder="도서 이미지 링크를 입력하세요" value="{{ book.books_link }}">
+                    <div class="form-group row">
+                      <label for="bookIsbn" class="app-main-form__label col-sm-2 col-form-label">ISBN</label>
+                      <div class="col-sm-10">
+                        <input type="text" readonly class="form-control-plaintext" id="bookIsbn"
+                               placeholder="도서 ISBN을 입력하세요" value="{{ book.books_isbn }}">
+                      </div>
                     </div>
-                </div>
-                <div class="form-group row">
-                    <label for="bookIsbn" class="app-main-form__label col-sm-2 col-form-label">ISBN</label>
-                    <div class="col-sm-10">
-                        <input type="text" readonly class="form-control-plaintext" id="bookIsbn" placeholder="도서 ISBN을 입력하세요" value="{{ book.books_isbn }}">
+                    <div class="form-group row">
+                      <label for="pressDate" class="app-main-form__label col-sm-2 col-form-label">출간일</label>
+                      <div class="col-sm-10">
+                        <input type="text" class="form-control-plaintext" id="pressDate" placeholder="도서 출간일을 입력하세요"
+                               value="{{ book.books_date }}">
+                      </div>
                     </div>
-                </div>
-                <div class="form-group row">
-                    <label for="pressDate" class="app-main-form__label col-sm-2 col-form-label">출간일</label>
-                    <div class="col-sm-10">
-                        <input type="text" class="form-control-plaintext" id="pressDate" placeholder="도서 출간일을 입력하세요" value="{{ book.books_date }}">
+                    <div class="form-group row">
+                      <label for="bookCompany" class="app-main-form__label col-sm-2 col-form-label">출판사</label>
+                      <div class="col-sm-10">
+                        <input type="text" readonly class="form-control-plaintext" id="bookCompany"
+                               placeholder="출판사를 입력하세요" value="{{ book.books_company }}">
+                      </div>
                     </div>
-                </div>
-                <div class="form-group row">
-                    <label for="bookCompany" class="app-main-form__label col-sm-2 col-form-label">출판사</label>
-                    <div class="col-sm-10">
-                        <input type="text" readonly class="form-control-plaintext" id="bookCompany" placeholder="출판사를 입력하세요" value="{{ book.books_company }}">
+                    <div class="form-group row">
+                      <label for="bookDescription" class="app-main-form__label col-sm-2 col-form-label">도서 설명</label>
+                      <div class="col-sm-10">
+                        <textarea rows="6" readonly class="form-control-plaintext" id="bookDescription"
+                                  placeholder="도서 설명을 입력하세요"
+                                  style="border: solid 1px grey;">{{ book.books_body }}</textarea>
+                      </div>
                     </div>
-                </div>
-                <div class="form-group row">
-                    <label for="bookDescription" class="app-main-form__label col-sm-2 col-form-label">도서 설명</label>
-                    <div class="col-sm-10">
-                        <textarea rows="6" readonly class="form-control-plaintext" id="bookDescription" placeholder="도서 설명을 입력하세요" style="border: solid 1px grey;" >{{ book.books_body }}</textarea>
+                    <div class="form-group row">
+                      <div class="col-2">서점 바로가기</div>
+                      <div class="col-10">
+                        <div class="btn-group">
+                          {{ book_link('교보문고', book.books_bookshop.kyobo) }}
+                          {{ book_link('영풍문고', book.books_bookshop.ypbook) }}
+                          {{ book_link('YES24', book.books_bookshop.yes24) }}
+                          {{ book_link('알라딘', book.books_bookshop.aladin) }}
+                        </div>
+                      </div>
                     </div>
+                  </div>
                 </div>
-                <div class="form-group row">
-                    <label for="shop_kyobo" class="app-main-form__label col-sm-2 col-form-label">교보문고</label>
-                    <div class="col-sm-10">
-                        <input type="text" readonly class="form-control-plaintext" id="shop_kyobo" placeholder="교보문고 링크를 입력하세요" value="{{ book.books_bookshop.kyobo }}">
-                    </div>
-                </div>
-                <div class="form-group row">
-                    <label for="shop_yp" class="app-main-form__label col-sm-2 col-form-label">영풍문고</label>
-                    <div class="col-sm-10">
-                        <input type="text" readonly class="form-control-plaintext" id="shop_yp" placeholder="영풍문고 링크를 입력하세요" value="{{ book.books_bookshop.ypbook }}">
-                    </div>
-                </div>
-                <div class="form-group row">
-                    <label for="shop_yes24" class="app-main-form__label col-sm-2 col-form-label">YES24</label>
-                    <div class="col-sm-10">
-                        <input type="text" readonly class="form-control-plaintext" id="shop_yes24" placeholder="YES24 링크를 입력하세요" value="{{ book.books_bookshop.yes24 }}">
-                    </div>
-                </div>
-                <div class="form-group row">
-                    <label for="shop_aladin" class="app-main-form__label col-sm-2 col-form-label">알라딘</label>
-                    <div class="col-sm-10">
-                        <input type="text" readonly class="form-control-plaintext" id="shop_aladin" placeholder="알라딘 링크를 입력하세요" value="{{ book.books_bookshop.aladin }}">
-                    </div>
-                </div>
-                <div class="form-group row" id="app">
+                <div class="row" id="app">
                     <div class="col-sm-10">
                         <a href="{{ url_for('admin.books_edit', book=book.id) }}" class="btn btn-success">수정</a>
                         <a href="#" @click.prevent="delete_book" class="btn btn-danger">삭제</a>
                     </div>
                 </div>
             </form>
-
         </div>
         <script>
         new Vue({

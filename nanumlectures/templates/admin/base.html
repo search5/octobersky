@@ -28,7 +28,31 @@
     <script src="{{ url_for('admin.static', filename='vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ url_for('admin.static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.11/summernote-bs4.js"></script>
-    <script src="{{ url_for('admin.static', filename='vendor/stacktable/stacktable.js') }}"></script>
+
+    {% if is_ie_browser() %}
+    <link rel="shortcut icon" href="http://octobersky.org/public/favicon/32x32.ico?v={{ today }}">
+    <link rel="icon" sizes="16x16 32x32" href="{{ url_for('public.static', filename='favicon/32x32.ico') }}">
+    {% else %}
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/32x32.png') }}?v={{ today }}" sizes="32x32">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/57x57.png') }}?v={{ today }}" sizes="57x57">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/72x72.png') }}?v={{ today }}" sizes="72x72">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/96x96.png') }}?v={{ today }}" sizes="96x96">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/120x120.png') }}?v={{ today }}" sizes="120x120">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/128x128.png') }}?v={{ today }}" sizes="128x128">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/144x144.png') }}?v={{ today }}" sizes="144x144">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/152x152.png') }}?v={{ today }}" sizes="152x152">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/195x195.png') }}?v={{ today }}" sizes="195x195">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/228x228.png') }}?v={{ today }}" sizes="228x228">
+    {% endif %}
+
+    <style type="text/css">
+    .app-header-nav__a:before {
+      content: url({{ url_for('public.static', filename='img/octobersky_logo.png') }});
+      position: absolute;
+      top: 6px;
+      left: 6px;
+    }
+    </style>
 
     {% block css %}
     {% endblock %}
@@ -44,7 +68,7 @@
 <header role="banner" class="app-header gradient-45deg-light-blue-cyan">
     <nav role="navigation" class="app-header-nav navbar navbar-expand static-top">
 
-        <a class="app-header-nav__a navbar-brand mr-1" href="{{ url_for('admin.main') }}">10월의 하늘</a>
+        <a class="app-header-nav__a navbar-brand mr-1" href="{{ url_for('admin.dashboard') }}" style="padding-left: 43px;">10월의 하늘</a>
 
         <button class="btn btn-link btn-sm text-white order-1 order-sm-0" id="sidebarToggle" href="#">
             <i class="app-header-nav__i far fa-circle fa-lg"></i>
@@ -91,7 +115,7 @@
                 </div>
             </li>
             <li class="app-header-menu-item nav-item">
-                <a class="app-header-menu-item_a nav-link" href="/" role="button">
+                <a class="app-header-menu-item_a nav-link" href="{{ url_for('public.main') }}" role="button">
                     <i class="fas fa-home"></i>
                 </a>
             </li>
@@ -108,14 +132,14 @@
 
 
 <div class="app-main-wrapper container-fluid" >
-
-
+    {% if current_user.usertype == 'A' %}
     <!-- App-Side-Nav -->
     <aside class="app-side" role="navigation" id="wrapper">
         <!-- Sidebar -->
+
         <ul class="app-side-nav sidebar navbar-nav">
             <li class="app-side-nav-item nav-item active">
-                <a class="app-side-nav-item__a nav-link" href="{{ url_for('admin.main') }}">
+                <a class="app-side-nav-item__a nav-link" href="{{ url_for('admin.roundtable_list') }}">
                     <i class="app-side-nav-item__i fas fa-calendar-alt fa-lg"></i>
                     <span class="app-side-nav-item__span">회차 관리</span>
                 </a>
@@ -142,6 +166,24 @@
                 <a class="app-side-nav-item__a nav-link" href="{{ url_for('admin.member_list') }}">
                     <i class="app-side-nav-item__i fas fa-users fa-lg"></i>
                     <span class="app-side-nav-item__span">회원 관리</span>
+                </a>
+            </li>
+            <li class="app-side-nav-item nav-item active">
+                <a class="app-side-nav-item__a nav-link" href="{{ url_for('admin.otandparty') }}">
+                    <i class="app-side-nav-item__i fas fa-handshake fa-lg"></i>
+                    <span class="app-side-nav-item__span">OT및파티</span>
+                </a>
+            </li>
+            <li class="app-side-nav-item nav-item active">
+                <a class="app-side-nav-item__a nav-link" href="{{ url_for('admin.vote_books') }}">
+                    <i class="app-side-nav-item__i fas fa-book fa-lg"></i>
+                    <span class="app-side-nav-item__span">추천 도서</span>
+                </a>
+            </li>
+            <li class="app-side-nav-item nav-item active">
+                <a class="app-side-nav-item__a nav-link" href="{{ url_for('admin.goods_donation') }}">
+                    <i class="app-side-nav-item__i fas fa-award fa-lg"></i>
+                    <span class="app-side-nav-item__span">물품 기부</span>
                 </a>
             </li>
             <li class="app-side-nav-item nav-item active">
@@ -180,26 +222,28 @@
                     <span class="app-side-nav-item__span">후원 안내</span>
                 </a>
             </li>
-            <!-- <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="pagesDropdown" role="button" data-toggle="dropdown"
-                   aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>Pages</span>
+            <li class="app-side-nav-item nav-item active">
+                <a class="app-side-nav-item__a nav-link" href="{{ url_for('admin.board') }}">
+                    <i class="app-side-nav-item__i fas fa-bus fa-lg"></i>
+                    <span class="app-side-nav-item__span">준비위 회의록</span>
                 </a>
-                <div class="dropdown-menu" aria-labelledby="pagesDropdown">
-                    <h6 class="dropdown-header">Login Screens:</h6>
-                    <a class="dropdown-item" href="login.html">Login</a>
-                    <a class="dropdown-item" href="register.html">Register</a>
-                    <a class="dropdown-item" href="forgot-password.html">Forgot Password</a>
-                    <div class="dropdown-divider"></div>
-                    <h6 class="dropdown-header">Other Pages:</h6>
-                    <a class="dropdown-item" href="404.html">404 Page</a>
-                    <a class="dropdown-item" href="blank.html">Blank Page</a>
-                </div>
-            </li> -->
+            </li>
+            <li class="app-side-nav-item nav-item active">
+                <a class="app-side-nav-item__a nav-link" href="{{ url_for('admin.mail_send_view') }}">
+                    <i class="app-side-nav-item__i fas fa-envelope fa-lg"></i>
+                    <span class="app-side-nav-item__span">메일 보내기</span>
+                </a>
+            </li>
+            <li class="app-side-nav-item nav-item active">
+                <a class="app-side-nav-item__a nav-link" href="{{ url_for('admin.main_view') }}">
+                    <i class="app-side-nav-item__i fas fa-train fa-lg"></i>
+                    <span class="app-side-nav-item__span">메인 이미지 관리</span>
+                </a>
+            </li>
         </ul>
     </aside>
     <!--./ App-Side-Nav -->
+    {% endif %}
 
     <!-- Content-wrapper -->
     <div class="app-main" id="content-wrapper">
@@ -217,8 +261,6 @@
 
     </div>
     <!-- Content-wrapper -->
-
-
 </div>
 
 <!-- Scroll to Top Button-->
@@ -249,18 +291,8 @@
 <!-- Core plugin JavaScript-->
 <script src="{{ url_for('admin.static', filename='vendor/jquery-easing/jquery.easing.min.js') }}"></script>
 
-<!-- Page level plugin JavaScript-->
-<script src="{{ url_for('admin.static', filename='vendor/chart.js/Chart.min.js') }}"></script>
-<script src="{{ url_for('admin.static', filename='vendor/datatables/jquery.dataTables.js') }}"></script>
-<script src="{{ url_for('admin.static', filename='vendor/datatables/dataTables.bootstrap4.js') }}"></script>
-
 <!-- Custom scripts for all pages-->
 <script src="{{ url_for('admin.static', filename='js/sb-admin.min.js') }}"></script>
-
-<!-- Demo scripts for this page-->
-<script src="{{ url_for('admin.static', filename='js/demo/datatables-demo.js') }}"></script>
-<script src="{{ url_for('admin.static', filename='js/demo/chart-area-demo.js') }}"></script>
-
 
 </body>
 

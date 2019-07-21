@@ -3,10 +3,48 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="description" content="오늘의 과학자가 내일의 과학자를 만나다.">
+    <meta name="author" content="이지호(search5@gmail.com)">
+    <meta name="title" content="10월의하늘" />
+    <meta itemprop="name" content="10월의하늘" />
+    <meta itemprop="image" content="https://octobersky.org/homepage_wallpaper" />
+
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://octobersky.org">
+    <meta property="og:title" content="10월의하늘">
+    <meta property="og:description" content="10월의하늘 - 오늘의 과학자가 내일의 과학자를 만나다">
+    <meta property="og:image" content="https://octobersky.org/homepage_wallpaper">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="10월의하늘">
+    <meta name="twitter:description" content="10월의하늘 - 오늘의 과학자가 내일의 과학자를 만나다">
+    <meta name="twitter:image" content="https://octobersky.org/homepage_wallpaper">
+
+    <link rel="manifest" href="/public/manifest.json">
 
     <title>10월의 하늘</title>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-139875148-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-139875148-1');
+    </script>
+
+    <style>
+      .app-header-nav__brand:before {
+        content: " ";
+        background: url({{ url_for('public.static', filename='img/octobersky_logo.png') }}) no-repeat;
+        position: absolute;
+        top: 8px;
+        height: 50px;
+        width: 50px;
+        left: 4px;
+      }
+    </style>
 
     <!-- Bootstrap core CSS -->
 {#    <link href="https://bootswatch.com/4/minty/bootstrap.min.css" rel="stylesheet">#}
@@ -16,6 +54,31 @@
     <link href="{{ url_for('public.static', filename='css/modern-business.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <link href="{{ url_for('public.static', filename='css/public-layout.css') }}" rel="stylesheet">
+
+    {% if is_ie_browser() %}
+    <link rel="shortcut icon" href="http://octobersky.org/public/favicon/32x32.ico?v={today}">
+    <link rel="icon" sizes="16x16 32x32" href="{{ url_for('public.static', filename='favicon/32x32.ico') }}?v={today}">
+    {% else %}
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/32x32.png') }}?v={today}" sizes="32x32">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/57x57.png') }}?v={today}" sizes="57x57">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/72x72.png') }}?v={today}" sizes="72x72">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/96x96.png') }}?v={today}" sizes="96x96">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/120x120.png') }}?v={today}" sizes="120x120">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/128x128.png') }}?v={today}" sizes="128x128">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/144x144.png') }}?v={today}" sizes="144x144">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/152x152.png') }}?v={today}" sizes="152x152">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/195x195.png') }}?v={today}" sizes="195x195">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/228x228.png') }}?v={today}" sizes="228x228">
+    <link rel="apple-touch-icon" sizes="57x57" href="{{ url_for('public.static', filename='favicon/apple-icon-57x57.png') }}?v={today}">
+    <link rel="apple-touch-icon" sizes="60x60" href="{{ url_for('public.static', filename='favicon/apple-icon-60x60.png') }}?v={today}">
+    <link rel="apple-touch-icon" sizes="72x72" href="{{ url_for('public.static', filename='favicon/apple-icon-72x72.png') }}?v={today}">
+    <link rel="apple-touch-icon" sizes="76x76" href="{{ url_for('public.static', filename='favicon/apple-icon-76x76.png') }}?v={today}">
+    <link rel="apple-touch-icon" sizes="114x114" href="{{ url_for('public.static', filename='favicon/apple-icon-114x114.png') }}?v={today}">
+    <link rel="apple-touch-icon" sizes="120x120" href="{{ url_for('public.static', filename='favicon/apple-icon-120x120.png') }}?v={today}">
+    <link rel="apple-touch-icon" sizes="144x144" href="{{ url_for('public.static', filename='favicon/apple-icon-144x144.png') }}?v={today}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{{ url_for('public.static', filename='favicon/apple-icon-152x152.png') }}?v={today}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('public.static', filename='favicon/apple-icon-180x180.png') }}?v={today}">
+    {% endif %}
 
     {% block css %}
     {% endblock %}
@@ -29,8 +92,7 @@
 <header role="banner" class="app-header">
     <!-- Navigation -->
     <nav role="navigation" class="app-header-nav navbar fixed-top navbar-dark navbar-expand-lg">
-
-        <a class="app-header-nav__brand navbar-brand" href="{{ url_for('public.main') }}">10월의 하늘</a>
+        <a class="app-header-nav__brand navbar-brand" href="{{ url_for('public.main') }}" style="padding-left: 25px;">10월의 하늘</a>
         <button class="app-header-nav__btn navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
                 data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false"
                 aria-label="Toggle navigation">
@@ -42,14 +104,16 @@
                     <a class="app-header-nav-item__a nav-link dropdown-toggle" href="#" data-toggle="dropdown">소개</a>
                     <div class="app-header-nav-dropdown dropdown-menu dropdown-menu-right">
                         <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.about') }}">10월의 하늘</a>
-                        <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.manifesto') }}">Manifest</a>
+                        <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.manifesto') }}">Manifesto</a>
                         <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.news') }}">언론 홍보</a>
                     </div>
                 </li>
                 <li class="app-header-nav-item nav-item dropdown">
                     <a class="app-header-nav-item__a nav-link dropdown-toggle" href="#" data-toggle="dropdown">기부참여</a>
                     <div class="app-header-nav-dropdown dropdown-menu dropdown-menu-right">
-                        <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.together_library') }}">강연/진행 기부</a>
+                        <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.lecture_application_donate') }}">강연/진행 기부</a>
+                        <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.lecture_library_map') }}">참여 도서관</a>
+                        <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.donation_goods') }}">도서 기부</a>
                         <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.boost') }}">후원 안내</a>
                         <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.faq') }}">FAQ</a>
                     </div>
@@ -61,6 +125,7 @@
                         <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.archive_photo') }}">사진</a>
                         <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.archive_design') }}">디자인</a>
                         <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.archive_books') }}">도서</a>
+                        <a class="app-header-nav-dropdown-item dropdown-item" href="{{ url_for('public.vote_books') }}">추천 도서(10회 특별)</a>
                     </div>
                 </li>
                 {% if not current_user.is_authenticated %}
@@ -77,9 +142,13 @@
                 <li class="app-header-nav-item nav-item">
                     <a class="app-header-nav-item__a nav-link" href="{{ url_for('public.logout') }}">로그아웃</a>
                 </li>
-                    {% if current_user.usertype == 'A' %}
+                    {% if current_user.usertype in ('A', 'B') %}
                     <li class="app-header-nav-item nav-item">
-                        <a class="app-header-nav-item__a nav-link" href="{{ url_for('admin.main') }}">관리자</a>
+                        {% if current_user.usertype == 'A' %}
+                          <a class="app-header-nav-item__a nav-link" href="{{ url_for('admin.roundtable_list') }}">관리자</a>
+                        {% elif current_user.usertype == 'B' %}
+                          <a class="app-header-nav-item__a nav-link" href="{{ url_for('admin.library_mngt') }}">관리자</a>
+                        {% endif %}
                     </li>
                     {% endif %}
                 {% endif %}

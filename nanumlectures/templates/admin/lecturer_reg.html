@@ -1,9 +1,9 @@
 {% extends "admin/base.html" %}
 
 {% block script %}
-  <script src="//unpkg.com/vue"></script>
-  <script src="//unpkg.com/lodash"></script>
-  <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-select/2.6.0/vue-select.js"></script>
 {% endblock %}
 
@@ -125,9 +125,15 @@
                     <div class="form-group row">
                         <label for="lectureName" class="app-main-form__label col-2">강연자명</label>
                         <div class="col-sm-8">
-                            <input type="text" id="lectureName"
-                                   placeholder="강연자명을 입력하세요"
-                                   class="form-control" v-model="lectureName">
+                            <div class="input-group">
+                              <div class="input-group-prepend">
+                                <input type="text" placeholder="강연자 ID" ID="lectureId"
+                                       class="form-control" v-model="lectureID">
+                              </div>
+                              <input type="text" id="lectureName"
+                                     placeholder="강연자명을 입력하세요"
+                                     class="form-control" v-model="lectureName">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -181,6 +187,7 @@
             data: {
                 roundtable_num: '{{ latest_roundtable.roundtable_num }} 회차',
                 library_list: {{ latest_roundtable.reg_available_library | tojson }},
+                lectureID: '',
                 libraryName: '',
                 lectureTime: '',
                 lectureTitle: '',
@@ -198,6 +205,7 @@
                     axios.post('/admin/lecturer/reg', {
                         roundtable_id: {{ latest_roundtable.id }},
                         library: this.library,
+                        lectureID: this.lectureID,
                         lectureTime: this.lectureTime,
                         lectureTitle: this.lectureTitle,
                         lectureSummary: this.lectureSummary,

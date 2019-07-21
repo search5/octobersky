@@ -22,12 +22,12 @@ Vue.component('summerNote', {
         }
     },
     mounted: function () {
-        $("#editor").summernote({
+        $("div#editor").summernote({
             placeholder: this.placeholder,
             tabsize: this.tabsize,
             height: this.height,
             callbacks: {
-              onChange: this.change
+                onChange: this.change
             }
         });
     }

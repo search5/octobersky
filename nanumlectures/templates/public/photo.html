@@ -1,5 +1,13 @@
 {% extends "public/base.html" %}
 
+{% block css %}
+  <style>
+  .app-main-wrapper {
+      height: calc(100vh - 56px);
+  }
+  </style>
+{% endblock %}
+
 {% block container %}
 <!-- Page Heading/Breadcrumbs -->
     <header class="app-main-header">
@@ -8,7 +16,7 @@
 
     <ol class="app-main-breadcrumb breadcrumb">
       <li class="app-main-breadcrumb-item breadcrumb-item">
-        <a class="app-main-breadcrumb-item__a" href="index.html">Home</a>
+        <a class="app-main-breadcrumb-item__a" href="/">Home</a>
       </li>
       <li class="app-main-breadcrumb-item--sub breadcrumb-item active">기록</li>
       <li class="app-main-breadcrumb-item--sub breadcrumb-item active">사진</li>

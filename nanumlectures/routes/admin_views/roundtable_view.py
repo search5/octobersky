@@ -3,7 +3,7 @@ from flask import render_template, jsonify, request, url_for, flash
 from flask.views import MethodView
 from flask_login import login_required
 from paginate_sqlalchemy import SqlalchemyOrmWrapper
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 
 from nanumlectures.common import is_admin_role, paginate_link_tag
 from nanumlectures.database import db_session
@@ -25,10 +25,9 @@ class RoundtableListView(MethodView):
             flash('검색어는 숫자만 입력하셔야 합니다.')
             search_word = None
 
-        page_url = url_for("admin.main")
+        page_url = url_for("admin.roundtable_list")
         if search_word:
-            page_url = url_for("admin.main", search_option=search_option, search_word=search_word)
-
+            page_url = url_for("admin.roundtable_list", search_option=search_option, search_word=search_word)
             page_url = str(page_url) + "&page=$page"
         else:
             page_url = str(page_url) + "?page=$page"
@@ -45,7 +44,7 @@ class RoundtableListView(MethodView):
                                   items_per_page=items_per_page,
                                   wrapper_class=SqlalchemyOrmWrapper)
 
-        return render_template("admin/index.html", paginator=paginator,
+        return render_template("admin/roundtable_list.html", paginator=paginator,
                                paginate_link_tag=paginate_link_tag,
                                page_url=page_url, items_per_page=items_per_page,
                                total_cnt=total_cnt, page=current_page)
@@ -67,7 +66,7 @@ class RoundtableRegView(MethodView):
         obj.staff = req_json.get('staff')
 
         for item in req_json.get('library_list'):
-            lib_info = RoundtableAndLibrary(round_num=item.get('session_time'))
+            lib_info = RoundtableAndLibrary(round_num=item.get('session_time'), library_type=item.get('library_type'))
             lib_info.library = db_session.query(Library).filter(Library.id == item.get('library').get('id')).first()
             obj.library.append(lib_info)
 
@@ -97,6 +96,7 @@ class RoundtableEditView(MethodView):
             if len(put_library) > 0:
                 worked_lib.append(entry.library_id)
                 entry.round_num = put_library[0]['session_time']
+                entry.library_type = put_library[0]['library_type']
             else:
                 # 사용자가 보낸 도서관을 목록에서 찾지 못하면 삭제 대상으로 결정한다.
                 db_session.delete(entry)
@@ -105,7 +105,7 @@ class RoundtableEditView(MethodView):
             if item.get('library').get('id') in worked_lib:
                 continue
 
-            lib_info = RoundtableAndLibrary(round_num=item.get('session_time'))
+            lib_info = RoundtableAndLibrary(round_num=item.get('session_time'), library_type=item.get('library_type'))
             lib_info.library = db_session.query(Library).filter(Library.id == item.get('library').get('id')).first()
             round.library.append(lib_info)
 
@@ -116,7 +116,16 @@ class RoundtableDetailView(MethodView):
     decorators = [is_admin_role, login_required]
 
     def get(self, round):
-        return render_template("admin/roundtable_view.html", round=round)
+        # 뷰 페이지에서 참여 도서관을 검색할 수 있도록 추가 기능 개선
+        opened_library = [{
+            "library": {
+                'library_name': entry.library.library_name,
+                'library_addr': entry.library.library_addr
+            },
+            "round_num": entry.round_num
+        } for entry in round.library]
+
+        return render_template("admin/roundtable_view.html", round=round, opened_library=opened_library)
 
     def delete(self, round):
         # 참여 도서관 정보 삭제
@@ -127,5 +136,25 @@ class RoundtableDetailView(MethodView):
         db_session.query(SessionHost).filter(SessionHost.roundtable_id == round.id).delete()
 
         db_session.delete(round)
+
+        return jsonify(success=True)
+
+
+class RoundtableActiveView(MethodView):
+    decorators = [is_admin_role, login_required]
+
+    def post(self):
+        req_json = request.get_json()
+
+        # roundtable_id만 제외하고 나머지 레코드는 활성화 여부를 비활성화로 바꾼다.
+        db_session.query(Roundtable).filter(Roundtable.id != req_json.get('roundtable_id')).update({"is_active": False})
+
+        record = db_session.query(Roundtable).filter(Roundtable.id == req_json.get('roundtable_id')).first()
+        record.is_active = req_json.get('checked')
+
+        # 만약 설정 상태를 요청받은 애가 False인 경우 가장 늦게 입력된 회차 레코드의 활성화 여부를 True로 설정한다.
+        if not req_json.get('checked'):
+            max_latest_id = db_session.query(func.max(Roundtable.id)).first()
+            db_session.query(Roundtable).filter(Roundtable.id == max_latest_id).update({"is_active": True})
 
         return jsonify(success=True)

@@ -1,9 +1,9 @@
 {% extends "admin/base.html" %}
 
 {% block script %}
-  <script src="//unpkg.com/vue"></script>
-  <script src="//unpkg.com/lodash"></script>
-  <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
   <script src="{{ url_for('admin.static', filename='js/summerNote.js') }}"></script>
 {% endblock %}
 
@@ -12,7 +12,7 @@
         <!-- Breadcrumbs-->
         <ol class="app-main-breadcrumb breadcrumb">
             <li class="app-main-breadcrumb-item breadcrumb-item">
-                <a class="app-main-breadcrumb-item__a" href="index.html">10월의 하늘</a>
+                <a class="app-main-breadcrumb-item__a" href="/admin">10월의 하늘</a>
             </li>
             <li class="app-main-breadcrumb-item--sub breadcrumb-item active">FAQ</li>
         </ol>
@@ -25,11 +25,12 @@
                 <div class="form-group row">
                     <label for="faqClassify" class="col-2">유형</label>
                     <div class="col-10">
-                      <select id="faqClassify" class="form-control" v-model="faqClassify">
+                      <select id="faqClassify" class="form-control" v-model="faqClassify" :class="{'is-invalid': faqClassify === ''}">
                         <option value="">FAQ 유형을 선택하세요</option>
                         <option value="재능기부자">재능기부자</option>
                         <option value="홈페이지">홈페이지</option>
                       </select>
+                      <div class="invalid-feedback">FAQ 유형을 반드시 선택해주세요</div>
                     </div>
                 </div>
                 <div class="form-group row">
@@ -62,6 +63,10 @@
             },
             methods: {
                 register: function (e) {
+                    if (this.faqClassify === '') {
+                        return false
+                    }
+
                     axios.post('/admin/faq/reg', {
                         faqClassify: this.faqClassify,
                         faqSubject: this.faqSubject,

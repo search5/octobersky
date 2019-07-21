@@ -1,19 +1,20 @@
-from datetime import date
-
 import paginate
+import requests
+from datauri import DataURI
 from flask import request, url_for, render_template, jsonify, flash
 from flask.views import MethodView
-from flask_login import login_required, current_user
+from flask_login import login_required
 from paginate_sqlalchemy import SqlalchemyOrmWrapper
 from sqlalchemy import desc
 
-from nanumlectures.common import is_admin_role, paginate_link_tag
+from nanumlectures.common import is_admin_role, paginate_link_tag, google_token
 from nanumlectures.database import db_session
+from nanumlectures.lib.google_photo import get_service, get_albums
 from nanumlectures.models import PhotoAlbum, Roundtable
 
 
 class PhotoListView(MethodView):
-    decorators = [is_admin_role, login_required]
+    decorators = [google_token(success_uri='admin.photo'), is_admin_role, login_required]
 
     def get(self):
         current_page = request.args.get("page", 1, type=int)
@@ -30,7 +31,6 @@ class PhotoListView(MethodView):
         page_url = url_for("admin.photo")
         if search_word:
             page_url = url_for("admin.photo", search_option=search_option, search_word=search_word)
-
             page_url = str(page_url) + "&page=$page"
         else:
             page_url = str(page_url) + "?page=$page"
@@ -60,7 +60,13 @@ class PhotoRegView(MethodView):
     decorators = [is_admin_role, login_required]
 
     def get(self):
-        return render_template("admin/photo_reg.html")
+        photo_service = get_service()
+        photo_albums = get_albums(photo_service)
+
+        # 회차 정보만 모아오기(유효성 검증용)
+        roundtable = map(lambda x: x[0], db_session.query(Roundtable.roundtable_num))
+
+        return render_template("admin/photo_reg.html", photo_albums=photo_albums, roundtable=roundtable)
 
     def post(self):
         req_json = request.get_json()
@@ -70,7 +76,12 @@ class PhotoRegView(MethodView):
             Roundtable.roundtable_num == req_json.get('roundtable_num')).first()
         photo_obj.album_name = req_json.get('album_name')
         photo_obj.album_link = req_json.get('album_link')
-        photo_obj.representation_image_link = req_json.get('represent_img')
+        photo_obj.album_id = req_json.get('album_id')
+
+        tmp_req = requests.get(req_json.get('represent_img'))
+        represent_img_uri = DataURI.make(tmp_req.headers['Content-Type'], None, base64=True, data=tmp_req.content)
+
+        photo_obj.representation_image_link = str(represent_img_uri)
         photo_obj.album_description = req_json.get('description')
 
         db_session.add(photo_obj)
@@ -82,7 +93,13 @@ class PhotoEditView(MethodView):
     decorators = [is_admin_role, login_required]
 
     def get(self, photo):
-        return render_template("admin/photo_edit.html", photo=photo)
+        photo_service = get_service()
+        photo_albums = get_albums(photo_service)
+
+        # 회차 정보만 모아오기(유효성 검증용)
+        roundtable = map(lambda x: x[0], db_session.query(Roundtable.roundtable_num))
+
+        return render_template("admin/photo_edit.html", photo=photo, photo_albums=photo_albums, roundtable=roundtable)
 
     def post(self, photo):
         req_json = request.get_json()
@@ -91,7 +108,12 @@ class PhotoEditView(MethodView):
             Roundtable.roundtable_num == req_json.get('roundtable_num')).first()
         photo.album_name = req_json.get('album_name')
         photo.album_link = req_json.get('album_link')
-        photo.representation_image_link = req_json.get('represent_img')
+        photo.album_id = req_json.get('album_id')
+
+        tmp_req = requests.get(req_json.get('represent_img'))
+        represent_img_uri = DataURI.make(tmp_req.headers['Content-Type'], None, base64=True, data=tmp_req.content)
+
+        photo.representation_image_link = str(represent_img_uri)
         photo.album_description = req_json.get('description')
 
         return jsonify(success=True)

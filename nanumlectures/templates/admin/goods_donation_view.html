@@ -1,0 +1,96 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+{% endblock %}
+
+{% macro book_link(bookstore_name, link='') -%}
+  {% if link %}
+    <a href="{{ link or '#' }}" class="btn btn-info" target="_blank">{{ bookstore_name }}</a>
+  {% else %}
+    <a href="{{ link or '#' }}" class="btn btn-info">{{ bookstore_name }}</a>
+  {% endif %}
+{%- endmacro %}
+
+{% block content %}
+    <div class="app-main-container container-fluid">
+
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="/admin">Admin</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">물품 기부</li>
+        </ol>
+
+        <div class="app-main-card">
+            <!-- Page Content -->
+            <form class="app-main-form">
+                <div class="row">
+                  <div class="col-9">
+                    <div class="form-group row">
+                      <label for="roundtable_num" class="app-main-form__label col-sm-2 col-form-label">개최회차</label>
+                      <div class="col-sm-10">
+                        <input type="text" readonly class="form-control-plaintext" id="roundtable_num"
+                               value="{{ donation.roundtable.roundtable_num }}회차">
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="donation_type" class="app-main-form__label col-sm-2 col-form-label">기부타입</label>
+                      <div class="col-sm-10">
+                        {{ donation.donation_type | donation_type }}
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="donation_goods_description" class="app-main-form__label col-sm-2 col-form-label">기부 항목</label>
+                      <div class="col-sm-10">
+                        <div style="width: 100%; height: 250px;overflow-y: scroll;" class="border">
+                          {{ line_break(donation.donation_description) | safe }}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="donation_transport_type" class="app-main-form__label col-sm-2 col-form-label">물품 전송 수단</label>
+                      <div class="col-sm-10">
+                        {{ donation.donation_transport |  donation_transport }}
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="donation_transport_type" class="app-main-form__label col-sm-2 col-form-label">기부자</label>
+                      <div class="col-sm-10">
+                        {% if donation.lecture_user %}
+                          {{ donation.lecture_user.name }}
+                        {% else %}
+                          별도로 기입할 필요 있음
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row" id="app">
+                    <div class="col-sm-10">
+                        <a href="{{ url_for('admin.goods_donation_edit', donation=donation.id) }}" class="btn btn-success">수정</a>
+                        <a href="#" @click.prevent="delete_donate" class="btn btn-danger">삭제</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <script>
+        new Vue({
+          el: "#app",
+          methods: {
+            delete_donate: function () {
+              if (confirm('정말 기부 신청 정보를 삭제하시겠습니까?\n되돌릴 수 없습니다')) {
+                axios.delete("{{ url_for('admin.goods_donation_view', donation=donation.id) }}").then(function (resp) {
+                  alert('기부 신청 정보가 삭제되었습니다.')
+                  location.href = '{{ url_for('admin.goods_donation') }}'
+                })
+              }
+            }
+          }
+        })
+        </script>
+    </div>
+    <!-- /.container-fluid -->
+{% endblock %}

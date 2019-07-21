@@ -168,7 +168,7 @@ body {
 .app-side-nav {
     background: #fff;
     height: calc(100vh - 68px);
-    overflow: hidden !important;
+    overflow-y: scroll !important;
 }
 
 .app-side-nav:hover {

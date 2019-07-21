@@ -25,21 +25,21 @@ class MemberList(MethodView):
         page_url = url_for("admin.member_list")
         if search_word:
             page_url = url_for("admin.member_list", search_option=search_option, search_word=search_word)
-
             page_url = str(page_url) + "&page=$page"
         else:
             page_url = str(page_url) + "?page=$page"
 
         items_per_page = 10
 
-        records = db_session.query(
-            User.username, User.name, User.email, User.phone, UserSocialAuth.provider, User.last_login_date, UserSocialAuth).join(
-            UserSocialAuth, User.id == UserSocialAuth.user_id)
+        records = db_session.query(User)
         if search_word:
-            if search_option == 'username':
-                records = records.filter(UserSocialAuth.uid.ilike('%{}%'.format(search_word)))
-            elif search_option == "phone":
+            if search_option == "phone":
                 records = records.filter(User.phone_search.ilike('%{}%'.format(search_word.replace("-", ""))))
+            elif search_option == "username":
+                # 다른데서 먼저 찾아야 한다.
+                social_auth_records = db_session.query(UserSocialAuth.user_id).filter(
+                    UserSocialAuth.provider == 'username', UserSocialAuth.uid.ilike('%{}%'.format(search_word)))
+                records = records.filter(User.id.in_(social_auth_records))
             else:
                 records = records.filter(search_column.ilike('%{}%'.format(search_word)))
         records = records.order_by(desc(User.id))
@@ -78,17 +78,20 @@ class MemberEditView(MethodView):
     def post(self, uid):
         req_json = request.get_json()
 
-        print('uid ', uid)
-        print('password ', req_json.get('password'))
-
-        if not req_json.get('password', ''):
+        if len(req_json.get('password', '')) > 0:
             uid.set_password(req_json.get('password'))
         uid.name = req_json.get('name')
         uid.email = req_json.get('email')
         uid.phone = req_json.get('phone')
         uid.usertype = req_json.get('usertype')
-        lib_rec = db_session.query(Library).filter(Library.id == req_json.get('library').get('id')).first()
-        uid.library = lib_rec
+
+        if 'id' in req_json.get('library'):
+            # 이 때 기존에 지정된 도서관 담당자가 있는 경우 일반 유저로 돌려놔야 한다.
+            lib_rec = db_session.query(Library).filter(Library.id == req_json.get('library').get('id')).first()
+            if bool(lib_rec.manager_id):
+                other_library_manager = User.query.filter(User.id == lib_rec.manager_id).first()
+                other_library_manager.usertype = 'C'
+            uid.library = lib_rec
 
         return jsonify(success=True)
 

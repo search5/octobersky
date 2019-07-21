@@ -1,8 +1,9 @@
 {% extends "admin/base.html" %}
 
 {% block script %}
-    <script src="//unpkg.com/vue"></script>
-    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -10,7 +11,7 @@
         <!-- Breadcrumbs-->
         <ol class="app-main-breadcrumb breadcrumb">
             <li class="app-main-breadcrumb-item breadcrumb-item">
-                <a class="app-main-breadcrumb-item__a" href="index.html">Admin</a>
+                <a class="app-main-breadcrumb-item__a" href="/admin">Admin</a>
             </li>
             <li class="app-main-breadcrumb-item--sub breadcrumb-item active">디자인 등록</li>
         </ol>
@@ -21,7 +22,8 @@
                 <div class="form-group row">
                     <label for="roundtable_num" class="app-main-form__label col-sm-2 col-form-label">개최회차</label>
                     <div class="col-sm-10">
-                        <input type="number" class="form-control" id="roundtable_num" v-model='roundtable_num' placeholder="개최회차를 입력하세요.">
+                        <input type="number" class="form-control" id="roundtable_num" v-model='roundtable_num' placeholder="개최회차를 입력하세요." :class="valid.roundtable_num">
+                    <div class="invalid-feedback">개최회차는 올바르게 입력해주세요</div>
                     </div>
                 </div>
                 <div class="form-group row">
@@ -57,10 +59,21 @@
                   roundtable_num: '',
                   design_name: '',
                   design_file: '',
-                  description: ''
+                  description: '',
+                  roundtable_range: {{ tuple(roundtable) | tojson }},
+                  valid: {
+                      roundtable_num: ''
+                  }
               },
               methods: {
                   submit: function (e) {
+                      this.valid.roundtable_num = ''
+
+                      if (_.indexOf(this.roundtable_range, parseInt(this.roundtable_num)) === -1) {
+                          this.valid.roundtable_num = 'is-invalid'
+                          return false
+                      }
+
                       var bodyFormData = new FormData();
                       bodyFormData.append('roundtable_num', this.roundtable_num)
                       bodyFormData.append('design_name', this.design_name)

@@ -1,0 +1,146 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+{% endblock %}
+
+{% block css %}
+  <link rel="stylesheet" type="text/css" href="{{ url_for('public.static', filename='css/mobile-table.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid">
+
+        <h4 class="app-main-breadcrumb__title">대시보드</h4>
+
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="/admin">10월의 하늘</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">대시보드</li>
+        </ol>
+
+        <!-- Page Content -->
+        <div class="app-main-card card mb-2" id="app">
+            <div class="card-header">
+              <div class="row">
+                <div class="col text-center">
+                  <div class="btn-group">
+                    <button class="btn btn-secondary" @click="area_select('all')">전체</button>
+                    <button class="btn btn-secondary" @click="area_select(area)" v-for="(area, index) in opened_area" :key="index" v-text="area"></button>
+                  </div>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-6">
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">도서관명</span>
+                    </div>
+                    <input type="text" v-model="library_name" class="form-control" placeholder="검색할 도서관 이름을 입력하세요">
+                  </div>
+                </div>
+                <div class="col-3">
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">강연미신청자 수</span>
+                    </div>
+                    <input type="number" v-model="lecture_cnt" class="form-control" placeholder="강연 미신청자 수">
+                  </div>
+                </div>
+                <div class="col-3">
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">진행미신청자 수</span>
+                    </div>
+                    <input type="number" v-model="host_cnt" class="form-control" placeholder="진행 미신청자 수">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover is-responsive">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">권역</th>
+                        <th scope="col">도서관명</th>
+                        <th scope="col">세션 수</th>
+                        <th scope="col">강연 신청</th>
+                        <th scope="col">진행 신청</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% raw %}
+                    <tr v-for="(entry, index) in filtered_dashboard" :key="index">
+                        <th scoppe="row">{{ index + 1 }}</th>
+                        <td>{{ entry.area }}</td>
+                        <td><a :href="'/admin/library/'+ entry.library_id">{{ entry.library_name }}</a></td>
+                        <td>{{ entry.round_num }}</td>
+                        <td>{{ entry.lecture_cnt }}/{{ entry.round_num }}명</td>
+                        <td>{{ entry.host_cnt }}/{{ entry.round_num }}명</td>
+                    </tr>
+                    {% endraw %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- /.container-fluid -->
+
+  <script>
+  new Vue({
+      el: '#app',
+      data: {
+          dashboard_list: {{ opened_library | tojson }},
+          opened_area: {{ opened_area | tojson }},
+          selected_area: 'all',
+          library_name: '',
+          lecture_cnt: -1,
+          host_cnt: -1
+      },
+      methods: {
+          area_select: function (area_name) {
+              this.selected_area = area_name
+          }
+      },
+      computed: {
+          filtered_dashboard: function () {
+              var vm = this
+              var filtered_list = this.dashboard_list
+
+              // 도서관명
+              if (this.library_name !== '') {
+                  filtered_list = filtered_list.filter(function (entry) {
+                      return entry.library_name.indexOf(vm.library_name) > -1
+                  })
+              }
+
+              // 지역
+              if (this.selected_area !== 'all') {
+                  filtered_list = filtered_list.filter(function (entry) {
+                      return entry.area.indexOf(vm.selected_area) > -1
+                  })
+              }
+
+              // 강연 미신청자
+              if (this.lecture_cnt > -1) {
+                  filtered_list = filtered_list.filter(function (entry) {
+                      return (entry.round_num - entry.lecture_cnt) === parseInt(vm.lecture_cnt)
+                  })
+              }
+
+              // 진행 미신청자
+              if (this.host_cnt > -1) {
+                  filtered_list = filtered_list.filter(function (entry) {
+                      return (entry.round_num - entry.host_cnt) === parseInt(vm.host_cnt)
+                  })
+              }
+
+              return filtered_list
+          }
+      }
+  })
+  </script>
+{% endblock %}

@@ -1,5 +1,9 @@
 {% extends "admin/base.html" %}
 
+{% block css %}
+  <link rel="stylesheet" type="text/css" href="{{ url_for('public.static', filename='css/mobile-table.css') }}">
+{% endblock %}
+
 {% block content %}
       <div class="app-main-container container-fluid">
 
@@ -8,7 +12,7 @@
           <!-- Breadcrumbs-->
           <ol class="app-main-breadcrumb breadcrumb">
               <li class="app-main-breadcrumb-item breadcrumb-item">
-                  <a class="app-main-breadcrumb-item__a" href="index.html">10월의 하늘</a>
+                  <a class="app-main-breadcrumb-item__a" href="/admin">10월의 하늘</a>
               </li>
               <li class="app-main-breadcrumb-item--sub breadcrumb-item active">회원 관리</li>
           </ol>
@@ -16,32 +20,32 @@
           <!-- Page Content -->
           <div class="card">
               <div class="card-body">
-                  <table class="table table-hover">
-              <thead>
-              <tr>
-                  <th scope="col">#</th>
-                  <th scope="col">ID</th>
-                  <th scope="col">이름</th>
-                  <th scope="col">이메일</th>
-                  <th scope="col">전화번호</th>
-                  <th scope="col">로그인 경로</th>
-                  <th scope="col">마지막 로그인</th>
-              </tr>
-              </thead>
-              <tbody>
-              {% for row in paginator %}
-              <tr>
-                  <th scope="row">{{ (total_cnt - (items_per_page * (page - 1))) - loop.index0 }}</th>
-                  <td><a href="{{ url_for('admin.member_view', uid=row[0]) }}">{{ row[-1].uid }}</a></td>
-                  <td>{{ row[1] }}</td>
-                  <td>{{ row[2] or '' }}</td>
-                  <td>{{ row[3] or '' }}</td>
-                  <td>{{ row[4] }}</td>
-                  <td>{{ date_format(row[5], '%Y-%m-%d %H:%M:%S') }}</td>
-              </tr>
-              {% endfor %}
-              </tbody>
-          </table>
+                <table class="table table-hover is-responsive">
+                  <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">ID</th>
+                    <th scope="col">이름</th>
+                    <th scope="col">이메일</th>
+                    <th scope="col">전화번호</th>
+                    <th scope="col">마지막 로그인</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {% for row in paginator %}
+                    <tr>
+                      <th scope="row">{{ (total_cnt - (items_per_page * (page - 1))) - loop.index0 }}</th>
+                      <td><a
+                          href="{{ url_for('admin.member_view', uid=row.username) }}">{{ row.social_auth.filter_by(provider='username').scalar().uid }}</a>
+                      </td>
+                      <td>{{ row.name }}</td>
+                      <td>{{ row.email or '' }}</td>
+                      <td>{{ row.phone or '' }}</td>
+                      <td>{{ date_format(row.last_login_date and (row.last_login_date + kst), '%Y-%m-%d %H:%M:%S') }}</td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
               </div>
               <div class="card-footer">
                   <div class="row">

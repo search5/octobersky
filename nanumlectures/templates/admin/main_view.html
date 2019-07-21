@@ -1,0 +1,82 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+{% endblock %}
+
+{% block css %}
+  <link rel="stylesheet" type="text/css" href="{{ url_for('public.static', filename='css/mobile-table.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid">
+
+        <h4 class="app-main-breadcrumb__title">메인 이미지 관리</h4>
+
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="/admin">Admin</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">메인 이미지 관리</li>
+        </ol>
+
+        <!-- Page Content -->
+        <div class="card mb-2" id="app">
+            <div class="card-body">
+              <form ref="main_form">
+              {% for _ in range(1, 4) %}
+                {% set entry = carousel.get(_) %}
+                <div class="form-group row">
+                  <label for="formSlideNum-{{ _ }}" class="col-sm-2 col-form-label">Num</label>
+                  <div class="col-sm-10">
+                    <input type="text" class="form-control" name="formSlideNum-{{ _ }}" id="formSlideNum-{{ _ }}" value="{{ _ }}" readonly>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="formSlideImage-{{ _ }}" class="col-sm-2 col-form-label">Image</label>
+                  <div class="col-sm-10">
+                    <input type="file" class="form-control" name="formSlideImage-{{ _ }}" id="formSlideImage-{{ _ }}">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="formSlideTitle-{{ _ }}" class="col-sm-2 col-form-label">Title</label>
+                  <div class="col-sm-10">
+                    <input type="text" class="form-control" name="formSlideTitle-{{ _ }}" id="formSlideTitle-{{ _ }}" value="{{ entry.slide_title }}">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="formSlideDescription-{{ _ }}" class="col-sm-2 col-form-label">Description</label>
+                  <div class="col-sm-10">
+                    <input type="text" class="form-control" name="formSlideDescription-{{ _ }}" id="formSlideDescription-{{ _ }}" value="{{ entry.slide_text }}">
+                  </div>
+                </div>
+                <hr>
+              {% endfor %}
+              </form>
+            </div>
+            <div class="card-footer">
+              <div class="btn-group">
+              <button class="btn btn-primary" @click.prevent="submit">저장하기</button>
+              <span class="text-danger small">기존 내역은 저장하지 않습니다.<br> 수정에 주의하시기 바랍니다. 누구도 책임지지 않습니다</span>
+            </div>
+        </div>
+    </div>
+    <!-- /.container-fluid -->
+  <script>
+  new Vue({
+      el: '#app',
+      methods: {
+          submit: function () {
+              var form_data = new FormData(this.$refs.main_form)
+              axios.post('{{ url_for('admin.main_view') }}', form_data, { headers: {'Content-Type': 'multipart/form-data' }}).then(function (resp) {
+                  alert('성공적으로 이미지가 메인 이미지가 변경되었습니다')
+                  location.reload()
+              })
+          }
+      }
+  })
+  </script>
+{% endblock %}

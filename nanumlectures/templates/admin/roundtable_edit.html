@@ -1,10 +1,10 @@
 {% extends "admin/base.html" %}
 
 {% block script %}
-    <script src="//unpkg.com/vue"></script>
-    <script src="//unpkg.com/lodash"></script>
-    <script src="//unpkg.com/moment@2.14.1/min/moment.min.js"></script>
-    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-select/2.6.0/vue-select.js"></script>
 {% endblock %}
 
@@ -113,6 +113,12 @@
                     <option value="2">2</option>
                     <option value="3">3</option>
                   </select>
+                  <select v-model="library_type" class="form-control" style="flex: 0.1">
+                    <option value="일반">일반</option>
+                    <option value="SF">SF</option>
+                    <option value="장애인">장애인</option>
+                    <option value="다문화">다문화</option>
+                  </select>
                   <div class="input-group-append">
                     <button class="btn btn-info" @click.prevent="library_add">추가</button>
                     <button class="btn btn-danger" @click.prevent="library_del">삭제</button>
@@ -130,7 +136,7 @@
                       </thead>
                       <tbody ref="libraries">
                       {% raw %}
-                      <tr v-for="(item, index) in record.library_list" :key="index" @click.stop="library_select($event, index)">
+                      <tr v-for="(item, index) in filtered_library" :key="index" @click.stop="library_select($event, index, item)">
                           <td>{{ item.library.library_name }} ({{ item.library.library_addr }})</td>
                           <td>{{ item.session_time }}</td>
                           <td>
@@ -142,6 +148,9 @@
                       {% endraw %}
                       </tbody>
                   </table>
+              </div>
+              <div class="card-footer">
+                <input type="text" v-model="quick_find_library" class="form-control" placeholder="빠르게 찾기">
               </div>
             </div>
           </div>
@@ -179,6 +188,15 @@
                     <option value="3">3</option>
                   </select>
                 </div>
+                <div class="form-group">
+                  <label for="inputSessionTime">강연 타입</label>
+                  <select id="inputSessionTime" class="form-control" v-model="modal_record.library_type">
+                    <option value="일반">일반</option>
+                    <option value="SF">SF</option>
+                    <option value="장애인">장애인</option>
+                    <option value="다문화">다문화</option>
+                  </select>
+                </div>
               </form>
             </div>
             <div class="modal-footer">
@@ -204,12 +222,16 @@
         options: [],
         library: '',
         session_time: 2,
+        library_type: '일반',
         modal_record: {
           library: {
             library_name: ''
           },
-          session_time: ''
-        }
+          session_time: '',
+          library_type: ''
+        },
+        quick_find_library: '',
+        selected_lib: null
       },
       methods: {
         onSearch(search, loading) {
@@ -229,13 +251,15 @@
 
           this.record.library_list.push({
             library: this.library,
-            session_time: this.session_time
+            session_time: this.session_time,
+            library_type: this.library_type
           })
 
           this.library = ''
           this.session_time = 2
+          this.library_type = '일반'
         },
-        library_select (e, index) {
+        library_select (e, index, item) {
           let tbody = e.target.parentElement.parentElement
           let selected = false
 
@@ -249,6 +273,7 @@
                 delete tr.dataset['selected']
                 tr.style.backgroundColor = '#ffffff'
                 tr.style.color = '#495057'
+                this.selected_lib = null
               }
 
               break
@@ -259,19 +284,19 @@
             e.target.parentElement.dataset['selected'] = 'selected'
             e.target.parentElement.style.backgroundColor = '#094D92'
             e.target.parentElement.style.color = '#ffffff'
+            this.selected_lib = item
           }
         },
         library_del (e) {
+          if (this.selected_lib === null) {
+            alert('선택된 도서관이 없습니다')
+          }
+
           if (confirm('선택하신 도서관을 목록에서 빼시겠습니까?')) {
+            var selected_lib_idx = _.findIndex(this.record.library_list, (o) => { return o.library.id === this.selected_lib.library.id })
             const libraries = this.$refs.libraries.children
 
-            for (let i = 0; i < libraries.length; i++) {
-              let tr = libraries[i]
-
-              if (tr.dataset.hasOwnProperty('selected')) {
-                this.record.library_list.splice(i, 1)
-              }
-            }
+            this.record.library_list.splice(selected_lib_idx, 1)
 
             for (let i = 0; i < libraries.length; i++) {
               let tr = libraries[i]
@@ -304,6 +329,16 @@
           }
 
           return roundDate.format('YYYY-MM-DD')
+        },
+        filtered_library: function () {
+          if (this.quick_find_library !== '') {
+              var vm = this
+              return this.record.library_list.filter(function (entry) {
+                  return entry.library.library_name.indexOf(vm.quick_find_library) > -1
+              })
+          } else {
+              return this.record.library_list
+          }
         }
       }
     })

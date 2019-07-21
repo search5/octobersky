@@ -1,0 +1,60 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid">
+
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="/admin">10월의 하늘</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">준비위 회의록</li>
+        </ol>
+        <div class="app-main-card">
+            <form class="app-main-form" action="">
+                <!-- Page Content -->
+                <div class="form-group row">
+                    <label for="title" class="app-main-form__label col-2">제목</label>
+                    <div class="col-10">
+                        <input type="text" id="title" class="form-control-plaintext" readonly  value="{{ board.title }}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="app-main-form__label col-2">본문</label>
+                    <div class="col-10" style="border: solid 1px lightgrey;height: 300px;">
+                        {{ board.content | safe }}
+                    </div>
+                </div>
+                <div class="row" id="app">
+                    <div class="col-12 text-right">
+                        <a href="{{ url_for('admin.board_edit', board=board.id) }}" class="btn btn-primary">수정</a>
+                        <a href="#" @click.prevent="delete_board" class="btn btn-danger">삭제</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <script>
+            new Vue({
+                el: "#app",
+                methods: {
+                    delete_board: function () {
+                        if (confirm('정말 회의록을 삭제하시겠습니까?\n되돌릴 수 없습니다')) {
+                            axios.delete("{{ url_for('admin.board_view', board=board.id) }}").then(function (resp) {
+                                alert('회의록이 삭제되었습니다.')
+                                location.href = '{{ url_for('admin.board') }}'
+                            })
+                        }
+                    }
+                }
+            })
+        </script>
+    </div>
+    <!-- /.container-fluid -->
+{% endblock %}

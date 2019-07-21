@@ -1,0 +1,781 @@
+{% extends "public/base.html" %}
+
+{% block css %}
+    <style type="text/css">
+    .bd-highlight {
+        border: dotted 0.5px #FFFCFC;
+        color: #ffffff;
+    }
+
+    .area_width {
+      width: 25%
+    }
+
+    /* LG V30(portait) */
+    @media (min-width: 360px) and (orientation: portrait) {
+      .area_width {
+        width: 50% !important;
+      }
+    }
+
+    /* iPhone 5/SE */
+    @media (min-width: 320px) and (orientation: portrait) {
+      .area_width {
+        width: 50% !important;
+      }
+    }
+
+    /* iPad */
+    @media (min-width: 768px) and (orientation: portrait) {
+      .area_width {
+        width: 25% !important;
+      }
+    }
+    </style>
+{% endblock %}
+
+{% block script %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_key }}&libraries=services"></script>
+{% endblock %}
+
+{% block container %}
+    <!-- Page Heading/Breadcrumbs -->
+    <header class="app-main-header">
+        <h1 class="app-main-header__title">강연/진행 기부</h1>
+    </header>
+
+    <ol class="app-main-breadcrumb breadcrumb">
+        <li class="app-main-breadcrumb-item breadcrumb-item">
+            <a class="app-main-breadcrumb-item__a" href="/">Home</a>
+        </li>
+        <li class="app-main-breadcrumb-item--sub breadcrumb-item active">기부참여</li>
+        <li class="app-main-breadcrumb-item--sub breadcrumb-item active">강연/진행 기부</li>
+    </ol>
+
+    <div class="bg-success d-flex flex-wrap">
+      {% for item in area %}
+        <div class="p-2 area_width"><a href="{{ url_for('public.lecture_application_donate', area=item["name"]) }}" style="color: white;">{{ library_short2long(item) }} {{ item["statics"] }}</a></div>
+      {% endfor %}
+    </div>
+
+    <div class="row mt-5">
+      {% for library, lecture_addition in opened_library %}
+        <div class="col-12">
+          <div class="row">
+            <div class="col">
+              <h3>{{ library.library_name }}(<a href="#" onclick="map_open('{{ library.lat }}', '{{ library.long }}', event)"><i class="fas fa-map"></i></a>)</h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-3">
+              <p>담당 선생님: {{ library.manager_name or '' }}</p>
+
+              {% if lecture_addition.library_type != '일반' %}
+              올해의 강연 분야: {{ lecture_addition.library_type }}
+              {% endif %}
+
+              <address style="font-weight: 400">
+                {{ library.library_addr }}<br>
+                <abbr>T:</abbr> {{ library.library_tel or '' }}
+              </address>
+
+              <details open="" style="font-weight: 400">
+                <summary>강연장 환경</summary>
+                <p>{{ library.lib_description or '' }}</p>
+              </details>
+
+              <details open="" style="font-weight: 400">
+                <summary>예상 청중</summary>
+                <p>{{ library.expected_listener or '' }}</p>
+              </details>
+            </div>
+            <div class="col-sm-9">
+              <ul class="list-inline">
+                {% set library_dependency = library_sessions(library, show_roundtable_num, lecture_addition.round_num) %}
+                <div class="d-none d-sm-block">
+                {% for lecture, host in library_dependency %}
+                  {% set card_width = {3: '32%', 2: '48%', 1:"96%"}[lecture_addition.round_num] %}
+                  <li class="list-inline-item" style="width: {{ card_width }};">
+                    <div class="card">
+                      <div class="card-body" style="height: 255px">
+                      {% if lecture %}
+                        <h5 class="card-title">{{ lecture.lecture_title }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">{{ lecture.lecture_info }}</h6>
+                        <p class="card-text text-justify">{{ shortcut_summary(lecture.lecture_summary, lecture.lecture_info) }}</p>
+                      {% else %}
+                        <h5 class="card-title"><span style="color: grey;">강연이 비어있습니다</span></h5>
+                        {% if lecture_addition.library_type == '일반' %}
+                        <h6 class="card-subtitle mb-2 text-muted"><a href="#" onclick="lecture_modal('{{ library.id }}', '{{ loop.index + 1 }}', event);" class="btn btn-primary btn-sm">강연신청</a></h6>
+                        {% else %}
+                        <h6 class="card-subtitle mb-2 text-muted"><a href="#" onclick="error_special(event)" class="btn btn-primary btn-sm">강연신청</a></h6>
+                        {% endif %}
+                        <p class="card-text"><span class="font-italic" style="color: #e02d1b;">이 자리가 당신의 자리!<br>지금 바로 강연 신청하세요!!</span></p>
+                      {% endif %}
+                      </div>
+                      <div class="card-footer" style="height: 75px;word-break: break-all">
+                        {% if not host %}
+                          <span style="color: grey;">진행자가 비어있습니다</span><br>
+                          <a href="#" onclick="host_modal('{{ library.id }}', '{{ loop.index + 1 }}', event)" class="btn btn-primary btn-sm">진행자 신청</a>
+                        {% else %}
+                          {{ host.host_info }}
+                        {% endif %}
+                      </div>
+                    </div>
+                  </li>
+                {% endfor %}
+                </div>
+
+                <span class="d-block d-sm-none mt-1">강연자:</span>
+                <div class="accordion d-block d-sm-none" id="accordionExample">
+                  {% for lecture, host in library_dependency %}
+                    <div class="card">
+                      <div class="card-header" id="headingOne">
+                        <h2 class="mb-0">
+                        {% if lecture %}
+                          <a href="#" class="btn btn-link" data-toggle="collapse" data-target="#collapse-{{ library.id }}-{{ loop.index }}">{{ lecture.lecture_title }}</a>
+                        {% else %}
+                          <a href="#" class="btn btn-link" data-toggle="collapse" data-target="#collapse-{{ library.id }}-{{ loop.index }}"><span style="color: grey;">강연이 비어있습니다</span></a>
+                        {% endif %}
+                        </h2>
+                      </div>
+
+                      <div id="collapse-{{ library.id }}-{{ loop.index }}" class="collapse" data-parent="#accordionExample">
+                        <div class="card-body">
+                        {% if lecture %}
+                          <h6 class="card-subtitle mb-2 text-muted">{{ lecture.lecture_info }}</h6>
+                          <p class="card-text">{{ lecture.lecture_summary }}</p>
+                        {% else %}
+                          {% if lecture_addition.library_type == '일반' %}
+                            <h6 class="card-subtitle mb-2 text-muted"><a href="#"
+                                                                         onclick="lecture_modal('{{ library.id }}', '{{ loop.index + 1 }}', event);"
+                                                                         class="btn btn-primary btn-sm">강연신청</a></h6>
+                          {% else %}
+                            <h6 class="card-subtitle mb-2 text-muted"><a href="#"
+                                                                         onclick="error_special(event)"
+                                                                         class="btn btn-primary btn-sm">강연신청</a></h6>
+                          {% endif %}
+                          <p class="card-text"><span class="font-italic" style="color: #e02d1b;">이 자리가 당신의 자리!<br>지금 바로 강연 신청하세요!!</span></p>
+                        {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+
+                <span class="d-block d-sm-none mt-1">진행자:</span>
+                <div class="card d-block d-sm-none mt-1">
+                  {% for lecture, host in library_dependency %}
+                  <div class="card-body text-justify">
+                    {% if not host %}
+                      <a href="#" onclick="host_modal('{{ library.id }}', '{{ loop.index + 1 }}', event)" class="btn btn-primary btn-sm">진행자 신청</a>
+                    {% else %}
+                      {{ host.host_info }}
+                    {% endif %}
+                  </div>
+                  {% endfor %}
+                </div>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      {% endfor %}
+    </div>
+
+    <!-- Large modal -->
+    <div class="modal fade library_map" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+              <div class="modal-body">
+                <div style="width: 100%; height: 500px;" id="map">도서관 위치를 나타낸 지도가 표시됩니다.</div>
+              </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app">
+      <div class="modal fade lecture_reg" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content">
+            {% raw %}
+            <div class="modal-header">
+              <h5 class="modal-title" id="lecture_title">강연 기부 신청({{ library_info.area }} {{ library_info.library_name }})</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            {% endraw %}
+            <div class="modal-body">
+              <div class="row" v-if="input_basic_info">
+                <div class="col-12">
+                  <div class="form-group">
+                    <label>강연장 정보</label>
+                    <div class="form-control-static">
+                      {% raw %}
+                      <ul>
+                        <li>강연장 환경: {{ library_info.lib_description }}</li>
+                        <li>청중 연령: {{ library_info.expected_audience }}</li>
+                      </ul>
+                      {% endraw %}
+                    </div>
+                  </div>
+
+                  {% raw %}
+                  <div class="form-group">
+                    <label for="exampleInputEmail2">강연 시간</label>
+                    <select id="Time" class="form-control" :class="validation_lecture.session_time" v-model="lecture_info.session_time">
+                      <option value="">선택하세요</option>
+                      <option v-for="(item, index) in available_session_time" :key="index" :value="item">
+                        강연 {{ item }}({{ item + 1 }}시)
+                      </option>
+                    </select>
+                    <div class="invalid-feedback">
+                      강연 시간을 선택하셔야 합니다.
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="Title">강연 제목</label>
+                    <input type="text" id="Title" placeholder="강연 제목을 입력하세요" class="form-control"
+                           v-model="lecture_info.title" :class="validation_lecture.title">
+                    <div class="invalid-feedback">
+                      강연 제목을 입력하세요
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="Summary">강연개요</label>
+                    <textarea type="text" id="Summary" placeholder="강연개요를 입력하세요" rows="5"
+                              v-model="lecture_info.description" class="form-control" :class="validation_lecture.description"></textarea>
+                    <div class="invalid-feedback">
+                      강연 개요를 입력하세요
+                    </div>
+                  </div>
+                  {% endraw %}
+
+                  <div class="row">
+                    <div class="col-lg-6">
+                      <div class="form-group">
+                        <label for="ExpectedAudience">예상청중</label>
+                        <input type="text" id="ExpectedAudience" v-model="lecture_info.expectedaudience"
+                               class="form-control" placeholder="예상 청중을 입력하세요"
+                               :class="validation_lecture.expectedaudience">
+                        <div class="invalid-feedback">
+                          예상 청중을 입력하세요
+                        </div>
+                      </div>
+                    </div>
+                    {% raw %}
+                    <div class="col-lg-6">
+                      <div class="form-group">
+                        <label for="Belong">소속</label>
+                        <input type="text" id="Belong" placeholder="소속을 입력하세요" class="form-control"
+                               v-model="lecture_info.organization" :class="validation_lecture.organization">
+                        <div class="invalid-feedback">
+                          소속 정보를 입력하세요
+                        </div>
+                      </div>
+                    </div>
+                    {% endraw %}
+                  </div>
+
+                  {% if (not current_user.phone) or (not current_user.email) %}
+                    <div class="row">
+                      {% if not current_user.phone %}
+                        {% raw %}
+                        <div class="col-lg-6">
+                          <div class="form-group">
+                            <label for="phone">전화번호</label>
+                            <input type="text" id="phone" placeholder="휴대폰 번호를 입력하세요"
+                                   class="form-control" v-model="lecture_info.phone" :class="validation_lecture.phone">
+                            <div class="invalid-feedback">
+                              전화번호를 입력하세요
+                            </div>
+                          </div>
+                        </div>
+                        {% endraw %}
+                      {% endif %}
+
+                      {% if not current_user.email %}
+                        {% raw %}
+                        <div class="col-lg-6">
+                          <div class="form-group">
+                            <label for="email">이메일</label>
+                            <input type="text" id="email" placeholder="이메일을 입력하세요" class="form-control"
+                                   v-model="lecture_info.email" :class="validation_lecture.email">
+                            <div class="invalid-feedback">
+                              이메일을 입력하세요
+                            </div>
+                          </div>
+                        </div>
+                        {% endraw %}
+                      {% endif %}
+                    </div>
+                  {% endif %}
+
+                  <div class="checkbox" v-if="library_info.lecture_video_recording_yn">
+                    <label>
+                      <input type="checkbox" v-model="lecture_info.public_yn"> 강연 영상 공개에 동의하십니까?
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="row" v-if="!input_basic_info">
+                <div class="col-12">
+                  <div class="row">
+                    <div class="col-12">
+                      <span class="font-weight-bold">10월의하늘 10주년을 기념하는 북 컬렉션에 함께해주세요.</span>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-12">
+                      <span class="">과학의 꿈을 키워가는 청소년들이 강연으로 생긴 호기심을 한 단계 깊고 넓은 탐구심으로
+                        이어갈 수 있는 책을 추천해주세요. 추천 도서를 담은 북 컬렉션 리스트는 10월의 하늘 홈페이지에서
+                        만나실 수 있으며 북컬렉션 가운데 일부는 희망하는 도서관을 대상으로 배포됩니다.</span>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-12">
+                      <span>(도서 후원: (재)도서문화재단 씨앗)</span>
+                    </div>
+                  </div>
+                  <div class="row mt-3">
+                    <div class="col-12">
+                      <div class="form-group">
+                          <label for="book1">추천하고 싶은 도서</label>
+                          <input type="text" id="book1" v-model="vote_book.book1"
+                                 class="form-control" :placeholder="vote_book_placeholder.book"
+                                 :class="validation_vote.book">
+                          <div class="invalid-feedback">
+                            추천하고 싶은 도서 정보를 입력해주세요
+                          </div>
+                        </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-12">
+                      <div class="form-group">
+                          <label for="book1_desc">추천하고 싶은 이유</label>
+                          <textarea rows="3" id="book1_desc" v-model="vote_book.book1_desc"
+                                 class="form-control" :placeholder="vote_book_placeholder.desc"
+                                    :class="validation_vote.desc"></textarea>
+                          <div class="invalid-feedback">
+                            추천하고 싶은 이유를 적어주세요
+                          </div>
+                        </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col">
+                      <span>그 외에 추천하고 싶은 도서가 있다면 남겨주세요</span>
+                    </div>
+                  </div>
+                  <div class="row mt-2">
+                    <div class="col-12">
+                      <div class="d-flex flex-column">
+                        <div>
+                          <input type="text" id="book2" v-model="vote_book.book2"
+                                 class="form-control" :placeholder="vote_book_placeholder.book">
+                        </div>
+                        <div class="mt-1">
+                          <input type="text" id="book3" v-model="vote_book.book3"
+                                 class="form-control" :placeholder="vote_book_placeholder.book">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row" v-if="!input_basic_info"></div>
+                  </div>
+                  <div class="row mt-3">
+                    <div class="col">
+                      <span>강연 시에 청중들에게 나눠드릴 책을 후원합니다(강연자 1명당 10권)</span><br>
+                      <span>원하시는 책이 있다면 남겨주세요.(작성하지 않으시면 추천도서로 드립니다)</span>
+                    </div>
+                  </div>
+                  <div class="row mt-2">
+                    <div class="col-12">
+                      <input type="text" id="book_etc" v-model="vote_book.etc"
+                             class="form-control" :placeholder="vote_book_placeholder.book">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-danger" data-dismiss="modal">취소</button>
+              <button type="button" class="btn btn-success" @click.prevent="reg_lecture" v-if="input_basic_info">기부 신청</button>
+              <button type="button" class="btn btn-primary" @click.prevent="reg_votebook" v-if="!input_basic_info">완료</button>
+            </div>
+           </div>
+        </div>
+      </div>
+
+      <div class="modal fade host_reg" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    {% raw %}
+                    <h5 class="modal-title" id="host_title_reg_title">진행 기부 신청({{ library_info.area }} {{ library_info.library_name }})</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                    {% endraw %}
+                  </div>
+                  <div class="modal-body">
+                    <div class="row">
+                      <div class="col-lg-6">
+                          <div class="form-group">
+                              <label for="name">이름</label>
+                              <input type="text" readonly id="name" value="{{ current_user.name }}"
+                                     class="form-control-plaintext">
+                          </div>
+                      </div>
+                      {% raw %}
+                      <div class="col-lg-6">
+                        <div class="form-group">
+                          <label for="Belong">소속</label>
+                          <input type="text" id="Belong" placeholder="소속을 입력하세요" class="form-control"
+                                 v-model="host_info.organization" :class="validation_host.organization">
+                          <div class="invalid-feedback">
+                            소속 정보를 입력하세요
+                          </div>
+                        </div>
+                      </div>
+                      {% endraw %}
+                    </div>
+
+                    {% if (not current_user.phone) or (not current_user.email) %}
+                      <div class="row">
+                        {% if not current_user.phone %}
+                          {% raw %}
+                          <div class="col-lg-6">
+                            <div class="form-group">
+                              <label for="phone">전화번호</label>
+                              <input type="text" id="phone" placeholder="휴대폰 번호를 입력하세요"
+                                     class="form-control" v-model="host_info.phone" :class="validation_host.phone">
+                              <div class="invalid-feedback">
+                                연락처를 입력해주세요
+                              </div>
+                            </div>
+                          </div>
+                          {% endraw %}
+                        {% endif %}
+                        {% if not current_user.email %}
+                          {% raw %}
+                          <div class="col-lg-6">
+                            <div class="form-group">
+                              <label for="email">이메일</label>
+                              <input type="text" id="email" placeholder="이메일을 입력하세요" class="form-control"
+                                     v-model="host_info.email" :class="validation_host.email">
+                            </div>
+                          </div>
+                          {% endraw %}
+                        {% endif %}
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" @click.prevent="reg_host">기부 신청하기</button>
+                  </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function map_open(lat, long, event) {
+        event.preventDefault()
+
+        $("#map", ".library_map").html('')
+
+        $(".library_map").data('pos', {
+            lat: lat,
+            long: long
+        }).modal('show')
+    }
+
+    function lecture_modal(library_id, session_time, e) {
+        e.preventDefault()
+
+        {% if current_user.is_authenticated and not joined_user %}
+          $(".lecture_reg").modal("show")
+          modal_app.lecture_modal(library_id, session_time)
+        {% elif current_user.is_authenticated and joined_user %}
+          alert('이미 신청하셨습니다')
+        {% else %}
+          alert('로그인 이후 신청해주세요')
+        {% endif %}
+    }
+
+    function host_modal(library_id, session_time, e) {
+        e.preventDefault()
+
+        {% if current_user.is_authenticated and not joined_user %}
+          $(".host_reg").modal("show")
+          modal_app.host_modal(library_id, session_time)
+        {% elif current_user.is_authenticated and joined_user %}
+          alert('이미 신청하셨습니다')
+        {% else %}
+          alert('로그인 이후 신청해주세요')
+        {% endif %}
+    }
+
+    function error_special (e) {
+        e.preventDefault()
+        alert('특별한 도서관은 강연자를 공개 모집하지 않습니다')
+    }
+
+    var modal_app = new Vue({
+        el: '#app',
+        data: {
+            roundtable_num: {{ show_roundtable_num }},
+            library_info: {
+                library_name: '',
+                manager_name: '',
+                library_tel: '',
+                library_fax: '',
+                library_homepage: '',
+                manager_hp: '',
+                lat: '',
+                long: '',
+                area: '',
+                lib_description: '',
+                expected_audience: '',
+                library_addr: '',
+                lecture_video_recording_yn: ''
+            },
+            available_session_time: [],
+            lecture_info: {
+                title: '',
+                description: '',
+                organization: '',
+                public_yn: false,
+                session_time: '',
+                roundtable_num: {{ show_roundtable_num }},
+                library_id: '',
+                expectedaudience: '',
+                email: '{{ current_user.email }}',
+                phone: '{{ current_user.phone }}'
+            },
+            host_info: {
+                organization: '',
+                session_time: '',
+                roundtable_num: {{ show_roundtable_num }},
+                library_id: '',
+                email: '{{ current_user.email }}',
+                phone: '{{ current_user.phone }}'
+            },
+            validation_lecture: {
+                title: '',
+                description: '',
+                organization: '',
+                session_time: '',
+                expectedaudience: '',
+                email: '',
+                phone: ''
+            },
+            validation_lecture_init: {
+                title: '',
+                description: '',
+                organization: '',
+                session_time: '',
+                expectedaudience: '',
+                email: '',
+                phone: ''
+            },
+            validation_host: {
+                organization: '',
+                email: '',
+                phone: ''
+            },
+            validation_host_init: {
+                organization: '',
+                email: '',
+                phone: ''
+            },
+            input_basic_info: true,
+            vote_book: {
+                lecture_id: 0,
+                book1: '',
+                book1_desc: '',
+                book2: '',
+                book3: '',
+                etc: '',
+                roundtable_num: {{ show_roundtable_num }},
+                enter_path: 'lecture_donate'
+            },
+            vote_book_placeholder: {
+                book: '도서명, 저자, 출판사를 적어주세요',
+                desc: '컬렉션 리스트에 추천하신 분과 추천이유도 함께 적어드리려고 합니다. 추천하고 싶은 이유, 특히' +
+                    ' 관심가지면 좋을 부분 등을 적어주세요. 강연에 참석한 청소년들에게 이 책은 어떤 의미가 있을까요?'
+            },
+            validation_vote: {
+                book: '',
+                desc: ''
+            }
+        },
+        methods: {
+            lecture_modal: function (library_id, session_time) {
+                var vm = this
+
+                this.lecture_info.library_id = library_id
+
+                axios.get('{{ url_for('public.library_info') }}', { params: {
+                    library_id: library_id,
+                    session_time: session_time,
+                    roundtable_id: this.roundtable_num
+                } }).then(function (resp) {
+                    vm.library_info = resp.data.library
+                    vm.available_session_time = resp.data.available_session_time
+                })
+            },
+            reg_lecture: function () {
+                Object.assign(this.validation_lecture, this.validation_lecture_init)
+
+                if (!_.trim(this.lecture_info.title)) {
+                    this.validation_lecture.title = 'is-invalid'
+                }
+
+                if (!_.trim(this.lecture_info.description)) {
+                    this.validation_lecture.description = 'is-invalid'
+                }
+
+                if (!_.trim(this.lecture_info.organization)) {
+                    this.validation_lecture.organization = 'is-invalid'
+                }
+
+                if (!_.trim(this.lecture_info.session_time)) {
+                    this.validation_lecture.session_time = 'is-invalid'
+                }
+
+                if (!_.trim(this.lecture_info.expectedaudience)) {
+                    this.validation_lecture.expectedaudience = 'is-invalid'
+                }
+
+                {% if not current_user.email %}
+                if (!_.trim(this.lecture_info.phone)) {
+                    this.validation_lecture.phone = 'is-invalid'
+                }
+                {% endif %}
+
+                if (this.validation_lecture.title !== '' || this.validation_lecture.description !== '' ||
+                    this.validation_lecture.organization !== '' || this.validation_lecture.session_time !== '' ||
+                    this.validation_lecture.expectedaudience !== '' || this.validation_lecture.phone !== '') {
+                    return false;
+                }
+
+                var vm = this
+
+                axios.post('{{ url_for('public.reg_lecture') }}', this.lecture_info).then(function (resp) {
+                    if (resp.data.success) {
+                        vm.input_basic_info = false
+                        vm.vote_book.lecture_id = resp.data.lecture_id
+                    } else {
+                        alert(resp.data.msg)
+                    }
+                })
+            },
+            reg_votebook: function (e) {
+
+
+                var is_vote_valid = true
+
+                this.validation_vote.book = ''
+                if (this.vote_book.book1 === '') {
+                    this.validation_vote.book = 'is-invalid'
+                    is_vote_valid = false
+                }
+
+                this.validation_vote.desc = ''
+                if (this.vote_book.book1_desc === '') {
+                    this.validation_vote.desc = 'is-invalid'
+                    is_vote_valid = false
+                }
+
+                if (!is_vote_valid) {
+                    if (confirm('추천 도서 입력을 하시려면 확인 버튼을 클릭하세요')) {
+                        return false
+                    } else {
+                        alert('강연 신청이 완료되었습니다.\n추천 도서를 입력하실 경우 마이 페이지에 가시면 입력하실 수 있습니다')
+                        $('.lecture_reg').modal('hide')
+                    }
+                }
+
+                axios.post('{{ url_for('public.reg_votebook') }}', this.vote_book).then(function (resp) {
+                    if (resp.data.success) {
+                        alert('강연 및 추천도서 저장을 완료했습니다.')
+                        $('.lecture_reg').modal('hide')
+                    } else {
+                        alert(resp.data.msg)
+                    }
+                })
+            },
+            host_modal: function (library_id, session_time) {
+                var vm = this
+
+                this.host_info.library_id = library_id
+                this.host_info.session_time = session_time
+
+                axios.get('{{ url_for('public.library_info') }}', { params: {
+                    library_id: library_id,
+                    session_time: session_time,
+                    roundtable_id: this.roundtable_num
+                } }).then(function (resp) {
+                    vm.library_info = resp.data.library
+                    vm.available_session_time = resp.data.available_session_time
+                })
+            },
+            reg_host: function (e) {
+                Object.assign(this.validation_host, this.validation_host_init)
+
+                if (!_.trim(this.host_info.organization)) {
+                    this.validation_host.organization = 'is-invalid'
+                }
+
+                if (!_.trim(this.host_info.phone)) {
+                    this.validation_host.phone = 'is-invalid'
+                }
+
+                console.log(this.validation_host)
+
+                if (this.validation_host.organization === 'is-invalid' || this.validation_host.phone === 'is-invalid') {
+                    return false;
+                }
+
+                axios.post('{{ url_for('public.reg_host') }}', this.host_info).then(function (resp) {
+                    if (resp.data.success) {
+                        alert('진행자 정보가 등록되었습니다')
+                        location.reload()
+                    } else {
+                        alert(resp.data.msg)
+                        location.reload()
+                    }
+                })
+            }
+        }
+    })
+    </script>
+{% endblock %}
+
+{% block footer_script %}
+  <script>
+  $('.library_map').on('shown.bs.modal', function (e) {
+      var pos = $(e.target).data('pos')
+      var container = document.getElementById('map');
+      var lib_latlang = new daum.maps.LatLng(pos.lat, pos.long)
+
+      var options = { center: lib_latlang, level: 2 };
+
+      var map = new daum.maps.Map(container, options);
+      var marker = new daum.maps.Marker({ map: map, position: lib_latlang });
+      marker.setMap(map);
+  })
+
+  $('div.lecture_reg').on('hidden.bs.modal', function (e) {
+      modal_app.input_basic_info = true
+      location.reload()
+  })
+  </script>
+{% endblock %}

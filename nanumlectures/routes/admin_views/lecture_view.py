@@ -3,12 +3,13 @@ from flask import render_template, jsonify, flash, redirect, url_for, request
 from flask.views import MethodView
 from flask_login import login_required
 from paginate_sqlalchemy import SqlalchemyOrmWrapper
+from social_flask_sqlalchemy.models import UserSocialAuth
 from sqlalchemy import func, desc
 from werkzeug.datastructures import MultiDict
 
 from nanumlectures.common import is_admin_role, paginate_link_tag
 from nanumlectures.database import db_session
-from nanumlectures.models import Roundtable, Lecture, Library
+from nanumlectures.models import Roundtable, Lecture, Library, VoteBooks, User, OTandParty
 
 
 class LectureListView(MethodView):
@@ -29,7 +30,6 @@ class LectureListView(MethodView):
         page_url = url_for("admin.lecturer")
         if search_word:
             page_url = url_for("admin.lecturer", search_option=search_option, search_word=search_word)
-
             page_url = str(page_url) + "&page=$page"
         else:
             page_url = str(page_url) + "?page=$page"
@@ -64,11 +64,13 @@ class LectureFindView(MethodView):
 
     def get(self):
         roundtable_id = request.args.get("roundtable_id", -1, type=int)
+        library_id = request.args.get("library_id", -1, type=int)
         lecture_time = request.args.get("lecture_time", -1, type=int)
 
         if roundtable_id > -1 and lecture_time > -1:
             lecture_record = db_session.query(Lecture).filter(
                 Lecture.roundtable_id == roundtable_id,
+                Lecture.library_id == library_id,
                 Lecture.session_time == lecture_time).first()
             if not lecture_record:
                 return jsonify(success=True, msg='등록된 강연이 없습니다')
@@ -83,19 +85,20 @@ class LectureRegView(MethodView):
     def get(self):
         # 새로 입력할 회차 정보를 받아와서 넘겨준다
         # 단, 지난 회차에 강연자 정보를 등록할 일이 없다고 가정한다.
-        latest_round_num = db_session.query(Roundtable.id, func.max(Roundtable.roundtable_num)).group_by(
-            Roundtable.id).first()
-        latest_roundtable_record = db_session.query(Roundtable).filter(Roundtable.id == latest_round_num[0]).first()
+        main_roundtable = db_session.query(Roundtable).filter(Roundtable.is_active == True).first()
 
         # 만약 개최회차 등록되지 않았을 경우 개최회차 등록 화면으로 돌려보낸다.
-        if not latest_roundtable_record:
+        if not main_roundtable:
             flash('강연자를 등록하시려면 개최회차 등록부터 하셔야 합니다')
             return redirect(url_for('admin.roundtable_reg'))
 
-        return render_template("admin/lecturer_reg.html", latest_roundtable=latest_roundtable_record)
+        return render_template("admin/lecturer_reg.html", latest_roundtable=main_roundtable)
 
     def post(self):
         req_json = MultiDict(request.get_json())
+
+        user_record = db_session.query(User).outerjoin(UserSocialAuth).filter(
+            UserSocialAuth.uid == req_json.get("lectureID")).first()
 
         lecturer_obj = Lecture()
         lecturer_obj.roundtable_id = req_json.get('roundtable_id')
@@ -104,6 +107,7 @@ class LectureRegView(MethodView):
         lecturer_obj.lecture_title = req_json.get('lectureTitle')
         lecturer_obj.lecture_summary = req_json.get('lectureSummary')
         lecturer_obj.lecture_expected_audience = req_json.get('lectureExpectedAudience')
+        lecturer_obj.lecture_user_id = (user_record and user_record.id) or None
         lecturer_obj.lecture_name = req_json.get('lectureName')
         lecturer_obj.lecture_belong = req_json.get('lectureBelong')
         lecturer_obj.lecture_hp = req_json.get('lectureHp')
@@ -124,16 +128,20 @@ class LectureEditView(MethodView):
     def post(self, lecturer):
         req_json = MultiDict(request.get_json())
 
+        user_record = db_session.query(User).outerjoin(UserSocialAuth).filter(
+            UserSocialAuth.uid == req_json.get("lectureID")).first()
+
         lecturer.library_id = req_json.get('library').get('id')
         lecturer.lecture_time = req_json.get('lectureTime')
         lecturer.lecture_title = req_json.get('lectureTitle')
         lecturer.lecture_summary = req_json.get('lectureSummary')
         lecturer.lecture_expected_audience = req_json.get('lectureExpectedAudience')
+        lecturer.lecture_user_id = (user_record and user_record.id) or None
         lecturer.lecture_name = req_json.get('lectureName')
         lecturer.lecture_belong = req_json.get('lectureBelong')
         lecturer.lecture_hp = req_json.get('lectureHp')
         lecturer.lecture_email = req_json.get('lectureEmail')
-        lecturer.lecture_public_yn = req_json.get('lectureUserYn', type=bool)
+        lecturer.lecture_public_yn = req_json.get('lecturePublicYn', type=bool)
 
         return jsonify(success=True)
 
@@ -142,9 +150,24 @@ class LectureDetailView(MethodView):
     decorators = [is_admin_role, login_required]
 
     def get(self, lecturer):
-        return render_template("admin/lecturer_view.html", lecturer=lecturer)
+        vote_books = db_session.query(VoteBooks).filter(
+            VoteBooks.roundtable_id == lecturer.roundtable_id,
+            VoteBooks.lecture_user_id == lecturer.lecture_user_id).first()
+
+        return render_template("admin/lecturer_view.html", lecturer=lecturer, vote_books=vote_books)
 
     def delete(self, lecturer):
+        vote_books = db_session.query(VoteBooks).filter(
+            VoteBooks.roundtable_id == lecturer.roundtable_id,
+            VoteBooks.lecture_user_id == lecturer.lecture_user_id).first()
+
+        if vote_books:
+            db_session.delete(vote_books)
+
+        db_session.query(OTandParty).filter(
+            OTandParty.party_user_id == lecturer.lecture_user_id,
+            OTandParty.roundtable_id == lecturer.roundtable_id).delete()
+
         db_session.delete(lecturer)
 
         return jsonify(success=True)

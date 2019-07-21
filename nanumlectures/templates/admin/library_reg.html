@@ -1,9 +1,9 @@
 {% extends "admin/base.html" %}
 
 {% block script %}
-    <script src="//unpkg.com/vue"></script>
-    <script src="//unpkg.com/lodash"></script>
-    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
     <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_key }}&libraries=services"></script>
 {% endblock %}
 
@@ -18,96 +18,164 @@
         </ol>
         <div class="app-main-card" id="form">
             <form class="app-main-form">
-                    <div class="form-group row">
-                        <label for="libraryName" class="app-main-form__label col-sm-2 col-form-label">도서관명</label>
-                        <div class="col-sm-10">
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="libraryName" placeholder="도서관 이름을 입력하세요" v-model="libraryName">
-                                <div class="input-group-append">
-                                    <button class="btn btn-info" @click.prevent="inFormLibrary">정보 가져오기</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <label for="libraryAddr" class="app-main-form__label col-sm-2 col-form-label">도서관 주소</label>
-                        <div class="col-sm-10">
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="libraryAddr" placeholder="도서관 주소를 입력하세요"
-                                       v-model="libraryAddr">
-                                <div class="input-group-append">
-                                    <button class="btn btn-info" @click.prevent="inFormAddr">위치 정보 설정</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <label for="managerName" class="app-main-form__label col-sm-2 col-form-label">사서명</label>
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="managerName" placeholder="사서 선생님 이름을 입력하세요" v-model="managerName">
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <label for="libraryTel" class="app-main-form__label col-sm-2 col-form-label">대표전화</label>
-                        <div class="col-sm-4">
-                            <input type="text" class="form-control" id="libraryTel" placeholder="도서관 대표 전화번호를 입력하세요" v-model="libraryTel">
-                        </div>
-                        <label for="managerHp" class="app-main-form__label col-sm-2 col-form-label">휴대전화</label>
-                        <div class="col-sm-4">
-                            <input type="text" class="form-control" id="managerHp" placeholder="사서 선생님 개인 연락처를 입력하세요" v-model="managerHp">
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <label for="libraryFax" class="app-main-form__label col-sm-2 col-form-label">팩스</label>
-                        <div class="col-sm-4">
-                            <input type="text" class="form-control" id="libraryFax" placeholder="도서관 팩스 번호를 입력하세요" v-model="libraryFax">
-                        </div>
-                        <label for="libraryHomepage" class="app-main-form__label col-sm-2 col-form-label">홈페이지</label>
-                        <div class="col-sm-4">
-                            <input type="text" class="form-control" id="libraryHomepage"
-                                   placeholder="도서관 홈페이지 주소를 입력하세요" v-model="libraryHomepage">
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <label for="libraryDescription" class="app-main-form__label col-sm-2 col-form-label">강연장 정보</label>
-                        <div class="col-sm-10">
-                            <textarea class="form-control" rows="2" id="libraryDescription" :placeholder="placeholder.libraryDescription" v-model="libraryDescription"></textarea>
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <label for="expectedAudience" class="app-main-form__label col-sm-2 col-form-label">예상청중</label>
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="expectedAudience" :placeholder="placeholder.expectedAudience" v-model="expectedAudience">
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <div class="col-sm-10">
-                            <button type="button" class="btn btn-primary" @click.prevent="register">등록</button>
-                        </div>
-                    </div>
-                </form>
-            <div class="modal fade" id="findMoreLibrary" tabindex="-1" role="dialog">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="findMoreLibraryLabel">찾아진 도서관</h5>
-                                <button type="button" class="close" data-dismiss="modal">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <ul class="list-group" style="height: 300px;overflow-y: auto">
-                                    {% raw %}
-                                    <li class="list-group-item" v-for="(item, index) in findLibrary" :key="index" @click="selectLibrary(item)" style="cursor: pointer">{{ item.place_name }} ({{ item.road_address_name }})</li>
-                                    {% endraw %}
-                                </ul>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                <div class="form-group row">
+                    <label for="libraryName" class="app-main-form__label col-sm-2 col-form-label">도서관명</label>
+                    <div class="col-sm-10">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="libraryName" placeholder="도서관 이름을 입력하세요" v-model="libraryName">
+                            <div class="input-group-append">
+                                <button class="btn btn-info" @click.prevent="inFormLibrary">정보 가져오기</button>
                             </div>
                         </div>
                     </div>
                 </div>
+                <div class="form-group row">
+                    <label for="libraryAddr" class="app-main-form__label col-sm-2 col-form-label">도서관 주소</label>
+                    <div class="col-sm-10">
+                        <div class="input-group">
+                          <div class="input-group-prepend">
+                            <div class="input-group-text">
+                              <i class="fas fa-map-pin" v-if="libraryLat !== 0.0 && libraryLong !== 0.0"></i>
+                              <span v-if="libraryLat === 0.0 && libraryLong === 0.0">&nbsp;</span>
+                            </div>
+                          </div>
+                          <input type="text" class="form-control" id="libraryAddr" placeholder="도서관 주소를 입력하세요"
+                                 v-model="libraryAddr">
+                          <div class="input-group-append">
+                              <button class="btn btn-info" @click.prevent="inFormAddr">위치 정보 설정</button>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="managerName" class="app-main-form__label col-sm-2 col-form-label">사서명</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="managerName" placeholder="사서 선생님 이름을 입력하세요" v-model="managerName">
+                    </div>
+                    <label for="managerEmail" class="app-main-form__label col-sm-2 col-form-label">사서 이메일</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="managerEmail" placeholder="사서 선생님 이메일을 입력하세요" v-model="managerEmail">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="managerDescription" class="app-main-form__label col-sm-2 col-form-label">사서 선생님 직함</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="managerDescription" placeholder="사서 선생님 직함을 입력하세요" v-model="managerDescription">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="libraryTel" class="app-main-form__label col-sm-2 col-form-label">대표전화</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="libraryTel" placeholder="도서관 대표 전화번호를 입력하세요" v-model="libraryTel">
+                    </div>
+                    <label for="managerHp" class="app-main-form__label col-sm-2 col-form-label">휴대전화</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="managerHp" placeholder="사서 선생님 개인 연락처를 입력하세요" v-model="managerHp">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="libraryFax" class="app-main-form__label col-sm-2 col-form-label">팩스</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="libraryFax" placeholder="도서관 팩스 번호를 입력하세요" v-model="libraryFax">
+                    </div>
+                    <label for="libraryHomepage" class="app-main-form__label col-sm-2 col-form-label">홈페이지</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="libraryHomepage"
+                               placeholder="도서관 홈페이지 주소를 입력하세요" v-model="libraryHomepage">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="libraryPlace" class="app-main-form__label col-sm-2 col-form-label">강연장</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="libraryPlace" placeholder="강연장 이름을 입력하세요" v-model="libraryPlace">
+                    </div>
+                    <label for="placeSeats" class="app-main-form__label col-sm-2 col-form-label">강연장 좌석 수</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="placeSeats" placeholder="강연장 좌석 수를 입력하세요" v-model="placeSeats">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="expectedAudience" class="app-main-form__label col-sm-2 col-form-label">예상 청중</label>
+                    <div class="col-sm-6">
+                        <input type="text" class="form-control" id="expectedAudience" :placeholder="placeholder.expectedAudience" v-model="expectedAudience">
+                    </div>
+                    <label for="expectedListens" class="app-main-form__label col-sm-2 col-form-label">예상 인원</label>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" id="expectedListens" placeholder="예상 인원" v-model="expectedListens">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="prProduction" class="app-main-form__label col-sm-2 col-form-label">홍보물 제작 계획</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="prProduction" placeholder="홍보물 제작 계획을 입력하세요" v-model="prProduction">
+                    </div>
+                </div>
+                <div class="form-group row">
+                  <label for="projector_screen" class="app-main-form__label col-sm-2 col-form-label">빔프로젝터+스크린</label>
+                  <div class="col-sm-2">
+                    <input id="projector_screen" type="checkbox" style="width: 25px;height: 25px;" v-model="projector_screen">
+                  </div>
+                  <label for="projector_notebook" class="app-main-form__label col-sm-2 col-form-label">빔프로젝터에 연결된 노트북</label>
+                  <div class="col-sm-2">
+                    <input id="projector_notebook" type="checkbox" style="width: 25px;height: 25px;" v-model="projector_notebook">
+                  </div>
+                  <label for="sound_equipment" class="app-main-form__label col-sm-2 col-form-label">음향(마이크. 스피커)</label>
+                  <div class="col-sm-2">
+                    <input id="sound_equipment" type="checkbox" style="width: 25px;height: 25px;" v-model="sound_equipment">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="camcorder_yn" class="app-main-form__label col-sm-2 col-form-label">캠코더 보유 유무</label>
+                  <div class="col-sm-2">
+                    <input id="camcorder_yn" type="checkbox" style="width: 25px;height: 25px;" v-model="camcorder_yn">
+                  </div>
+                  <label for="lecture_video_recording_yn" class="app-main-form__label col-sm-2 col-form-label">강연 촬영 & 영상 공개</label>
+                  <div class="col-sm-2">
+                    <input id="lecture_video_recording_yn" type="checkbox" style="width: 25px;height: 25px;" v-model="lecture_video_recording_yn">
+                  </div>
+                  <label for="coordinate_photography_yn" class="app-main-form__label col-sm-2 col-form-label">촬영 협조 가능</label>
+                  <div class="col-sm-2">
+                    <input id="coordinate_photography_yn" type="checkbox" style="width: 25px;height: 25px;" v-model="coordinate_photography_yn">
+                  </div>
+                </div>
+                <div class="form-group row">
+                    <label for="internet_yn" class="app-main-form__label col-sm-2 col-form-label">인터넷 가능 여부</label>
+                    <div class="col-sm-2">
+                      <input id="internet_yn" type="checkbox" style="width: 25px;height: 25px;" v-model="internet_yn">
+                    </div>
+                    <label for="etc_equipment" class="app-main-form__label col-sm-2 col-form-label">기타 보유</label>
+                    <div class="col-sm-6">
+                        <input type="text" class="form-control" id="etc_equipment" placeholder="기타 보유 물품을 입력하세요" v-model="etc_equipment">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-10">
+                        <button type="button" class="btn btn-primary" @click.prevent="register">등록</button>
+                    </div>
+                </div>
+            </form>
+            <div class="modal fade" id="findMoreLibrary" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="findMoreLibraryLabel">찾아진 도서관</h5>
+                            <button type="button" class="close" data-dismiss="modal">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <ul class="list-group" style="height: 300px;overflow-y: auto">
+                                {% raw %}
+                                <li class="list-group-item" v-for="(item, index) in findLibrary" :key="index" @click="selectLibrary(item)" style="cursor: pointer">{{ item.place_name }} ({{ item.road_address_name }})</li>
+                                {% endraw %}
+                            </ul>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
             <script>
@@ -118,13 +186,27 @@
                         libraryAddr: '',
                         managerName: '',
                         managerHp: '',
+                        managerEmail: '',
+                        managerDescription: '',
                         libraryTel: '',
                         libraryFax: '',
+                        libraryPlace: '',
+                        placeSeats: '',
+                        prProduction: '',
+                        projector_screen: '',
+                        projector_notebook: '',
+                        sound_equipment: '',
+                        camcorder_yn: '',
+                        lecture_video_recording_yn: '',
+                        coordinate_photography_yn: '',
+                        internet_yn: '',
+                        etc_equipment: '',
                         libraryHomepage: '',
                         libraryDescription: '',
                         expectedAudience: '',
-                        libraryLat: '',
-                        libraryLong: '',
+                        expectedListens: '',
+                        libraryLat: 0.0,
+                        libraryLong: 0.0,
                         placeholder: {
                             libraryDescription: '예시) 시청각실(120석)<br>\n' +
                                 '빔프로젝터, 노트북 사용가능, 음향시설 사용 가능',
@@ -134,22 +216,36 @@
                     },
                     methods: {
                         register: function (e) {
-                            axios.post('/admin/library/reg', {
-                                libraryName: this.libraryName,
-                                libraryAddr: this.libraryAddr,
-                                managerName: this.managerName,
-                                managerHp: this.managerHp,
-                                libraryTel: this.libraryTel,
-                                libraryFax: this.libraryFax,
-                                libraryHomepage: this.libraryHomepage,
-                                libraryDescription: this.libraryDescription,
-                                expectedAudience: this.expectedAudience,
-                                libraryLat: this.libraryLat,
-                                libraryLong: this.libraryLong
-                            }).then(function (e) {
-                                alert('도서관 등록이 완료되었습니다')
-                                location.href = '/admin/library'
-                            })
+                          axios.post('/admin/library/reg', {
+                              libraryName: this.libraryName,
+                              libraryAddr: this.libraryAddr,
+                              managerName: this.managerName,
+                              managerHp: this.managerHp,
+                              managerEmail: this.managerEmail,
+                              managerDescription: this.managerDescription,
+                              libraryTel: this.libraryTel,
+                              libraryFax: this.libraryFax,
+                              libraryPlace: this.libraryPlace,
+                              placeSeats: this.placeSeats,
+                              prProduction: this.prProduction,
+                              projector_screen: this.projector_screen,
+                              projector_notebook: this.projector_notebook,
+                              sound_equipment: this.sound_equipment,
+                              camcorder_yn: this.camcorder_yn,
+                              lecture_video_recording_yn: this.lecture_video_recording_yn,
+                              coordinate_photography_yn: this.coordinate_photography_yn,
+                              internet_yn: this.internet_yn,
+                              etc_equipment: this.etc_equipment,
+                              libraryHomepage: this.libraryHomepage,
+                              libraryDescription: this.libraryDescription,
+                              expectedAudience: this.expectedAudience,
+                              expectedListens: this.expectedListens,
+                              libraryLat: this.libraryLat,
+                              libraryLong: this.libraryLong
+                          }).then(function (e) {
+                              alert('도서관 등록이 완료되었습니다')
+                              location.href = '/admin/library'
+                          })
                         },
                         inFormLibrary: function (e) {
                             var vm = this

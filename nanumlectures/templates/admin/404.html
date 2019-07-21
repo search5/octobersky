@@ -6,7 +6,7 @@
         <!-- Breadcrumbs-->
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
-                <a href="index.html">Dashboard</a>
+                <a href="/admin">Dashboard</a>
             </li>
             <li class="breadcrumb-item active">404 Error</li>
         </ol>
@@ -16,7 +16,7 @@
         <p class="lead">요청하신 페이지를 찾을 수 없습니다
             <a href="javascript:history.back()">뒤로 가기</a>
             이전 페이지로 가시거나 다음으로 이동하실 수 있습니다.
-            <a href="{{ url_for('admin.main') }}">관리자 홈으로 돌아가기</a>.</p>
+            <a href="{{ url_for('admin.dashboard') }}">관리자 홈으로 돌아가기</a>.</p>
     </div>
     <!-- /.container-fluid -->
 {% endblock %}

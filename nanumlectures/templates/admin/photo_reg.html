@@ -1,8 +1,9 @@
 {% extends "admin/base.html" %}
 
 {% block script %}
-    <script src="//unpkg.com/vue"></script>
-    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -10,7 +11,7 @@
     <!-- Breadcrumbs-->
     <ol class="app-main-breadcrumb breadcrumb">
         <li class="app-main-breadcrumb-item breadcrumb-item">
-            <a class="app-main-breadcrumb-item__a" href="index.html">Admin</a>
+            <a class="app-main-breadcrumb-item__a" href="/admin">Admin</a>
         </li>
         <li class="app-main-breadcrumb-item--sub breadcrumb-item active">사진첩 등록</li>
     </ol>
@@ -20,58 +21,94 @@
             <div class="form-group row">
                 <label for="roundtable_num" class="app-main-form__label col-sm-2 col-form-label">개최회차</label>
                 <div class="col-sm-10">
-                    <input type="number" class="form-control" id="roundtable_num" v-model='roundtable_num' placeholder="개최회차를 입력하세요.">
+                    <input type="number" class="form-control" id="roundtable_num" v-model='roundtable_num' placeholder="개최회차를 입력하세요." :class="valid.roundtable_num">
+                    <div class="invalid-feedback">개최회차는 올바르게 입력해주세요</div>
                 </div>
             </div>
             <div class="form-group row">
                 <label for="album_name" class="app-main-form__label col-sm-2 col-form-label">사진첩명</label>
                 <div class="col-sm-10">
-                    <input type="text" class="form-control" id="album_name" v-model='album_name' placeholder="사진첩 이름을 입력하세요.">
+                  <select id="album_name" class="form-control" v-model="album_id" @change="album_select">
+                    <option value="">선택하세요</option>
+                    <option :value="item.id" :key="item.id" v-for="item in photo_albums" v-text="item.title"></option>
+                  </select>
                 </div>
             </div>
             <div class="form-group row">
                 <label for="album_link" class="app-main-form__label col-sm-2 col-form-label">사진첩 링크</label>
                 <div class="col-sm-10">
-                    <input type="text" class="form-control" id="album_link" v-model='album_link' placeholder="사진첩 링크를 입력하세요">
+                  <input id="album_link" class="form-control" v-model="album_link">
                 </div>
             </div>
             <div class="form-group row">
-                <label for="represent_img" class="app-main-form__label col-sm-2 col-form-label">대표 이미지 링크</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" id="represent_img" v-model='represent_img' placeholder="대표 이미지 링크를 입력하세요">
+              <div class="col-sm-12">
+                <div class="row">
+                  <div class="col-sm-4">
+                    <label for="represent_img" class="app-main-form__label col-form-label">대표 이미지</label><br>
+                    <div class="card mb-3">
+                      <div style="width: 429px;height: 324px;overflow-y: auto;">
+                        <img :src="cover.src" :alt="cover.alt" class="border" style="width: 100%;">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-sm-8">
+                      <label for="description" class="app-main-form__label col-form-label">사진첩 설명</label>
+                      <textarea rows="10" class="form-control" id="description" v-model='description'
+                                placeholder="사진첩 설명을 입력하세요"></textarea>
+                      <br>
+                      <button type="button" @click.prevent="submit" class="btn btn-primary">등록</button>
+                  </div>
                 </div>
-            </div>
-            <div class="form-group row">
-                <label for="description" class="app-main-form__label col-sm-2 col-form-label">사진첩 설명</label>
-                <div class="col-sm-10">
-                    <textarea rows="6" class="form-control" id="description" v-model='description' placeholder="사진첩 설명을 입력하세요"></textarea>
-                </div>
-            </div>
-            <div class="form-group row">
-                <div class="col-sm-10">
-                    <button type="button" @click.prevent="submit" class="btn btn-primary">등록</button>
-                </div>
+              </div>
             </div>
         </form>
     </div>
+
     <script>
       new Vue({
         el: '#app',
         data: {
           roundtable_num: '',
+          album_id: '',
           album_name: '',
           album_link: '',
           represent_img: '',
-          description: ''
+          description: '',
+          photo_albums: {{ photo_albums | tojson }},
+          cover: {src: '', alt: ''},
+          roundtable_range: {{ tuple(roundtable) | tojson }},
+          valid: {
+              roundtable_num: ''
+          }
         },
         methods: {
+          album_select: function (e) {
+              if (this.album_id === '') {
+                  return
+              }
+
+              var selected_album = _.find(this.photo_albums, {'id': this.album_id})
+              this.cover.src = selected_album.coverPhotoBaseUrl + "=w429-h324"
+              this.represent_img = selected_album.coverPhotoBaseUrl
+              this.cover.id = selected_album.id
+              this.album_name = selected_album.title
+              this.album_id = selected_album.id
+          },
           submit: function (event) {
+            this.valid.roundtable_num = ''
+
+            if (_.indexOf(this.roundtable_range, parseInt(this.roundtable_num)) === -1) {
+                this.valid.roundtable_num = 'is-invalid'
+                return false
+            }
+
             axios.post('/admin/photo/reg', {
                 roundtable_num: this.roundtable_num,
                 album_name: this.album_name,
                 album_link: this.album_link,
                 represent_img: this.represent_img,
-                description: this.description
+                description: this.description,
+                album_id: this.album_id
             }).then(function (e) {
                 alert('사진첩 등록이 완료되었습니다')
                 location.href = '/admin/photo'

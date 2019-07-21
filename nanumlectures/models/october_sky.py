@@ -1,14 +1,14 @@
 import hashlib
 
 from flask_login import UserMixin
+from markupsafe import Markup
 from sqlalchemy import (Column, BigInteger, Sequence, String, Text, Boolean,
-                        DateTime, func, Integer, Date, Float, Table, ForeignKey)
+                        DateTime, func, Integer, Date, Float, ForeignKey)
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, column_property
 
 from nanumlectures.database import Base, db_session
-from social_flask_sqlalchemy.models import UserSocialAuth
 
 
 class User(Base, UserMixin):
@@ -31,8 +31,9 @@ class User(Base, UserMixin):
     library = relationship("Library", uselist=False)
     lecture = relationship("Lecture", back_populates="lecture_user")
     host = relationship("SessionHost", back_populates="host_user")
+    donation = relationship("DonationGoods", back_populates="lecture_user")
+    vote = relationship("VoteBooks", back_populates="lecture_user")
     phone_search = column_property(func.replace(phone, '-', ''))
-    # social_info = relationship("UserSocialAuth", backref="user")
 
     def __repr__(self):
         r = {
@@ -79,6 +80,7 @@ class RoundtableAndLibrary(Base):
     library_id = Column(Integer, ForeignKey('library_mngt.id'), primary_key=True)
     roundtable_id = Column(Integer, ForeignKey('roundtable_mngt.id'), primary_key=True)
     round_num = Column(Integer, comment='세션 수')
+    library_type = Column(String(100), comment='일반/SF/장애인/다문화 중 하나')
     library = relationship("Library", back_populates="roundtable")
     roundtable = relationship("Roundtable", back_populates="library")
 
@@ -91,17 +93,19 @@ class Roundtable(Base):
     roundtable_year = Column(Integer, comment='개최년도')
     roundtable_date = Column(Date, comment='개최일')
     staff = Column(Text, comment='준비위원회 사람들')
+    is_active = Column(Boolean, comment='활성화 여부(활성화하면 이게 메인 회차)')
     library = relationship("RoundtableAndLibrary", back_populates="roundtable")
     lecture = relationship("Lecture", back_populates="roundtable")
     host = relationship("SessionHost", back_populates="roundtable")
 
     @hybrid_property
     def library_modify_list(self):
-        return [dict(
-                library=dict(id=entry.library.id,
-                library_name=entry.library.library_name,
-                library_addr=entry.library.library_addr),
-            session_time=entry.round_num) for entry in self.library]
+        return [
+            dict(library=dict(id=entry.library.id,
+                              library_name=entry.library.library_name,
+                              library_addr=entry.library.library_addr),
+                 session_time=entry.round_num,
+                 library_type=entry.library_type) for entry in self.library]
 
     @hybrid_property
     def reg_available_library(self):
@@ -129,12 +133,50 @@ class Library(Base):
     area = Column(String(10), comment='권역')
     library_description = Column(Text, comment='강연장 환경')
     expected_audience = Column(String(255), comment='예상 청중')
+    expected_listens = Column(String(20), comment='예상 인원')
     library_addr = Column(String(255), comment='도서관 주소')
     daum_place_id = Column(String(20), comment="DAUM 지도 Place ID")
     daum_place_url = Column(String(255), comment="DAUM 지도 Place URL")
+    manager_email = Column(String(255), comment='담당자 이메일 주소')
+    manager_description = Column(String(255), comment='담당자 소속 등')
+    library_place = Column(String(255), comment='개최장소')
+    place_seats = Column(String(30), comment='개최장소 좌석 수')
+    pr_production = Column(Text, comment='홍보물 제작 계획')
+    projector_screen = Column(Boolean, comment='빔프로젝터+스크린')
+    projector_notebook = Column(Boolean, comment='빔프로젝터에 연결된 노트북')
+    sound_equipment = Column(Boolean, comment='음향(마이크. 스피커)')
+    etc_equipment = Column(Text, comment='기타 보유')
+    camcorder_yn = Column(Boolean, comment='캠코더 보유 유무')
+    internet_yn = Column(Boolean, comment='인터넷 보유 유무')
+    lecture_video_recording_yn = Column(Boolean, comment='강연 내용 촬영 및 공개 가능 여부')
+    coordinate_photography_yn = Column(Boolean, comment='촬영 인력 협조가능 여부')
     roundtable = relationship("RoundtableAndLibrary", back_populates="library")
     lecture = relationship("Lecture", back_populates="library")
     host = relationship("SessionHost", back_populates="library")
+
+    @hybrid_property
+    def expected_listener(self):
+        return "{}({})".format(self.expected_audience, self.expected_listens)
+
+    @hybrid_property
+    def lib_description(self):
+        addition = []
+        if self.projector_screen:
+            addition.append("빔 프로젝터, 스크린")
+        if self.projector_notebook:
+            addition.append("노트북")
+        if self.sound_equipment:
+            addition.append("스피커, 마이크")
+        if self.camcorder_yn:
+            addition.append("캠코더")
+        if self.internet_yn:
+            addition.append("인터넷")
+        if self.etc_equipment:
+            addition.append(self.etc_equipment)
+
+        return Markup("{}({})<br>{}".format(self.library_place,
+                                            self.place_seats,
+                                            "{} 사용 가능".format(", ".join(addition))))
 
 
 class FAQ(Base):
@@ -183,7 +225,7 @@ class Lecture(Base):
 
     @hybrid_property
     def lecture_info(self):
-        ret = [self.lecture_name]
+        ret = [self.lecture_name or '관리자확인']
         if self.lecture_email:
             ret.append('({0})'.format(self.lecture_email))
         if self.lecture_belong:
@@ -212,7 +254,7 @@ class SessionHost(Base):
 
     @hybrid_property
     def host_info(self):
-        ret = [self.host_name]
+        ret = [self.host_name or '관리자확인']
         if self.host_email:
             ret.append('({0})'.format(self.host_email))
         if self.host_belong:
@@ -247,6 +289,7 @@ class PhotoAlbum(Base):
     roundtable = relationship("Roundtable")
     album_name = Column(String(255), comment='사진첩명')
     album_link = Column(Text, comment='사진첩 링크(구글 사진첩)')
+    album_id = Column(Text, comment='사진첩 ID')
     representation_image_link = Column(Text, comment='사진첩 대표 이미지(구글 사진첩)')
     album_description = Column(Text, comment='사진첩 설명')
     news_write_date = Column(Date, default=func.now(), comment='작성일자')
@@ -290,3 +333,151 @@ class PageTemplate(Base):
     id = Column(Integer, Sequence('pages_seq'), primary_key=True)
     page_name = Column(String(255), comment='페이지 이름')
     page_content = Column(Text, comment='페이지 내용(HTML)')
+
+
+class SlideCarousel(Base):
+    __tablename__ = 'slide_carousel'
+
+    id = Column(Integer, Sequence('carousel_seq'), primary_key=True)
+    slide_num = Column(Integer, comment='슬라이드 번호')
+    slide_img_type = Column(String(30), comment='이미지 타입')
+    slide_img = Column(Text, comment='슬라이드 이미지')
+    slide_title = Column(Text, comment='슬라이드 대표 텍스트')
+    slide_text = Column(Text, comment='슬라이드 설명 텍스트')
+    is_active = Column(Boolean, comment='활성화 여부')
+
+
+class VoteBooks(Base):
+    __tablename__ = 'vote_books'
+
+    id = Column(Integer, Sequence('vote_books_seq'), primary_key=True)
+    roundtable_id = Column(Integer, ForeignKey('roundtable_mngt.id'),
+                           comment="회차 고유번호(DB 고유 인덱스)")
+    roundtable = relationship("Roundtable")
+    lecture_user_id = Column(Integer, ForeignKey('users.id'), comment='강연자 ID')
+    lecture_user = relationship("User")
+    lecture_id = Column(Integer, ForeignKey('lecture.id'), comment='강연 ID')
+    lecture = relationship("Lecture")
+    book_info = Column(JSON, comment='추천도서 정보')
+    enter_path = Column(String(50), comment='진입경로', doc='아 증말!!!, 내가 효용성을 증명해준다(도서문화재단 씨앗 요청)')
+
+    def __iter__(self):
+        yield 'book_info', self.book_info
+
+    @hybrid_property
+    def disp_book_info(self):
+        base_text_format = "<span class=\"font-weight-bold\">{}: </span> <span>{}</span><br>"
+        base2_text_format = "<span class=\"font-weight-bold\">{}: </span>"
+
+        book_info_str = [base_text_format.format("추천하고 싶은 도서", self.book_info['book1']),
+                         base_text_format.format("추천하고 싶은 이유", self.book_info['book1_desc'])]
+        if self.book_info['book2'] or self.book_info['book3']:
+            book_info_str.append(base2_text_format.format("그 외에 추천하고 싶은 도서가 있다면 남겨주세요"))
+            book_info_str.append("<ul>")
+            if self.book_info['book2']:
+                book_info_str.append("<li>{}</li>".format(self.book_info['book2']))
+            if self.book_info['book3']:
+                book_info_str.append("<li>{}</li>".format(self.book_info['book3']))
+            book_info_str.append("</ul>")
+        if self.book_info['etc']:
+            book_info_str.append(base_text_format.format("강연 시에 청중들에게 나눠드릴 책", self.book_info['etc']))
+        return ''.join(book_info_str)
+
+
+class DonationGoods(Base):
+    __tablename__ = "donation_goods"
+
+    id = Column(Integer, Sequence('donation_goods_seq'), primary_key=True)
+    roundtable_id = Column(Integer, ForeignKey('roundtable_mngt.id'),
+                           comment="회차 고유번호(DB 고유 인덱스)")
+    roundtable = relationship("Roundtable")
+    lecture_user_id = Column(Integer, ForeignKey('users.id'), comment='기부자 ID')
+    lecture_user = relationship("User")
+    donation_type = Column(String(10), comment='기부타입(A: 물품(굿즈)기부, B: 뒷풀이 기부)')
+    donation_description = Column(Text, comment='기부 물품 정보')
+    donation_transport = Column(String(10), comment='전송수단(A: 미리 전달, B: 현장 전달)')
+    is_received = Column(Boolean, comment='물품 수신여부 확인')
+
+    def __iter__(self):
+        for item in ('id', 'roundtable_id', 'lecture_user_id', 'donation_type', 'donation_description', 'donation_transport'):
+            if item == 'donation_transport':
+                yield 'donation_transport_type', getattr(self, item)
+            else:
+                yield item, getattr(self, item)
+
+    def __lt__(self, other):
+        return self.id < other.id
+
+
+class GoogleToken(Base):
+    """구글 웹 인증 토큰 저장(항상 1개 레코드)"""
+
+    __tablename__ = 'google_token'
+
+    id = Column(Integer, Sequence('google_token_seq'), primary_key=True)
+    token_content = Column(Text, comment='토큰 내용')
+
+
+class FindPasswordToken(Base):
+    """비밀번호 초기화 및 찾기 테이블"""
+
+    __tablename__ = 'find_password_token'
+
+    id = Column(Integer, Sequence('find_password_token_seq'), primary_key=True)
+    find_user_id = Column(Integer, comment='비밀번호 찾는 사람 ID')
+    find_user_email = Column (String(100), comment='비밀번호 찾는 사람 이메일')
+    uuid = Column(String(50), comment='이메일로 보내지는 Randomstring')
+    find_created_date = Column(DateTime, default=func.now(), comment="발급 시간")
+    find_expired_date = Column(DateTime, default=None, comment='만료 시간')
+    find_email_use_yn = Column(Boolean, default=False, comment='사용 여부')
+
+
+class BoardModel(Base):
+    """게시판 모델"""
+
+    __tablename__ = 'board'
+
+    # board_type이 A1은 준비위 회의록
+    # board_type을 따로 두는건.. 또 게시판 추가해달라고 할까봐
+
+    id = Column(Integer, Sequence('board_seq'), primary_key=True)
+    board_type = Column(String(50), default='A1', comment='게시판 구분')
+    title = Column(String(255), comment='게시판 제목')
+    content = Column(Text, comment='게시판 내용')
+    wdate = Column(Date, comment='작성일')
+    mdate = Column(Date, comment='수정일')
+    user_id = Column(Integer, ForeignKey('users.id'), comment='강연자 ID')
+    user = relationship("User")
+    hit = Column(Integer, comment='조회수', doc='아이고 의미음따..')
+
+
+class MailSend(Base):
+    '''관리자에서 메일 전송'''
+
+    __tablename__ = 'mail_send'
+
+    id = Column(Integer, Sequence('mail_send_seq'), primary_key=True)
+    receive_type = Column(String(1), comment='받는 사람 타입')
+    receive_addr = Column(JSON, comment='받는 사람 메일 주소(도서관 섭외 한정)')
+    mail_subject = Column(String(255), comment='메일 제목')
+    mail_content = Column(Text, comment='메일 본문')
+    mail_attach = Column(JSON, comment='첨부파일 목록', doc='(S3에 저장하자...) 근데 첨부파일을 저장할 필요가 있나.. 앗흥..')
+    uploading_file_cnt = Column(Integer, comment='업로드 중인 파일 갯수')
+    uploaded_file_cnt = Column(Integer, comment='업로드할 파일 갯수')
+    is_mail_send = Column(Boolean, comment='메일 발송 여부')
+    send_time = Column(DateTime, comment='메일 발송 시간')
+
+
+class OTandParty(Base):
+    '''OT 및 뒤풀이 참석 여부 결정'''
+    __tablename__ = 'ot_and_party'
+
+    id = Column(Integer, Sequence('ot_and_party_seq'), primary_key=True)
+    roundtable_id = Column(Integer, ForeignKey('roundtable_mngt.id'),
+                           comment="회차 고유번호(DB 고유 인덱스)")
+    roundtable = relationship("Roundtable")
+    party_user_id = Column(Integer, ForeignKey('users.id'), comment='기부자 ID')
+    party_user = relationship("User")
+    ot1_join = Column(Boolean, default=False, comment='1차 OT 참석 여부',)
+    ot2_join = Column(Boolean, default=False, comment='2차 OT 참석 여부')
+    party_join = Column(Boolean, default=False, comment='뒤풀이 참석 여부')

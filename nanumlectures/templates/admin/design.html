@@ -1,5 +1,9 @@
 {% extends "admin/base.html" %}
 
+{% block css %}
+  <link rel="stylesheet" type="text/css" href="{{ url_for('public.static', filename='css/mobile-table.css') }}">
+{% endblock %}
+
 {% block content %}
     <div class="app-main-container container-fluid">
 
@@ -8,7 +12,7 @@
         <!-- Breadcrumbs-->
         <ol class="app-main-breadcrumb breadcrumb">
             <li class="app-main-breadcrumb-item breadcrumb-item">
-                <a class="app-main-breadcrumb-item__a" href="index.html">Admin</a>
+                <a class="app-main-breadcrumb-item__a" href="/admin">Admin</a>
             </li>
             <li class="app-main-breadcrumb-item--sub breadcrumb-item active">디자인 파일 관리</li>
         </ol>
@@ -16,7 +20,7 @@
         <!-- Page Content -->
         <div class="card mb-2">
             <div class="card-body">
-                <table class="table table-hover">
+                <table class="table table-hover is-responsive">
                     <thead>
                     <tr>
                         <th scope="col">#</th>

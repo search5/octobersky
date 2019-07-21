@@ -1,0 +1,111 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid" id="form">
+
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="/admin">Admin</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">물품 기부</li>
+        </ol>
+        <div class="app-main-card">
+            <!-- Page Content -->
+            <form class="app-main-form" >
+            <div class="form-group row">
+                <label for="roundtable_num" class="app-main-form__label col-sm-2 col-form-label">개최회차</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="booksYear" placeholder="개최회차를 입력하세요." v-model="roundtable_num" :class="valid.roundtable_num">
+                    <div class="invalid-feedback">개최회차는 올바르게 입력해주세요</div>
+                </div>
+            </div>
+            <div class="form-group row">
+              <label class="app-main-form__label col-sm-2 col-form-label">기부타입</label>
+              <div class="col-sm-10">
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="donation_type" id="donation_type1" value="A" v-model="donation_type">
+                  <label class="form-check-label" for="donation_type1">도서 기부</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="donation_type" id="donation_type2" value="B" v-model="donation_type">
+                  <label class="form-check-label" for="donation_type2">뒷풀이 기부</label>
+                </div>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label for="donation_goods_description" class="app-main-form__label col-sm-2 col-form-label">기부 항목</label>
+              <div class="col-sm-10">
+                <textarea class="form-control" id="donation_goods_description" placeholder="기부하실 항목을 간략히 입력해주세요" rows="10" v-model="donation_description"></textarea>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label for="donation_transport_type" class="app-main-form__label col-sm-2 col-form-label">물품 전송 수단</label>
+              <div class="col-sm-10">
+                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                  <label class="btn btn-outline-success" @click="donation_transport_type = 'A'">
+                    <input type="radio" name="donation_transport_type" autocomplete="off"> 택배, 방문 등으로 미리 전달하겠습니다
+                  </label>
+                  <label class="btn btn-outline-success" @click="donation_transport_type = 'B'">
+                    <input type="radio" name="donation_transport_type" autocomplete="off"> 뒷풀이 장소 등에 직접 가져갑니다
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label for="donation_transport_type" class="app-main-form__label col-sm-2 col-form-label">기부자</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control">
+              </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-10">
+                    <button type="button" class="btn btn-primary" @click.prevent="register">제출</button>
+                </div>
+            </div>
+        </form>
+        </div>
+    </div>
+    <script>
+        new Vue({
+            el: '#form',
+            data: {
+                roundtable_num: '',
+                donation_type: '',
+                donation_description: '',
+                donation_transport_type: '',
+                roundtable_range: {{ tuple(roundtable) | tojson }},
+                valid: {
+                    roundtable_num: ''
+                }
+            },
+            methods: {
+                register: function (e) {
+                    this.valid.roundtable_num = ''
+
+                    if (_.indexOf(this.roundtable_range, parseInt(this.roundtable_num)) === -1) {
+                        this.valid.roundtable_num = 'is-invalid'
+                        return false
+                    }
+
+                    axios.post('/admin/goods_donate/reg', {
+                      roundtable_num: this.roundtable_num,
+                      donation_type: this.donation_type,
+                      donation_description: this.donation_description,
+                      donation_transport_type: this.donation_transport_type
+                    }).then(function (e) {
+                      alert('기부 신청이 등록되었습니다')
+                      location.href = '/admin/goods_donate'
+                    })
+                }
+            }
+        })
+    </script>
+    <!-- /.container-fluid -->
+{% endblock %}

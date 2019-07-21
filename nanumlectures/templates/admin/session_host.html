@@ -1,5 +1,9 @@
 {% extends "admin/base.html" %}
 
+{% block css %}
+  <link rel="stylesheet" type="text/css" href="{{ url_for('public.static', filename='css/mobile-table.css') }}">
+{% endblock %}
+
 {% block content %}
     <div class="app-main-container container-fluid">
 
@@ -8,7 +12,7 @@
         <!-- Breadcrumbs-->
         <ol class="app-main-breadcrumb breadcrumb">
             <li class="app-main-breadcrumb-item breadcrumb-item">
-                <a class="app-main-breadcrumb-item__a" href="index.html">10월의 하늘</a>
+                <a class="app-main-breadcrumb-item__a" href="/admin">10월의 하늘</a>
             </li>
             <li class="app-main-breadcrumb-item--sub breadcrumb-item active">진행자 관리</li>
         </ol>
@@ -16,34 +20,36 @@
         <!-- Page Content -->
         <div class="card">
             <div class="card-body">
-                <table class="table table-hover">
-            <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">이름</th>
-                <th scope="col">도서관</th>
-                <th scope="col">개최회차</th>
-                <th scope="col">강연시간</th>
-                <th scope="col">확정여부</th>
-            </tr>
-            </thead>
-            <tbody>
-             {% for row in paginator %}
+              <table class="table table-hover is-responsive">
+                <thead>
                 <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">이름</th>
+                  <th scope="col">도서관</th>
+                  <th scope="col">개최회차</th>
+                  <th scope="col">강연시간</th>
+                  <th scope="col">확정여부</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for row in paginator %}
+                  <tr>
                     <th scope="row">{{ (total_cnt - (items_per_page * (page - 1))) - loop.index0 }}</th>
-                    <td><a href="{{ url_for('admin.session_host_view', host=row.id) }}">{{ row.host_name }}</a></td>
+                    <td><a
+                        href="{{ url_for('admin.session_host_view', host=row.id) }}">{{ row.host_name }}</a>
+                    </td>
                     <td>{{ row.library.library_name }}</td>
                     <td>{{ row.roundtable.roundtable_num }} 회차</td>
                     <td>{{ row.session_time + 1 }} 시</td>
-                     {% if row.host_use_yn == true %}
-                         <td>Y</td>
-                     {% else %}
-                         <td>N</td>
-                     {% endif  %}
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+                    {% if row.host_use_yn == true %}
+                      <td>확정</td>
+                    {% else %}
+                      <td>미확정</td>
+                    {% endif %}
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
             </div>
             <div class="card-footer">
                 <div class="row">

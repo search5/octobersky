@@ -1,8 +1,8 @@
 {% extends "admin/base.html" %}
 
 {% block script %}
-    <script src="//unpkg.com/vue"></script>
-    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -23,10 +23,9 @@
                     </div>
                 </div>
                 <div class="form-group row">
-                    <label for="inputLibraryName" class="app-main-form__label col-sm-1 col-form-label">도서관명</label>
+                    <label class="app-main-form__label col-sm-1 col-form-label">도서관명</label>
                     <div class="col-sm-10">
-                        <input type="text" readonly class="form-control-plaintext" id="inputLibraryName"
-                               value="{{ lecturer.library.library_name }}">
+                      <span class="form-control-plaintext"><a href="{{ url_for('admin.library_view', library=lecturer.library.id) }}">{{ lecturer.library.library_name }}</a></span>
                     </div>
                 </div>
                 <div class="form-group row">
@@ -59,10 +58,9 @@
                     </div>
                 </div>
                 <div class="form-group row">
-                    <label for="inputUser" class="app-main-form__label col-1 col-form-label">강연자명</label>
+                    <label class="app-main-form__label col-1 col-form-label">강연자명</label>
                     <div class="col-sm-5">
-                        <input type="text" id="inputUser"  value="{{ lecturer.lecture_name }}" readonly
-                               class="form-control-plaintext">
+                      <span class="form-control-plaintext"><a href="{{ url_for('admin.member_view', uid=lecturer.lecture_user.username) }}">{{ lecturer.lecture_name }}</a></span>
                     </div>
                     <label for="inputOrgnization" class="app-main-form__label col-1 col-form-label">소속</label>
                     <div class="col-sm-5">
@@ -80,6 +78,16 @@
                     <div class="col-sm-5">
                         <input type="text" id="inputEmail" readonly  value="{{ lecturer.lecture_email }}"
                                class="form-control-plaintext">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPhone" class="app-main-form__label col-1 col-form-label">추천도서 목록</label>
+                    <div class="col-sm-11">
+                      {% if vote_books %}
+		                    {{ vote_books.disp_book_info | safe }}
+                      {% else %}
+                        추천하신 도서가 없습니다.
+                      {% endif %}
                     </div>
                 </div>
                 <div class="checkbox">

@@ -1,7 +1,13 @@
 {% extends "public/base.html" %}
 
 {% block css %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('public.static', filename='css/mobile-table.css') }}">
+
     <style>
+        .app-main-wrapper {
+            height: calc(100vh - 56px);
+        }
+
         .card-table .card-body {
             padding: 0;
         }
@@ -66,7 +72,7 @@
 
   <ol class="app-main-breadcrumb breadcrumb">
     <li class="app-main-breadcrumb-item breadcrumb-item">
-      <a class="app-main-breadcrumb-item__a" href="index.html">Home</a>
+      <a class="app-main-breadcrumb-item__a" href="/">Home</a>
     </li>
     <li class="app-main-breadcrumb-item--sub breadcrumb-item active">소개</li>
     <li class="app-main-breadcrumb-item--sub breadcrumb-item active">언론 홍보</li>
@@ -83,9 +89,10 @@
               </div>
           </div>
           <div class="card-body">
-              <table class="table table-hover">
+              <table class="table table-hover is-responsive">
                   <thead>
                   <tr>
+                      <th>홍보유형</th>
                       <th>배부일자</th>
                       <th>제목</th>
                       <th>언론사</th>
@@ -99,11 +106,12 @@
                   <tbody>
                       {% for row in paginator %}
                           <tr>
+                            <td>{{ row.category | category_name }}</td>
                             <td>{{ row.press_date }}</td>
                             {% if row.category == 1 %}
                               <td><a href="{{ url_for('public.news_view', news=row.id) }}">{{ row.news_title }}</a></td>
                             {% else %}
-                              <td><a href="{{ row.news_link }}">{{ row.news_title }}</a></td>
+                              <td><a href="{{ row.news_link }}" target="_blank">{{ row.news_title }}</a></td>
                             {% endif %}
                             <td>{{ row.news_press }}</td>
                             <td>{{ row.writer.name }}</td>

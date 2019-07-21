@@ -10,7 +10,7 @@
 
     <ol class="app-main-breadcrumb breadcrumb">
       <li class="app-main-breadcrumb-item breadcrumb-item">
-        <a class="app-main-breadcrumb-item__a" href="index.html">Home</a>
+        <a class="app-main-breadcrumb-item__a" href="/">Home</a>
       </li>
       <li class="app-main-breadcrumb-item--sub breadcrumb-item active">기록</li>
       <li class="app-main-breadcrumb-item--sub breadcrumb-item active">도서</li>
@@ -25,10 +25,12 @@
                 {{ row.books_body }}<br>
                 {{ row.books_company }}<br>
                 {{ row.books_date }}<br>
-                교보: {{ row.books_bookshop['kyobo'] }}<br>
-                영풍: {{ row.books_bookshop['ypbook']}}<br>
-                yes24: {{ row.books_bookshop['yes24'] }}<br>
-                aladin: {{ row.books_bookshop['aladin'] }}<br>
+                <div class="btn-group">
+                  <a href="{{ row.books_bookshop['kyobo'] }}" target="_blank" class="btn btn-secondary">교보문고</a>
+                  <a href="{{ row.books_bookshop['ypbook']}}" target="_blank" class="btn btn-secondary">영풍문고</a>
+                  <a href="{{ row.books_bookshop['yes24'] }}" target="_blank" class="btn btn-secondary">YES24</a>
+                  <a href="{{ row.books_bookshop['aladin'] }}" target="_blank" class="btn btn-secondary">알라딘</a>
+                </div>
             </div>
         </li>
       {% endfor %}

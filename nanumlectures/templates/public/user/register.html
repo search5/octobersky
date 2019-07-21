@@ -1,7 +1,8 @@
 {% extends "public/base.html" %}
 
 {% block script %}
-    <script type="text/javascript" src="//unpkg.com/vue"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
 {% endblock %}
 
 {% block footer_script %}
@@ -16,25 +17,58 @@
             email: '',
             phone: '',
             agree: false,
-            validated: true
+            validated: true,
+            msg: {
+                id_error: '10월의 하늘에 로그인 하실때 사용할 ID를 입력하셔야 합니다.'
+            }
         },
         computed: {
             errors: function () {
                 let password_isvalid = this.pw === this.repw
 
+                this.msg.id_error = '10월의 하늘에 로그인 하실때 사용할 ID를 입력하셔야 합니다.'
+
+                if (this.id.indexOf('@') > 0 ) {
+                  this.msg.id_error = '아이디는 이메일을 사용하실 수 없습니다'
+                }
+
+                var valid_id_regex = /[a-zA-Z0-9_-]+/
+
+                if (!valid_id_regex.test(this.id)) {
+                    this.msg.id_error = '아이디는 영어와 숫자, 그리고 하이픈(-)과 밑줄(_)만 사용할 수 있습니다.'
+                }
+
                 return {
-                    name: { 'is-invalid': this.name === '' },
-                    id: { 'is-invalid': this.id === '' },
-                    pw: { 'is-invalid': this.pw === '' || (this.pw !== '' && !password_isvalid) },
-                    repw: { 'is-invalid': this.repw === '' ||  (this.repw !== '' && !password_isvalid) },
-                    agree: { 'is-invalid': this.agree === false }
+                    name: { 'is-invalid': _.trim(this.name) === '' },
+                    id: { 'is-invalid':  _.trim(this.id) === '' || this.id.indexOf('@') > 0 || !valid_id_regex.test(this.id) },
+                    pw: { 'is-invalid':  _.trim(this.pw) === '' || ( _.trim(this.pw) !== '' && !password_isvalid) },
+                    repw: { 'is-invalid':  _.trim(this.repw) === '' ||  ( _.trim(this.repw) !== '' && !password_isvalid) },
+                    agree: { 'is-invalid':  this.agree === false }
                 }
             }
         },
         methods: {
             register: function (e) {
-                this.validated = (this.name !== '' && this.id !== '' &&
-                    this.pw !== '' && this.repw !== '' && this.agree)
+                this.validated = ( _.trim(this.name) !== '' &&  _.trim(this.id) !== '' &&
+                     _.trim(this.pw) !== '' &&  _.trim(this.repw) !== '' &&  this.agree)
+
+                // ID 유효성 검증
+                if (this.id.indexOf('@') > 0 ) {
+                  this.validated = false
+                }
+
+                var valid_id_regex = /[a-zA-Z0-9_-]+/
+
+                if (!valid_id_regex.test(this.id)) {
+                    this.validated = false
+                }
+
+                this.name = _.trim(this.name)
+                this.id = _.trim(this.id)
+                this.pw = _.trim(this.pw)
+                this.repw = _.trim(this.repw)
+                this.email = _.trim(this.email)
+                this.phone = _.trim(this.phone)
 
                 if (this.validated) {
                     this.$refs.form.submit()
@@ -48,7 +82,7 @@
 {% block container %}
     <ol class="app-main-breadcrumb breadcrumb">
       <li class="app-main-breadcrumb-item breadcrumb-item">
-        <a class="app-main-breadcrumb-item__a" href="index.html">Home</a>
+        <a class="app-main-breadcrumb-item__a" href="/">Home</a>
       </li>
       <li class="app-main-breadcrumb-item--sub breadcrumb-item active">회원가입</li>
     </ol>
@@ -86,8 +120,7 @@
                         <div class="valid-feedback">
                           잘하셨어요 *^^*
                         </div>
-                        <div class="invalid-feedback">
-                            10월의 하늘에 로그인 하실때 사용할 ID를 입력하셔야 합니다.
+                        <div class="invalid-feedback" v-text="msg.id_error">
                         </div>
                     </div>
                 </div>

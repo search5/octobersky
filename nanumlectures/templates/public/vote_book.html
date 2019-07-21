@@ -1,0 +1,136 @@
+{% extends "public/base.html" %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('public.static', filename='css/mobile-table.css') }}">
+
+    <style>
+        .card-table .card-body {
+            padding: 0;
+        }
+
+        .card-table .card-body .table-bordered {
+            border-style: none;
+            margin: 0;
+        }
+
+        .card-table .card-body .table-bordered > thead > tr > th:first-of-type {
+            text-align: center;
+            width: 100px;
+        }
+
+        .card-table .card-body .table-bordered > thead > tr > th:last-of-type,
+        .card-table .card-body .table-bordered > tbody > tr > td:last-of-type {
+            border-right: 0px;
+        }
+
+        .card-table .card-body .table-bordered > thead > tr > th:first-of-type,
+        .card-table .card-body .table-bordered > tbody > tr > td:first-of-type {
+            border-left: 0px;
+        }
+
+        .card-table .card-body .table-bordered > tbody > tr:first-of-type > td {
+            border-bottom: 0px;
+        }
+
+        .card-table .card-body .table-bordered > thead > tr:first-of-type > th {
+            border-top: 0px;
+        }
+
+        .card-table .card-footer .pagination {
+            margin: 0;
+        }
+
+        /*
+        used to vertically center elements, may need modification if you're not using default sizes.
+        */
+        .card-table .card-footer .col {
+            line-height: 34px;
+            height: 34px;
+        }
+
+        .card-table .card-heading .col h3 {
+            line-height: 30px;
+            height: 30px;
+        }
+
+        .card-table .card-body .table-bordered > tbody > tr > td {
+            line-height: 34px;
+        }
+    </style>
+{% endblock %}
+
+{% block container %}
+  <!-- Page Heading/Breadcrumbs -->
+  <header class="app-main-header">
+      <h1 class="app-main-header__title">추천 도서</h1>
+  </header>
+
+
+  <ol class="app-main-breadcrumb breadcrumb">
+    <li class="app-main-breadcrumb-item breadcrumb-item">
+      <a class="app-main-breadcrumb-item__a" href="/">Home</a>
+    </li>
+    <li class="app-main-breadcrumb-item--sub breadcrumb-item active">기록</li>
+    <li class="app-main-breadcrumb-item--sub breadcrumb-item active">추천 도서</li>
+  </ol>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card mb-5">
+          <div class="card-header">
+              <div class="row">
+                  <div class="col col-xs-6">
+                      <h3 class="card-title">추천 도서(10회 특별)</h3>
+                  </div>
+              </div>
+          </div>
+          <div class="card-body">
+              <table class="table table-hover is-responsive">
+                  <thead>
+                  <tr>
+                      <th style="width: 25%;">도서1</th>
+                      <th>도서추천 이유</th>
+                      <th style="width: 16%;">도서2</th>
+                      <th style="width: 16%;">도서3</th>
+                      <th style="width: 16%;">기타 도서</th>
+                  </tr>
+                  </thead>
+                  <tfoot>
+                  <!-- Paging -->
+                  </tfoot>
+                  <tbody>
+                      {% for row in paginator %}
+                          <tr>
+                            <td>{{ row.book_info['book1'] }}</td>
+                            <td>{{ row.book_info['book1_desc'] }}</td>
+                            <td>{{ row.book_info['book2'] }}</td>
+                            <td>{{ row.book_info['book3'] }}</td>
+                            <td>{{ row.book_info['etc'] }}</td>
+                          </tr>
+                      {% endfor %}
+                  </tbody>
+              </table>
+          </div>
+          <div class="card-footer">
+            <div class="row">
+              <div class="col-10">
+                <nav>
+                  <ul class="pagination pagination-sm">
+                    {{ paginator.pager(
+                          dotdot_attr={'class':'spacer'},
+                          symbol_first='',
+                          symbol_last='',
+                          symbol_previous='<a href="#"><span>&laquo;</span></a>',
+                          symbol_next='<a href="#"><span>&raquo;</span></a>',
+                          link_tag=paginate_link_tag,
+                          url=page_url|safe) | safe }}
+                  </ul>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

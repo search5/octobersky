@@ -1,10 +1,10 @@
 {% extends "admin/base.html" %}
 
 {% block script %}
-    <script src="//unpkg.com/vue"></script>
-    <script src="//unpkg.com/lodash"></script>
-    <script src="//unpkg.com/moment@2.14.1/min/moment.min.js"></script>
-    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-select/2.6.0/vue-select.js"></script>
 {% endblock %}
 
@@ -121,6 +121,12 @@
                                         <option value="2">2</option>
                                         <option value="3">3</option>
                                     </select>
+                                    <select v-model="library_type" class="form-control" style="flex: 0.1">
+                                      <option value="일반">일반</option>
+                                      <option value="SF">SF</option>
+                                      <option value="장애인">장애인</option>
+                                      <option value="다문화">다문화</option>
+                                    </select>
                                     <div class="input-group-append">
                                         <button class="btn btn-info" @click.prevent="library_add">추가</button>
                                         <button class="btn btn-danger" @click.prevent="library_del">삭제</button>
@@ -173,7 +179,8 @@
           },
           options: [],
           library: '',
-          session_time: 2
+          session_time: 2,
+          library_type: '일반'
         },
         methods: {
           onSearch(search, loading) {
@@ -193,11 +200,13 @@
 
             this.record.library_list.push({
               library: this.library,
-              session_time: this.session_time
+              session_time: this.session_time,
+              library_type: this.library_type
             })
 
             this.library = ''
             this.session_time = 2
+            this.library_type = '일반'
           },
           library_select (e, index) {
             let tbody = e.target.parentElement.parentElement

@@ -1,4 +1,6 @@
 import paginate
+import requests
+from bs4 import BeautifulSoup
 from flask import request, url_for, render_template, jsonify, flash
 from flask.views import MethodView
 from flask_login import login_required
@@ -8,6 +10,7 @@ from sqlalchemy import desc
 from nanumlectures.common import is_admin_role, paginate_link_tag
 from nanumlectures.database import db_session
 from nanumlectures.models import Books, Roundtable
+from nanumlectures.settings import SOCIAL_AUTH_NAVER_KEY, SOCIAL_AUTH_NAVER_SECRET
 
 
 class BooksListView(MethodView):
@@ -28,7 +31,6 @@ class BooksListView(MethodView):
         page_url = url_for("admin.books")
         if search_word:
             page_url = url_for("admin.books", search_option=search_option, search_word=search_word)
-
             page_url = str(page_url) + "&page=$page"
         else:
             page_url = str(page_url) + "?page=$page"
@@ -58,7 +60,10 @@ class BooksRegView(MethodView):
     decorators = [is_admin_role, login_required]
 
     def get(self):
-        return render_template("admin/books_reg.html")
+        # 회차 정보만 모아오기(유효성 검증용)
+        roundtable = map(lambda x: x[0], db_session.query(Roundtable.roundtable_num))
+
+        return render_template("admin/books_reg.html", roundtable=roundtable)
 
     def post(self):
         req_json = request.get_json()
@@ -84,7 +89,10 @@ class BooksEditView(MethodView):
     decorators = [is_admin_role, login_required]
 
     def get(self, book):
-        return render_template("admin/books_edit.html", book=book)
+        # 회차 정보만 모아오기(유효성 검증용)
+        roundtable = map(lambda x: x[0], db_session.query(Roundtable.roundtable_num))
+
+        return render_template("admin/books_edit.html", book=book, roundtable=roundtable)
 
     def post(self, book):
         req_json = request.get_json()
@@ -113,3 +121,48 @@ class BooksDetailView(MethodView):
         db_session.delete(book)
 
         return jsonify(success=True)
+
+
+def date_simple_format(text):
+    return "{}-{}-{}".format(text[0:4], text[4:6], text[6:])
+
+
+class BookFindNaverAPI(MethodView):
+    decorators = [is_admin_role, login_required]
+
+    def get(self):
+
+        headers = {
+            'X-Naver-Client-Id': SOCIAL_AUTH_NAVER_KEY,
+            'X-Naver-Client-Secret': SOCIAL_AUTH_NAVER_SECRET
+        }
+
+        r = requests.get('https://openapi.naver.com/v1/search/book_adv.xml?d_isbn=' + request.args.get('isbn'),
+                         headers=headers)
+        book_info = BeautifulSoup(r.content.decode("utf-8"), "lxml")
+
+        link_aladin_req = requests.get(
+            "https://openapi.naver.com/v1/search/webkr.json?query={}".format("알라딘 " + request.args.get('isbn')),
+            headers=headers)
+        link_yes24_req = requests.get(
+            "https://openapi.naver.com/v1/search/webkr.json?query={}".format("예스24 " + request.args.get('isbn')),
+            headers=headers)
+        link_ypbooks_req = requests.get(
+            "https://openapi.naver.com/v1/search/webkr.json?query={}".format("영풍문고 " + request.args.get('isbn')),
+            headers=headers)
+
+        aladin_link = tuple(filter(lambda x: 'www.aladin.co.kr' in x["link"], link_aladin_req.json()["items"]))
+        yes24_link = tuple(filter(lambda x: 'www.yes24.com' in x["link"], link_yes24_req.json()["items"]))
+        ypbook_link = tuple(filter(lambda x: 'www.ypbooks.co.kr' in x["link"], link_ypbooks_req.json()["items"]))
+
+        return jsonify(title=book_info.find("item").title.text,
+            image=book_info.find("item").image.text,
+            author=book_info.find("item").author.text,
+            pubdate=date_simple_format(book_info.find("item").pubdate.text),
+            description=book_info.find("item").description.text,
+            publisher=book_info.find("item").publisher.text,
+            store_link=dict(
+                aladin=aladin_link and aladin_link[0]["link"],
+                yes24=yes24_link and yes24_link[0]["link"],
+                ypbook=ypbook_link and ypbook_link[0]["link"])
+        )

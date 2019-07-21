@@ -6,17 +6,17 @@
         <!-- Breadcrumbs-->
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
-            <a href="index.html">Dashboard</a>
+            <a href="/admin">Dashboard</a>
           </li>
           <li class="breadcrumb-item active">500 Error</li>
         </ol>
 
         <!-- Page Content -->
         <h1 class="display-1">500</h1>
-        <p class="lead">Page not found. You can
-          <a href="javascript:history.back()">go back</a>
-          to the previous page, or
-          <a href="index.html">return home</a>.</p>
+        <p class="lead">{{ error }}
+          <a href="javascript:history.back()">뒤로 가기</a>
+          하거나
+          <a href="/admin/roundtable/list">회차 목록</a>으로 이동할 수 있습니다.</p>
 
       </div>
       <!-- /.container-fluid -->

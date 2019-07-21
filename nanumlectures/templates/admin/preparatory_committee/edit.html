@@ -1,0 +1,65 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+  <script src="{{ url_for('admin.static', filename='js/summerNote.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid" id="form">
+
+        <!-- Breadcrumbs-->
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="/admin">10월의 하늘</a>
+            </li>
+            <li class="breadcrumb-item active">준비위 회의록</li>
+        </ol>
+
+        <!-- Page Content -->
+        <h1>언론 홍보 수정</h1>
+        <hr>
+        <form action="">
+            <div class="form-group row">
+                <label for="title" class="col-2">제목</label>
+                <div class="col-10">
+                    <input type="text" id="title" class="form-control" placeholder="기사 제목이 표시됩니다" v-model="title">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="editor" class="col-2">본문</label>
+                <div class="col-10">
+                    <summer-note id="editor" v-model="content" placeholder="보도자료인 경우 본문을 입력해주세요"></summer-note>
+                </div>
+            </div>
+        </form>
+        <div class="row">
+            <div class="col-12 text-right">
+                <button class="btn btn-primary" @click.prevent="modify">수정</button>
+            </div>
+        </div>
+    </div>
+   <script>
+    new Vue({
+        el: '#form',
+        data: {
+            title: '{{ board.title or '' }}',
+            content: '{{ board.content | safe or '' }}'
+        },
+        methods: {
+            modify: function (e) {
+                axios.post('/admin/board/{{ board.id }}/edit', {
+                    title: this.title,
+                    content: this.content
+                }).then(function (e) {
+                    alert('회의록 수정이 완료되었습니다')
+                    location.href = '/admin/board/{{ board.id }}'
+                })
+            }
+        }
+    })
+    </script>
+    <!-- /.container-fluid -->
+{% endblock %}

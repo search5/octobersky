@@ -1,9 +1,9 @@
 {% extends "admin/base.html" %}
 
 {% block script %}
-  <script src="//unpkg.com/vue"></script>
-  <script src="//unpkg.com/lodash"></script>
-  <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
   <script src="{{ url_for('admin.static', filename='js/summerNote.js') }}"></script>
 {% endblock %}
 
@@ -13,7 +13,7 @@
         <!-- Breadcrumbs-->
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
-                <a href="index.html">10월의 하늘</a>
+                <a href="/admin">10월의 하늘</a>
             </li>
             <li class="breadcrumb-item active">언론 홍보</li>
         </ol>
@@ -25,7 +25,7 @@
             <div class="form-group row">
                 <label for="newsCategory" class="col-2">구분</label>
                 <div class="col-4">
-                    <select class="form-control" id="newsCategory" v-model="category">
+                    <select class="form-control" id="newsCategory" v-model="pressCategory" @change="pressCategoryChange">
                         <option value="">언론보도 자료 구분을 선택하세요</option>
                         <option value="1">보도자료</option>
                         <option value="2">뉴스기사</option>
@@ -71,7 +71,7 @@
     new Vue({
         el: '#form',
         data: {
-            category: '{{ news.category or '' }}',
+            pressCategory: '{{ news.category or '' }}',
             pressDate: '{{ news.press_date }}',
             newsTitle: '{{ news.news_title or '' }}',
             newsPress: '{{ news.news_press or '' }}',
@@ -88,9 +88,14 @@
                     newsLink: this.newsLink,
                     newsBody: this.newsBody
                 }).then(function (e) {
-                    alert('언론홍보 등록이 완료되었습니다')
+                    alert('언론홍보 수정이 완료되었습니다')
                     location.href = '/admin/news/{{ news.id }}'
                 })
+            },
+            pressCategoryChange: function () {
+                if (this.pressCategory === '1') {
+                    this.newsPress = '10월의 하늘 준비위원회'
+                }
             }
         }
     })

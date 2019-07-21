@@ -1,8 +1,8 @@
 {% extends "admin/base.html" %}
 
 {% block script %}
-    <script src="//unpkg.com/vue"></script>
-    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -19,8 +19,15 @@
                 <div class="form-group row">
                     <label for="roundtableNum" class="app-main-form__label col-sm-2 col-form-label">개최회차</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control-plaintext" id="roundtableNum"
+                      <div class="input-group">
+                        <div class="input-group-prepend">
+                          <div class="input-group-text">
+                            <input type="checkbox" {% if round.is_active %}checked{% endif %} style="width: 20px;height: 20px;" onchange="active_check('{{ round.id }}', this)">
+                          </div>
+                        </div>
+                        <input type="text" class="form-control" id="roundtableNum"
                                value="{{ round.roundtable_num }}회차" readonly>
+                      </div>
                     </div>
                 </div>
                 <div class="form-group row">
@@ -47,7 +54,7 @@
                 <div class="form-group row">
                     <label class="app-main-form__label col-form-label col-sm-2 pt-0">도서관</label>
                     <div class="col-10">
-                        <div class="card">
+                        <div class="card" id="library_view_app">
                             <div class="card-body" style="height: 400px; overflow-y: auto">
                                 <table class="table table-hover">
                                     <thead>
@@ -57,16 +64,17 @@
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    {% for library_entry in round.library %}
-                                        <tr>
-                                            <td>{{ library_entry.library.library_name }}
-                                                ({{ library_entry.library.library_addr }})
-                                            </td>
-                                            <td>{{ library_entry.round_num }}</td>
-                                        </tr>
-                                    {% endfor %}
+                                    {% raw %}
+                                    <tr v-for="(item, index) in filtered_library" :key="index">
+                                        <td>{{ item.library.library_name }} ({{ item.library.library_addr }})</td>
+                                        <td>{{ item.round_num }}</td>
+                                    </tr>
+                                    {% endraw %}
                                     </tbody>
                                 </table>
+                            </div>
+                            <div class="card-footer">
+                                <input type="text" v-model="quick_find_library" class="form-control" placeholder="빠르게 찾기">
                             </div>
                         </div>
                     </div>
@@ -80,19 +88,47 @@
                     </div>
                 </div>
                 <script>
-                    new Vue({
-                        el: '#btn_app',
-                        methods: {
-                            delete_round: function (e) {
-                                if (confirm('삭제하시겠습니까? 되돌릴 수 없습니다')) {
-                                    axios.delete('/admin/roundtable/{{ round.id }}').then(function (e) {
-                                        alert('개최 회차를 성공적으로 삭제했습니다')
-                                        location.href = '/admin'
-                                    })
-                                }
-                            }
-                        }
+                  function active_check(roundtable_id, checkbox) {
+                    axios.post("/admin/roundtable/active", {roundtable_id: roundtable_id, checked: checkbox.checked}).then(function (resp) {
+                      if (checkbox.checked) {
+                        alert('지정하신 회차가 이번에 홈페이지에 보여줄 회차입니다. 다른 회차는 보여주지 않습니다')
+                      }
                     })
+                  }
+
+                  new Vue({
+                      el: '#btn_app',
+                      methods: {
+                          delete_round: function (e) {
+                              if (confirm('삭제하시겠습니까? 되돌릴 수 없습니다')) {
+                                  axios.delete('/admin/roundtable/{{ round.id }}').then(function (e) {
+                                      alert('개최 회차를 성공적으로 삭제했습니다')
+                                      location.href = '/admin'
+                                  })
+                              }
+                          }
+                      }
+                  })
+
+                  new Vue({
+                      el: '#library_view_app',
+                      data: {
+                          quick_find_library: '',
+                          opened_library: {{ opened_library | tojson }}
+                      },
+                      computed: {
+                          filtered_library: function () {
+                              if (this.quick_find_library !== '') {
+                                  var vm = this
+                                  return this.opened_library.filter(function (entry) {
+                                      return entry.library.library_name.indexOf(vm.quick_find_library) > -1
+                                  })
+                              } else {
+                                  return this.opened_library
+                              }
+                          }
+                      }
+                  })
                 </script>
             </form>
         </div>

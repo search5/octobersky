@@ -1,0 +1,188 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+  <script src="{{ url_for('admin.static', filename='js/summerNote.js') }}"></script>
+  <script src="{{ url_for('admin.static', filename='vendor/plupload/js/plupload.full.min.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+  <div class="app-main-container container-fluid">
+
+    <h4 class="app-main-breadcrumb__title">메일 보내기</h4>
+
+    <!-- Page Content -->
+    <div class="card" id="app">
+      <div class="card-body">
+        <div class="form-group row">
+          <div class="col-2"><span>받는 사람 타입</span></div>
+          <div class="col-10">
+            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+              <label class="btn btn-outline-success" @click="receive_type = 'A'" :class="{active: receive_type === 'A'}">
+                <input type="radio" name="receive_type" autocomplete="off"> 전체(도서관, 강연자, 진행자)
+              </label>
+              <label class="btn btn-outline-success" @click="receive_type = 'B'" :class="{active: receive_type === 'B'}">
+                <input type="radio" name="receive_type" autocomplete="off"> 도서관
+              </label>
+              <label class="btn btn-outline-success" @click="receive_type = 'C'" :class="{active: receive_type === 'C'}">
+                <input type="radio" name="receive_type" autocomplete="off"> 강연자
+              </label>
+              <label class="btn btn-outline-success" @click="receive_type = 'D'" :class="{active: receive_type === 'D'}">
+                <input type="radio" name="receive_type" autocomplete="off"> 진행자
+              </label>
+              <label class="btn btn-outline-success" @click="receive_type = 'E'" :class="{active: receive_type === 'E'}">
+                <input type="radio" name="receive_type" autocomplete="off"> 도서관 섭외
+              </label>
+              <label class="btn btn-outline-success" @click="receive_type = 'F'" :class="{active: receive_type === 'F'}">
+                <input type="radio" name="receive_type" autocomplete="off"> 별도 메일 전송(섭외, 양해 등)
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-2">지역구분</div>
+          <div class="col-10">
+            <select v-model="area" class="form-control" :disabled="receive_type === 'E' || receive_type === 'A' || receive_type === 'F'">
+              <option value="all">전체</option>
+              {% for item in area_opened_library %}
+              <option value="{{ item[0] }}">{{ item[0] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-2">받는 사람 주소</div>
+          <div class="col-10">
+            <input type="text" class="form-control" v-model="mail_addr" :disabled="receive_type !== 'E'" v-if="receive_type !== 'F'">
+            <textarea v-model="mail_addr" rows="6" class="form-control" v-if="receive_type === 'F'" placeholder="이름 <메일주소>"></textarea>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-2">메일 제목</div>
+          <div class="col-10">
+            <input type="text" class="form-control" v-model="mail_subject">
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-2">메일 본문</div>
+          <div class="col-10">
+            <summer-note v-model="mail_content" placeholder="메일 내용을 입력해주세요"></summer-note>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-2">첨부파일</div>
+          <div class="col-10">
+            <div id="filelist" class="border">
+              {% raw %}
+              <div :id="file.id" v-for="file in upload_files">
+                {{ file.name }} ( {{ formatSize(file.size) }} )
+                <b></b> <!-- b는 업로드 진행률이 표시됨 -->
+                <a href="#" @click="remove_file(file)">
+                  <span class="text-danger">[지우기]</span>
+                </a>
+              </div>
+              {% endraw %}
+            </div>
+            <br>
+            <div id="container">
+              <a id="pickfiles" href="javascript:;">[파일 선택하기]</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-primary" @click.prevent="mail_send">메일 보내기</button>
+      </div>
+    </div>
+    <script>
+      var app_mail_sender = new Vue({
+        el: '#app',
+        data: {
+          receive_type: 'A',
+          area: 'all',
+          mail_addr: '',
+          mail_subject: '',
+          mail_content: '',
+          uploader: null,
+          upload_files: [],
+          editor_instance: false
+        },
+        methods: {
+          mail_send: function () {
+            var vm = this
+
+            if (!confirm('메일을 전송하시면 되돌릴 수 없습니다. 주의하세요')) {
+              return false
+            }
+
+            axios.post('/admin/mail/send', {
+              receive_type: this.receive_type,
+              area: this.area,
+              mail_addr: this.mail_addr,
+              mail_subject: this.mail_subject,
+              mail_content: this.mail_content,
+              uploaded_file_cnt: this.upload_files.length
+            }).then(function (resp) {
+              // 첨부파일 업로드 시작
+              vm.uploader.setOption({
+                  multipart_params: {
+                      mail_id: resp.data.mail_id,
+                  }
+              })
+              vm.uploader.start();
+            })
+          },
+          remove_file: function (file) {
+            this.upload_files = _.filter(this.upload_files, function(entry) {
+            return entry.id !== file.id;
+            });
+
+            this.uploader.removeFile(file)
+          },
+          formatSize: function (file_size) {
+            return plupload.formatSize(file_size)
+          }
+        },
+        mounted: function () {
+          var vm = this
+
+          this.uploader = new plupload.Uploader({
+            runtimes: 'html5,html4',
+            browse_button: 'pickfiles', // you can pass in id...
+            container: document.getElementById('container'), // ... or DOM Element itself
+            url: "/admin/mail/attach",
+            chunk_size: '1mb',
+            multipart_params: {j: 'J Minalee'},
+            filters: {
+                max_file_size: '10mb'
+            },
+            init: {
+              FilesAdded: function (up, files) {
+                plupload.each(files, function (file) {
+                  vm.upload_files.push(file)
+                });
+              },
+              UploadProgress: function (up, file) {
+                document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = '<span>' + file.percent + "%</span>";
+              },
+              Error: function (up, err) {
+                alert(err.code + ": " + err.message);
+              },
+              UploadComplete: function (uploader, files) {
+                alert('메일 전송 완료')
+                location.reload()
+              },
+              StateChanged: function (uploader) {
+              }
+            }
+          });
+
+          this.uploader.init();
+        }
+      })
+    </script>
+  </div>
+  <!-- /.container-fluid -->
+{% endblock %}

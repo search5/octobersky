@@ -1,0 +1,270 @@
+{% extends "public/base.html" %}
+
+{% block css %}
+    <style type="text/css">
+    .bd-highlight {
+        border: dotted 0.5px #FFFCFC;
+        color: #ffffff;
+    }
+
+    .map.wrap {
+      position: absolute;
+      left: 0;
+      bottom: 40px;
+      width: 288px;
+      height: 132px;
+      margin-left: -144px;
+      text-align: left;
+      overflow: hidden;
+      font-size: 12px;
+      font-family: 'Malgun Gothic', dotum, '돋움', sans-serif;
+      line-height: 1.5;
+    }
+
+    .map.wrap * {
+      padding: 0;
+      margin: 0;
+    }
+
+    .map.wrap .info {
+      width: 286px;
+      height: 120px;
+      border-radius: 5px;
+      border-bottom: 2px solid #ccc;
+      border-right: 1px solid #ccc;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .map.wrap .info:nth-child(1) {
+      border: 0;
+      box-shadow: 0px 1px 2px #888;
+    }
+
+    .map.info .title {
+      padding: 5px 0 0 10px;
+      height: 30px;
+      background: #eee;
+      border-bottom: 1px solid #ddd;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .map.info .close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: #888;
+      width: 17px;
+      height: 17px;
+      background: url('http://t1.daumcdn.net/localimg/localimages/07/mapapidoc/overlay_close.png');
+    }
+
+    .map.info .close:hover {
+      cursor: pointer;
+    }
+
+    .map.info .body {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .map.info .desc {
+      position: relative;
+      margin: 13px 0 0 10px;
+      height: 75px;
+      overflow-x: auto;
+    }
+
+    .map.desc .ellipsis {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .map.desc .jibun {
+      font-size: 11px;
+      color: #888;
+      margin-top: -2px;
+    }
+
+    .map.info .img {
+      position: absolute;
+      top: 6px;
+      left: 5px;
+      width: 73px;
+      height: 71px;
+      border: 1px solid #ddd;
+      color: #888;
+      overflow: hidden;
+    }
+
+    .map.info:after {
+      content: '';
+      position: absolute;
+      margin-left: -12px;
+      left: 50%;
+      bottom: 0;
+      width: 22px;
+      height: 12px;
+      background: url('http://t1.daumcdn.net/localimg/localimages/07/mapapidoc/vertex_white.png')
+    }
+
+    .map.info .link {
+      color: #5085BB;
+    }
+
+    .area_width {
+      width: 25%
+    }
+
+    /* LG V30(portait) */
+    @media (min-width: 360px) and (orientation: portrait) {
+      .area_width {
+        width: 50% !important;
+      }
+    }
+
+    /* iPhone 5/SE */
+    @media (min-width: 320px) and (orientation: portrait) {
+      .area_width {
+        width: 50% !important;
+      }
+    }
+
+    /* iPad */
+    @media (min-width: 768px) and (orientation: portrait) {
+      .area_width {
+        width: 25% !important;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block script %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_key }}&libraries=services,clusterer"></script>
+{% endblock %}
+
+{% block container %}
+    <!-- Page Heading/Breadcrumbs -->
+    <header class="app-main-header">
+        <h1 class="app-main-header__title">참여 도서관</h1>
+    </header>
+
+    <ol class="app-main-breadcrumb breadcrumb">
+        <li class="app-main-breadcrumb-item breadcrumb-item">
+            <a class="app-main-breadcrumb-item__a" href="/">Home</a>
+        </li>
+        <li class="app-main-breadcrumb-item--sub breadcrumb-item active">기부참여</li>
+        <li class="app-main-breadcrumb-item--sub breadcrumb-item active">참여 도서관</li>
+    </ol>
+
+    <div class="bg-success d-flex flex-wrap">
+        <div class="p-2 area_width">
+          <a href="{{ url_for('public.lecture_library_map', area="all") }}" style="color: white;">전체</a>
+        </div>
+      {% for item in area %}
+        <div class="p-2 area_width"><a href="{{ url_for('public.lecture_library_map', area=item["name"]) }}" style="color: white;">{{ library_short2long(item) }} {{ item["statics"] }}</a></div>
+      {% endfor %}
+    </div>
+
+    <dl class="row mt-5" id="app">
+      <div id="map" style="width: 1098px;height: 700px;margin-left: 16px;"></div>
+    </dl>
+
+    <script>
+    function closeOverlay(library_id) {
+        modal_app.library_overlay[library_id].setMap(null);
+    }
+
+    var modal_app = new Vue({
+        el: '#app',
+        data: {
+            library: {{ library | tojson }},
+            library_overlay: {}
+        },
+        methods: {
+
+        },
+        mounted: function () {
+            var container = document.getElementById('map');
+            var options = {
+              center: new daum.maps.LatLng(35.89825343431769, 127.87159501176129),
+              level: 13
+            };
+
+            var map = new daum.maps.Map(container, options);
+
+            // 지도 확대 축소를 제어할 수 있는  줌 컨트롤을 생성합니다
+            var zoomControl = new daum.maps.ZoomControl();
+            map.addControl(zoomControl, daum.maps.ControlPosition.RIGHT);
+
+            // 마커 클러스터러를 생성합니다
+            var clusterer = new daum.maps.MarkerClusterer({
+                map: map, // 마커들을 클러스터로 관리하고 표시할 지도 객체
+                averageCenter: true, // 클러스터에 포함된 마커들의 평균 위치를 클러스터 마커 위치로 설정
+                minLevel: 6 // 클러스터 할 최소 지도 레벨
+            });
+
+            // 커스텀 오버레이에 표시할 컨텐츠 입니다
+            // 커스텀 오버레이는 아래와 같이 사용자가 자유롭게 컨텐츠를 구성하고 이벤트를 제어할 수 있기 때문에
+            // 별도의 이벤트 메소드를 제공하지 않습니다
+            var content = '<div class="map wrap">' +
+                        '    <div class="map info">' +
+                        '        <div class="title">' +
+                        '            <%= library_name %>' +
+                        '            <div class="close" onclick="closeOverlay(<%= library_id %>)" title="닫기"></div>' +
+                        '        </div>' +
+                        '        <div class="body">' +
+                        '            <div class="desc">' +
+                        '                <div class="ellipsis"><%= library_addr %></div>' +
+                        '                <div class="ellipsis">(T) <%= library_tel %></div>' +
+                        '                <div><a href="<%= homepage %>" target="_blank" class="link"><%= homepage %></a></div>' +
+                        '            </div>' +
+                        '        </div>' +
+                        '    </div>' +
+                        '</div>';
+
+            // 마커 위에 커스텀오버레이를 표시합니다
+            // 마커를 중심으로 커스텀 오버레이를 표시하기위해 CSS를 이용해 위치를 설정했습니다
+            /**/
+
+            var vm = this // Vue Instance
+
+            var markers = _.map(this.library, function (entry) {
+                var lib_latlang = new daum.maps.LatLng(entry.lat, entry.long)
+                var marker = new daum.maps.Marker({ position: lib_latlang });
+
+                // 마커에 대한 오버레이를 생성해둔다.
+                var library_info = _.template(content)
+                var filled_library = library_info({
+                  'library_name': entry.library_name,
+                  'library_id': entry.id,
+                  'library_addr': entry.addr,
+                  'library_tel': entry.tel,
+                  'homepage': entry.homepage
+                })
+
+                vm.library_overlay[entry.id] = new daum.maps.CustomOverlay({
+                    content: filled_library,
+                    position: marker.getPosition()
+                })
+
+                // 마커를 클릭했을 때 커스텀 오버레이를 표시합니다
+                daum.maps.event.addListener(marker, 'click', function () {
+                    vm.library_overlay[entry.id].setMap(map);
+                });
+
+                //marker.setMap(map);
+                return marker
+            })
+
+            // 클러스터러에 마커들을 추가합니다
+            clusterer.addMarkers(markers)
+        }
+    })
+    </script>
+{% endblock %}

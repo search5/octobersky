@@ -1,8 +1,9 @@
 {% extends "admin/base.html" %}
 
 {% block script %}
-    <script src="//unpkg.com/vue"></script>
-    <script src="//unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -11,7 +12,7 @@
         <!-- Breadcrumbs-->
         <ol class="app-main-breadcrumb breadcrumb">
             <li class="app-main-breadcrumb-item breadcrumb-item">
-                <a class="app-main-breadcrumb-item__a" href="index.html">Admin</a>
+                <a class="app-main-breadcrumb-item__a" href="/admin">Admin</a>
             </li>
             <li class="app-main-breadcrumb-item--sub breadcrumb-item active">도서 등록</li>
         </ol>
@@ -21,7 +22,8 @@
             <div class="form-group row">
                 <label for="roundtable_num" class="app-main-form__label col-sm-2 col-form-label">개최회차</label>
                 <div class="col-sm-10">
-                    <input type="text" class="form-control" id="booksYear" placeholder="개최회차를 입력하세요." v-model="roundtable_num">
+                    <input type="text" class="form-control" id="booksYear" placeholder="개최회차를 입력하세요." v-model="roundtable_num" :class="valid.roundtable_num">
+                    <div class="invalid-feedback">개최회차는 올바르게 입력해주세요</div>
                 </div>
             </div>
             <div class="form-group row">
@@ -39,7 +41,12 @@
             <div class="form-group row">
                 <label for="booksISBN" class="app-main-form__label col-sm-2 col-form-label">ISBN</label>
                 <div class="col-sm-10">
-                    <input type="text" class="form-control" id="booksISBN" placeholder="도서 ISBN을 입력하세요" v-model="booksISBN">
+                    <div class="input-group">
+                      <input type="text" class="form-control" id="booksISBN" placeholder="도서 ISBN을 입력하세요" v-model="booksISBN">
+                      <div class="input-group-append">
+                        <button class="btn btn-info" @click.prevent="find_book_info">도서정보 찾기</button>
+                      </div>
+                    </div>
                 </div>
             </div>
             <div class="form-group row">
@@ -108,10 +115,21 @@
                     ypbook: '',
                     yes24: '',
                     aladin: ''
+                },
+                roundtable_range: {{ tuple(roundtable) | tojson }},
+                valid: {
+                    roundtable_num: ''
                 }
             },
             methods: {
                 register: function (e) {
+                    this.valid.roundtable_num = ''
+
+                    if (_.indexOf(this.roundtable_range, parseInt(this.roundtable_num)) === -1) {
+                        this.valid.roundtable_num = 'is-invalid'
+                        return false
+                    }
+
                     axios.post('/admin/books/reg', {
                         roundtable_num: this.roundtable_num,
                         booksTitle: this.booksTitle,
@@ -124,6 +142,26 @@
                     }).then(function (e) {
                         alert('도서 등록이 완료되었습니다')
                         location.href = '/admin/books'
+                    })
+                },
+                find_book_info: function () {
+                    if (this.booksISBN.length === 0) {
+                       alert('검색할 도서의 ISBN 정보를 입력해주세요')
+                       return
+                    }
+
+                    var vm = this
+
+                    axios.get('/admin/books/find/naver', { params: { isbn: this.booksISBN } }).then(function (resp) {
+                        vm.booksTitle = resp.data.title
+                        vm.booksLink = resp.data.image
+                        vm.booksDate = resp.data.pubdate
+                        vm.booksCompany = resp.data.publisher
+                        vm.booksBody = resp.data.description + "\n" + resp.data.author
+                        vm.shopLink.kyobo = 'http://www.kyobobook.co.kr/product/detailViewKor.laf?barcode=' + vm.booksISBN
+                        vm.shopLink.ypbook = resp.data.store_link.ypbook
+                        vm.shopLink.yes24 = resp.data.store_link.yes24
+                        vm.shopLink.aladin = resp.data.store_link.aladin
                     })
                 }
             }

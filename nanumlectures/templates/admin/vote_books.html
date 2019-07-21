@@ -1,0 +1,104 @@
+{% extends "admin/base.html" %}
+
+{% block script %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+{% endblock %}
+
+{% block css %}
+  <link rel="stylesheet" type="text/css" href="{{ url_for('public.static', filename='css/mobile-table.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="app-main-container container-fluid">
+
+        <h4 class="app-main-breadcrumb__title">추천 도서 관리</h4>
+
+        <!-- Breadcrumbs-->
+        <ol class="app-main-breadcrumb breadcrumb">
+            <li class="app-main-breadcrumb-item breadcrumb-item">
+                <a class="app-main-breadcrumb-item__a" href="/admin">Admin</a>
+            </li>
+            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">추천 도서 관리</li>
+        </ol>
+
+        <!-- Page Content -->
+        <div class="card mb-2">
+            <div class="card-body">
+                <table class="table table-hover is-responsive">
+                    <thead>
+                    <tr>
+                        <th scope="col" style="width: 7%;">#</th>
+                        <th scope="col" style="width: 8%;">개최회차</th>
+                        <th scope="col" style="width: 8%;">강연자</th>
+                        <th scope="col">도서 정보</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                     {% for row in paginator %}
+                        <tr>
+                            <th scope="row">{{ (total_cnt - (items_per_page * (page - 1))) - loop.index0 }}</th>
+                            <td>{{ row.roundtable.roundtable_num }}회차</td>
+                            <td>{{ row.lecture_user.name }}</td>
+                            <td>
+                              {{ row.disp_book_info | safe }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col-6">
+                        <nav>
+                            <ul class="pagination justify-content-start">
+                                  {{ paginator.pager(
+                                       dotdot_attr={'class':'spacer'},
+                                       symbol_first='',
+                                       symbol_last='',
+                                       symbol_previous='<a href="#"><span>&laquo;</span></a>',
+                                       symbol_next='<a href="#"><span>&raquo;</span></a>',
+                                       link_tag=paginate_link_tag,
+                                       url=page_url|safe) | safe }}
+                            </ul>
+                        </nav>
+                    </div>
+                    {% set error_stack = namespace() %}
+                    {% with messages = get_flashed_messages() %}
+                      {% if messages %}
+                          {% for message in messages %}
+                            {% set error_stack.class = 'is-invalid' %}
+                            {% set error_stack.msg = message %}
+                          {% endfor %}
+                      {% endif %}
+                    {% endwith %}
+                    <div class="col-4">
+                      <form action="{{ url_for('admin.books') }}" method="get">
+                        <input type="hidden" name="page" value="{{ page }}">
+                        <div class="input-group">
+                          <div class="input-group-preped">
+                            <select class="form-control" name="search_option">
+                              <option value="roundtable_num">개최회차</option>
+                            </select>
+                          </div>
+                          <input type="text" class="form-control {{ error_stack.class }}" placeholder="검색어를 입력하세요" name="search_word">
+                          <div class="input-group-append">
+                            <button class="btn btn-success" type="submit">검색하기</button>
+                          </div>
+                          <div class="invalid-feedback">
+                            {{ error_stack.msg }}
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                    <div class="col-2 text-right">
+                        <a href="{{ url_for('admin.vote_books_csv') }}" class="btn btn-primary">다운로드</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /.container-fluid -->
+{% endblock %}

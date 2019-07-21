@@ -12,125 +12,187 @@
 
         <div class="app-main-card" id="form">
             <form class="app-main-form">
-                    <div class="form-group row">
-                        <label class="app-main-form__label col-sm-2 col-form-label">도서관명</label>
-                        <div class="col-sm-10">
-                            <div class="row">
-                                <div class="col-12">
-                                    <input type="text" readonly class="form-control-plaintext"
-                                           value="{{ library.library_name }}">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <label for="libraryAddr" class="app-main-form__label col-sm-2 col-form-label">도서관 주소</label>
-                        <div class="col-sm-10">
-                            <input type="text" readonly class="form-control-plaintext" id="libraryAddr" placeholder="도서관 주소를 입력하세요"
-                                   value="{{ library.library_addr }}">
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <label class="app-main-form__label col-sm-2 col-form-label">사서명</label>
-                        <div class="col-sm-2">
-                            <input type="text" readonly class="form-control-plaintext"
-                                   value="{{ library.manager_name or '' }}">
-                        </div>
-                        <label class="app-main-form__label col-sm-2 col-form-label">대표전화</label>
-                        <div class="col-sm-2">
-                            <input type="text" readonly class="form-control-plaintext"
-                                   value="{{ library.library_tel or '' }}">
-                        </div>
-                        <label class="app-main-form__label col-sm-2 col-form-label">휴대전화</label>
-                        <div class="col-sm-2">
-                            <input type="text" readonly class="form-control-plaintext" value="{{ library.manager_hp or '' }}">
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <label class="app-main-form__label col-sm-2 col-form-label">팩스</label>
-                        <div class="col-sm-2">
-                            <input type="text" readonly class="form-control-plaintext"
-                                   value="{{ library.library_fax or '' }}">
-                        </div>
-                        <label class="app-main-form__label col-sm-2 col-form-label">홈페이지</label>
-                        <div class="col-sm-6">
-                            <input type="text" readonly class="form-control-plaintext"
-                                   value="{{ library.library_homepage or '' }}">
-                        </div>
-                    </div>
-                    <fieldset class="form-group">
+                <div class="form-group row">
+                    <label class="app-main-form__label col-sm-2 col-form-label">도서관명</label>
+                    <div class="col-sm-10">
                         <div class="row">
-                            <label class="app-main-form__label col-form-label col-md-2 pt-0">도서관 위치</label>
-                            <div class="col-md-10 col-sm-12">
-                                <div style="width: 100%;height: 300px; border: solid 1px grey; background-color: #f5b7b1;"
-                                     id="map">
-                                    여기에 지도를 배치하세요
-                                </div>
-                                <script type="text/javascript"
-                                        src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_key }}"></script>
-                                <script>
-                                    var container = document.getElementById('map');
-                                    var options = {
-                                        center: new daum.maps.LatLng({{ library.lat }}, {{ library.long }}),
-                                        level: 3
-                                    };
-
-                                    var map = new daum.maps.Map(container, options);
-                                    var marker = new daum.maps.Marker({
-                                        map: map,
-                                        position: new daum.maps.LatLng({{ library.lat }}, {{ library.long }})
-                                    });
-                                    marker.setMap(map);
-                                </script>
+                            <div class="col-12">
+                                <input type="text" readonly class="form-control-plaintext"
+                                       value="{{ library.library_name }}">
                             </div>
                         </div>
-                    </fieldset>
-                    <div class="form-group row">
-                        <label class="app-main-form__label col-sm-2 col-form-label">강연장 정보</label>
-                        <div class="col-sm-10">
-                            <textarea readonly class="form-control-plaintext"
-                                      style="height:170px;border: solid 1px #b3d7ff">{{ library.library_description or '' }}</textarea>
-                        </div>
                     </div>
-                    <div class="form-group row">
-                        <label class="app-main-form__label col-sm-2 col-form-label">예상청중</label>
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" value="{{ library.expected_audience or '' }}">
-                        </div>
+                </div>
+                <div class="form-group row">
+                    <label for="libraryAddr" class="app-main-form__label col-sm-2 col-form-label">도서관 주소</label>
+                    <div class="col-sm-10">
+                        <input type="text" readonly class="form-control-plaintext" id="libraryAddr" placeholder="도서관 주소를 입력하세요"
+                               value="{{ library.library_addr }}">
                     </div>
+                </div>
+                <div class="form-group row">
+                    <label class="app-main-form__label col-sm-2 col-form-label">사서명</label>
+                    <div class="col-sm-4">
+                        <input type="text" readonly class="form-control-plaintext"
+                               value="{{ library.manager_name or '' }}">
+                    </div>
+                    <label class="app-main-form__label col-sm-2 col-form-label">사서 이메일 주소</label>
+                    <div class="col-sm-4">
+                        <input type="text" readonly class="form-control-plaintext"
+                               value="{{ library.manager_email or '' }}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="managerDescription" class="app-main-form__label col-sm-2 col-form-label">사서 선생님 직함</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control-plaintext" readonly id="managerDescription" placeholder="사서 선생님 직함을 입력하세요" value="{{ library.manager_description or '' }}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="app-main-form__label col-sm-2 col-form-label">대표전화</label>
+                    <div class="col-sm-4">
+                        <input type="text" readonly class="form-control-plaintext"
+                               value="{{ library.library_tel or '' }}">
+                    </div>
+                    <label class="app-main-form__label col-sm-2 col-form-label">휴대전화</label>
+                    <div class="col-sm-4">
+                        <input type="text" readonly class="form-control-plaintext" value="{{ library.manager_hp or '' }}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="app-main-form__label col-sm-2 col-form-label">팩스</label>
+                    <div class="col-sm-4">
+                        <input type="text" readonly class="form-control-plaintext"
+                               value="{{ library.library_fax or '' }}">
+                    </div>
+                    <label class="app-main-form__label col-sm-2 col-form-label">홈페이지</label>
+                    <div class="col-sm-4">
+                        <a href="{{ library.library_homepage or '#' }}" target="_blank">{{ library.library_homepage or '' }}</a>
+                    </div>
+                </div>
+                <fieldset class="form-group">
                     <div class="row">
-                        <div class="col-12 text-right">
-                            <a href="{{ url_for('admin.library_edit', library=library.id) }}"
-                               class="btn btn-warning">수정</a>
-                        </div>
-                    </div>
-                    <hr style="border-top: 3px double #8c8b8b;">
-                    <div class="form-group row">
-                        <div class="col-12">
-                            <h5>참여 기록</h5>
-                            <table class="table table-hover">
-                                <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>회차</th>
-                                    <th>연도</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for entry in library.roundtable %}
-                                <tr>
-                                    <td>{{ loop.index }}</td>
-                                    <td>{{ entry.roundtable.roundtable_num }}</td>
-                                    <td>{{ entry.roundtable.roundtable_year }}</td>
-                                </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </form>
-        </div>
+                        <label class="app-main-form__label col-form-label col-md-2 pt-0">도서관 위치</label>
+                        <div class="col-md-10 col-sm-12">
+                            <div style="width: 100%;height: 300px; border: solid 1px grey; background-color: #f5b7b1;"
+                                 id="map">
+                                여기에 지도를 배치하세요
+                            </div>
+                            <script type="text/javascript"
+                                    src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_key }}"></script>
+                            <script>
+                                var container = document.getElementById('map');
+                                var options = {
+                                    center: new daum.maps.LatLng({{ library.lat }}, {{ library.long }}),
+                                    level: 3
+                                };
 
+                                var map = new daum.maps.Map(container, options);
+                                var marker = new daum.maps.Marker({
+                                    map: map,
+                                    position: new daum.maps.LatLng({{ library.lat }}, {{ library.long }})
+                                });
+                                marker.setMap(map);
+                            </script>
+                        </div>
+                    </div>
+                </fieldset>
+                <div class="form-group row">
+                    <label class="app-main-form__label col-sm-2 col-form-label">예상청중</label>
+                    <div class="col-sm-6">
+                        <input type="text" class="form-control-plaintext" value="{{ library.expected_audience or '' }}" readonly>
+                    </div>
+                    <label class="app-main-form__label col-sm-2 col-form-label">예상인원</label>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control-plaintext" value="{{ library.expected_listens or '' }}" readonly>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="prProduction" class="app-main-form__label col-sm-2 col-form-label">홍보물 제작 계획</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control-plaintext" id="prProduction" value="{{ library.pr_production or '' }}">
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="libraryPlace" class="app-main-form__label col-sm-2 col-form-label">강연장</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control-plaintext" id="libraryPlace" value="{{ library.library_place or '' }}" readonly>
+                    </div>
+                    <label for="placeSeats" class="app-main-form__label col-sm-2 col-form-label">강연장 좌석 수</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control-plaintext" id="placeSeats" value="{{ library.place_seats or '' }}" readonly>
+                    </div>
+                </div>
+                <div class="form-group row">
+                  <label for="projector_screen" class="app-main-form__label col-sm-2 col-form-label">빔프로젝터+스크린</label>
+                  <div class="col-sm-2">
+                    {{ library.projector_screen | retention }}
+                  </div>
+                  <label for="projector_notebook" class="app-main-form__label col-sm-2 col-form-label">빔프로젝터에 연결된 노트북</label>
+                  <div class="col-sm-2">
+                    {{ library.projector_notebook | retention }}
+                  </div>
+                  <label for="sound_equipment" class="app-main-form__label col-sm-2 col-form-label">음향(마이크. 스피커)</label>
+                  <div class="col-sm-2">
+                    {{ library.sound_equipment | retention }}
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="camcorder_yn" class="app-main-form__label col-sm-2 col-form-label">캠코더 보유 유무</label>
+                  <div class="col-sm-2">
+                    {{ library.camcorder_yn | retention }}
+                  </div>
+                  <label for="lecture_video_recording_yn" class="app-main-form__label col-sm-2 col-form-label">강연 촬영 & 영상 공개</label>
+                  <div class="col-sm-2">
+                    {{ library.lecture_video_recording_yn | public }}
+                  </div>
+                  <label for="coordinate_photography_yn" class="app-main-form__label col-sm-2 col-form-label">촬영 협조 가능</label>
+                  <div class="col-sm-2">
+                    {{ library.coordinate_photography_yn | possible }}
+                  </div>
+                </div>
+                <div class="form-group row">
+                    <label for="camcorder_yn" class="app-main-form__label col-sm-2 col-form-label">인터넷 가능 여부</label>
+                    <div class="col-sm-2">
+                      {{ library.internet_yn | retention }}
+                    </div>
+                    <label for="etc_equipment" class="app-main-form__label col-sm-2 col-form-label">기타 보유</label>
+                    <div class="col-sm-6">
+                        <input type="text" class="form-control-plaintext" readonly id="etc_equipment" placeholder="기타 보유 물품을 입력하세요" value="{{ library.etc_equipment or '' }}">
+                    </div>
+                </div>
+                <div class="row">
+                  <div class="col-12 text-right">
+                      <a href="{{ url_for('admin.library_edit', library=library.id) }}" class="btn btn-warning">수정</a>
+                  </div>
+                </div>
+                <hr style="border-top: 3px double #8c8b8b;">
+                <div class="form-group row">
+                    <div class="col-12">
+                        <h5>참여 기록</h5>
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>회차</th>
+                                <th>연도</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for entry in library.roundtable %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ entry.roundtable.roundtable_num }}</td>
+                                <td>{{ entry.roundtable.roundtable_year }}</td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
     <!-- /.container-fluid -->
 {% endblock %}
