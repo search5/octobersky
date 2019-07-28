@@ -57,18 +57,18 @@
 
     {% if is_ie_browser() %}
     <link rel="shortcut icon" href="http://octobersky.org/public/favicon/32x32.ico?v={today}">
-    <link rel="icon" sizes="16x16 32x32" href="{{ url_for('public.static', filename='favicon/32x32.ico') }}?v={today}">
+    <link rel="icon" sizes="16x16 32x32" href="{{ url_for('public.static', filename='favicon/32x32.ico') }}?v={{ today }}">
     {% else %}
-    <link rel="icon" href="{{ url_for('public.static', filename='favicon/32x32.png') }}?v={today}" sizes="32x32">
-    <link rel="icon" href="{{ url_for('public.static', filename='favicon/57x57.png') }}?v={today}" sizes="57x57">
-    <link rel="icon" href="{{ url_for('public.static', filename='favicon/72x72.png') }}?v={today}" sizes="72x72">
-    <link rel="icon" href="{{ url_for('public.static', filename='favicon/96x96.png') }}?v={today}" sizes="96x96">
-    <link rel="icon" href="{{ url_for('public.static', filename='favicon/120x120.png') }}?v={today}" sizes="120x120">
-    <link rel="icon" href="{{ url_for('public.static', filename='favicon/128x128.png') }}?v={today}" sizes="128x128">
-    <link rel="icon" href="{{ url_for('public.static', filename='favicon/144x144.png') }}?v={today}" sizes="144x144">
-    <link rel="icon" href="{{ url_for('public.static', filename='favicon/152x152.png') }}?v={today}" sizes="152x152">
-    <link rel="icon" href="{{ url_for('public.static', filename='favicon/195x195.png') }}?v={today}" sizes="195x195">
-    <link rel="icon" href="{{ url_for('public.static', filename='favicon/228x228.png') }}?v={today}" sizes="228x228">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/32x32.png') }}?v={{ today }}" sizes="32x32">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/57x57.png') }}?v={{ today }}" sizes="57x57">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/72x72.png') }}?v={{ today }}" sizes="72x72">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/96x96.png') }}?v={{ today }}" sizes="96x96">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/120x120.png') }}?v={{ today }}" sizes="120x120">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/128x128.png') }}?v={{ today }}" sizes="128x128">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/144x144.png') }}?v={{ today }}" sizes="144x144">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/152x152.png') }}?v={{ today }}" sizes="152x152">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/195x195.png') }}?v={{ today }}" sizes="195x195">
+    <link rel="icon" href="{{ url_for('public.static', filename='favicon/228x228.png') }}?v={{ today }}" sizes="228x228">
     <link rel="apple-touch-icon" sizes="57x57" href="{{ url_for('public.static', filename='favicon/apple-icon-57x57.png') }}">
     <link rel="apple-touch-icon" sizes="60x60" href="{{ url_for('public.static', filename='favicon/apple-icon-60x60.png') }}">
     <link rel="apple-touch-icon" sizes="72x72" href="{{ url_for('public.static', filename='favicon/apple-icon-72x72.png') }}">
@@ -163,20 +163,22 @@
 {% endblock %}
 
 <div class="app-main-wrapper">
-    <!-- Page Content -->
-    <div role="main" class="app-main container">
-        {% block container %}
-        {% endblock %}
-    </div>
+  <!-- Page Content -->
+  <div role="main" class="app-main container">
+    {% block container %}
+    {% endblock %}
+  </div>
 
-    <!-- Footer -->
-    <footer class="app-footer container-fluid">
-        <div class="row">
-            <div class="col-sm-6 col-md-6 col-lg-12">
-                <p class="app-footer__title">Copyright &copy; 10월의 하늘 준비위원회</p>
-            </div>
-        </div>
-    </footer>
+  <!-- Footer -->
+  <footer class="app-footer container-fluid">
+    <div class="row">
+      <div class="col-sm-6 col-md-6 col-lg-12">
+        <p class="app-footer__title">Copyright &copy; 10월의 하늘 준비위원회</p>
+      </div>
+    </div>
+    {% block old_links %}
+    {% endblock %}
+  </footer>
 </div>
 
 <!-- Bootstrap core JavaScript -->

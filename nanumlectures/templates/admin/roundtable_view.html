@@ -5,6 +5,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
 {% endblock %}
 
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('public.static', filename='css/mobile-table.css') }}">
+{% endblock %}
+
 {% block content %}
     <div class="app-main-container container-fluid">
         <!-- Breadcrumbs-->
@@ -18,7 +22,7 @@
             <form class="app-main-form">
                 <div class="form-group row">
                     <label for="roundtableNum" class="app-main-form__label col-sm-2 col-form-label">개최회차</label>
-                    <div class="col-sm-10">
+                    <div class="col-sm-12">
                       <div class="input-group">
                         <div class="input-group-prepend">
                           <div class="input-group-text">
@@ -32,42 +36,44 @@
                 </div>
                 <div class="form-group row">
                     <label for="roundtableYear" class="app-main-form__label col-sm-2 col-form-label">개최년도</label>
-                    <div class="col-sm-10">
+                    <div class="col-sm-12">
                         <input type="text" class="form-control-plaintext" id="roundtableYear"
                                value="{{ round.roundtable_year }}" readonly>
                     </div>
                 </div>
                 <div class="form-group row">
                     <label for="roundtableDate" class="app-main-form__label col-sm-2 col-form-label">개최일</label>
-                    <div class="col-sm-10">
+                    <div class="col-sm-12">
                         <input type="text" class="form-control-plaintext" id="roundtableDate"
                                value="{{ round.roundtable_date }}" readonly>
                     </div>
                 </div>
                 <div class="form-group row">
                     <label class="app-main-form__label col-form-label col-sm-2 pt-0">준비위원회</label>
-                    <div class="col-10">
+                    <div class="col-12">
                         <textarea class="form-control-plaintext" rows="2"
-                                  style="background-color: #ffffff;border: solid 1px lightgrey;padding: 10px">{{ round.staff }}</textarea>
+                                  style="background-color: #ffffff;border: solid 1px lightgrey;padding: 10px" readonly>{{ round.staff }}</textarea>
                     </div>
                 </div>
                 <div class="form-group row">
                     <label class="app-main-form__label col-form-label col-sm-2 pt-0">도서관</label>
-                    <div class="col-10">
+                    <div class="col-12">
                         <div class="card" id="library_view_app">
                             <div class="card-body" style="height: 400px; overflow-y: auto">
-                                <table class="table table-hover">
+                                <table class="table table-hover is-responsive">
                                     <thead>
                                     <tr>
                                         <th>도서관명</th>
+                                        <th class="d-inline d-sm-block d-md-none"></th>
                                         <th>세션 수</th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     {% raw %}
                                     <tr v-for="(item, index) in filtered_library" :key="index">
-                                        <td>{{ item.library.library_name }} ({{ item.library.library_addr }})</td>
-                                        <td>{{ item.round_num }}</td>
+                                        <th scope="row">{{ item.library.library_name }} <span class="d-none d-md-inline-block">({{ item.library.library_addr }})</span></th>
+                                        <td class="d-block d-sm-block d-md-none" data-header="주소">{{ item.library.library_addr }}</td>
+                                        <td data-header="세션 수">{{ item.round_num }}</td>
                                     </tr>
                                     {% endraw %}
                                     </tbody>
@@ -81,10 +87,10 @@
                 </div>
                 <div class="form-group row" id="btn_app">
                     <div class="col-sm-10">
-                      {% if roundtable_modifiable(round) %}
+{#                      {% if roundtable_modifiable(round) %}#}
                         <a href="{{ url_for('admin.roundtable_edit', round=round.id) }}" class="btn btn-primary">수정</a>
                         <a href="#" @click="delete_round" class="btn btn-danger">삭제</a>
-                      {% endif %}
+{#                      {% endif %}#}
                     </div>
                 </div>
                 <script>

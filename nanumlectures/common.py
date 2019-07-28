@@ -17,7 +17,8 @@ from social_core.exceptions import AuthException
 from social_core.pipeline.partial import partial
 from sqlalchemy import func
 
-from nanumlectures.models import GoogleToken
+from nanumlectures.lib.mail_lib import SESMail
+from nanumlectures.models import GoogleToken, Library
 
 
 def common_context(authentication_backends, strategy, user=None, plus_id=None, **extra):
@@ -87,11 +88,25 @@ def user_create(strategy, backend, user, is_new=False, *args, **kwargs):
         return False
 
     if is_backend_signup and is_pipeline_mode and is_new:
-        user.name = req_data['fullname']
-        user.email = req_data['email']
-        user.phone = req_data['phone']
-        user.set_password(req_data['password'])
+        user.name = req_data['fullname'].strip()
+        user.email = req_data['email'].strip()
+        user.phone = req_data['phone'].strip()
+        user.set_password(req_data['password'].strip())
         user.last_login_date = func.now()
+
+        library_record = Library.query.filter(
+            Library.manager_email == user.email).first()
+        if library_record and library_record.manager_id is None:
+            user.usertype = 'B'
+            user.library = library_record
+        elif library_record and library_record.manager_id is not None:
+            # 관리자에게 같은 이메일 주소를 사용한 사람이 회원 가입했음을 알리고 조치를 요구하는 메일을 보낸다.
+            content = ("{}님께서 도서관 {}의 사서 선생님의 메일 주소인 {}로 회원 가입"
+                       "하셨습니다. 관리자에서 어떻게 할지 조치해주시기 바랍니다.").format(
+                user.name, library_record.library_name, library_record.manager_email
+            )
+            ses = SESMail("이미 등록된 도서관 사서 주소로 회원 가입을 시도한 분이 있습니다", content, [])
+            ses.send({"name": "시월의하늘준비모임", "addr": "october10sky@gmail.com"})
 
         db_session.add(user)
 

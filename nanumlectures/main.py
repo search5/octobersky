@@ -5,7 +5,7 @@ from dateutil.utils import today
 
 from nanumlectures.common import common_context
 from nanumlectures.lib.format_util import date_format
-from nanumlectures.lib.public_context import line_break, is_ie_browser
+from nanumlectures.lib.public_context import line_break, is_ie_browser, opened_library_links
 from nanumlectures.lib.upload import s3_object_url
 from nanumlectures.lib.url_util import (LibraryConverter, UserConverter,
                                         UserModelConverter, FAQConverter,
@@ -140,7 +140,8 @@ def context_util():
         "line_break": line_break,
         "s3_object_url": s3_object_url,
         "is_ie_browser": is_ie_browser,
-        "today": today().strftime("%Y%m%d%H%m")
+        "today": today().strftime("%Y%m%d%H%m"),
+        "opened_library_links": opened_library_links
     }
 
 

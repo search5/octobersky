@@ -1,430 +1,425 @@
 {% extends "admin/base.html" %}
 
 {% block css %}
-    <style type="text/css">
-        .btn-group.special {
-            display: flex;
-        }
+  <style type="text/css">
+      .btn-group.special {
+          display: flex;
+      }
 
-        .special .btn {
-            flex: 1
-        }
+      .special .btn {
+          flex: 1
+      }
 
-        .special .text {
-            flex: 1
-        }
-    </style>
+      .special .text {
+          flex: 1
+      }
+  </style>
+
+  <link rel="stylesheet" type="text/css" href="{{ url_for('public.static', filename='css/mobile-table.css') }}">
 {% endblock %}
 
 {% block script %}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_key }}&libraries=services"></script>
-    <script src="https://ssl.daumcdn.net/dmaps/map_js_init/postcode.v2.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_key }}&libraries=services"></script>
+  <script src="https://ssl.daumcdn.net/dmaps/map_js_init/postcode.v2.js"></script>
 {% endblock %}
 
 {% block content %}
-    <div class="app-main-container container-fluid">
-        <div class="app-main-card" id="form">
-            <form class="app-main-form">
-                <div class="form-group row">
-                    <label class="app-main-form__label col-sm-2 col-form-label">도서관명</label>
-                    <div class="col-sm-10">
-
-                        <div class="input-group">
-                            <input type="text" class="form-control"
-                               v-model="libraryName">
-                            <div class="input-group-append">
-                                <button class="btn btn-info" @click.prevent="inFormLibrary">정보 가져오기</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group row">
-                    <label for="libraryAddr" class="app-main-form__label col-sm-2 col-form-label">도서관 주소</label>
-                    <div class="col-sm-10">
-                        <div class="input-group">
-                          <div class="input-group-prepend">
-                            <div class="input-group-text">
-                              <i class="fas fa-map-pin" v-if="libraryLat !== 0.0 && libraryLong !== 0.0"></i>
-                              <span v-if="libraryLat === 0.0 && libraryLong === 0.0">&nbsp;</span>
-                            </div>
-                          </div>
-                          <input type="text" class="form-control" id="libraryAddr" placeholder="도서관 주소를 입력하세요"
-                                 v-model="libraryAddr">
-                          <div class="input-group-append">
-                              <button class="btn btn-info" @click.prevent="inFormAddr">주소찾기</button>
-                          </div>
-                        </div>
-                    </div>
-                </div>
-              <div id="wrap" style="display:none;border:1px solid;width:500px;height:300px;margin:5px 0;position:relative">
-<img src="//t1.daumcdn.net/postcode/resource/images/close.png" id="btnFoldWrap" style="cursor:pointer;position:absolute;right:0px;top:-1px;z-index:1" onclick="foldDaumPostcode()" alt="접기 버튼">
-</div>
-                <div class="form-group row">
-                    <label for="managerName" class="app-main-form__label col-sm-2 col-form-label">사서명</label>
-                    <div class="col-sm-4">
-                        <input type="text" class="form-control" id="managerName" placeholder="사서 선생님 이름을 입력하세요" v-model="managerName">
-                    </div>
-                    <label for="managerEmail" class="app-main-form__label col-sm-2 col-form-label">사서 이메일</label>
-                    <div class="col-sm-4">
-                        <input type="text" class="form-control" id="managerEmail" placeholder="사서 선생님 이메일을 입력하세요" v-model="managerEmail">
-                    </div>
-                </div>
-                <div class="form-group row">
-                    <label for="managerDescription" class="app-main-form__label col-sm-2 col-form-label">사서 선생님 직함</label>
-                    <div class="col-sm-10">
-                        <input type="text" class="form-control" id="managerDescription" placeholder="사서 선생님 직함을 입력하세요" v-model="managerDescription">
-                    </div>
-                </div>
-                <div class="form-group row">
-                    <label for="libraryTel" class="app-main-form__label col-sm-2 col-form-label">대표전화</label>
-                    <div class="col-sm-4">
-                        <input type="text" class="form-control" id="libraryTel" placeholder="도서관 대표 전화번호를 입력하세요" v-model="libraryTel">
-                    </div>
-                    <label for="managerHp" class="app-main-form__label col-sm-2 col-form-label">휴대전화</label>
-                    <div class="col-sm-4">
-                        <input type="text" class="form-control" id="managerHp" placeholder="사서 선생님 개인 연락처를 입력하세요" v-model="managerHp">
-                    </div>
-                </div>
-                <div class="form-group row">
-                    <label for="libraryFax" class="app-main-form__label col-sm-2 col-form-label">팩스</label>
-                    <div class="col-sm-4">
-                        <input type="text" class="form-control" id="libraryFax" placeholder="도서관 팩스 번호를 입력하세요" v-model="libraryFax">
-                    </div>
-                    <label for="libraryHomepage" class="app-main-form__label col-sm-2 col-form-label">홈페이지</label>
-                    <div class="col-sm-4">
-                        <input type="text" class="form-control" id="libraryHomepage"
-                               placeholder="도서관 홈페이지 주소를 입력하세요" v-model="libraryHomepage">
-                    </div>
-                </div>
-                <fieldset class="form-group">
-                    <div class="row">
-                        <label class="app-main-form__label col-form-label col-md-2 pt-0">도서관 위치</label>
-                        <div class="col-md-10 col-sm-12">
-                            <div style="width: 100%;height: 300px; border: solid 1px grey; background-color: #f5b7b1;" id="map">
-                                여기에 지도를 배치하세요
-                            </div>
-                        </div>
-                    </div>
-                </fieldset>
-                <div class="form-group row">
-                    <label for="expectedAudience" class="app-main-form__label col-sm-2 col-form-label">예상청중</label>
-                    <div class="col-sm-6">
-                        <input type="text" class="form-control" id="expectedAudience" :placeholder="placeholder.expectedAudience" v-model="expectedAudience">
-                    </div>
-                    <label for="expectedListens" class="app-main-form__label col-sm-2 col-form-label">예상 인원</label>
-                    <div class="col-sm-2">
-                        <input type="text" class="form-control" id="expectedListens" placeholder="예상 인원 수를 입력하세요" v-model="expectedListens">
-                    </div>
-                </div>
-                <div class="form-group row">
-                    <label for="prProduction" class="app-main-form__label col-sm-2 col-form-label">홍보물 제작 계획</label>
-                    <div class="col-sm-10">
-                        <input type="text" class="form-control" id="prProduction" placeholder="홍보물 제작 계획을 입력하세요" v-model="prProduction">
-                    </div>
-                </div>
-                <div class="form-group row">
-                    <label for="libraryPlace" class="app-main-form__label col-sm-2 col-form-label">강연장</label>
-                    <div class="col-sm-4">
-                        <input type="text" class="form-control" id="libraryPlace" placeholder="강연장 이름을 입력하세요" v-model="libraryPlace">
-                    </div>
-                    <label for="placeSeats" class="app-main-form__label col-sm-2 col-form-label">강연장 좌석 수</label>
-                    <div class="col-sm-4">
-                        <input type="text" class="form-control" id="placeSeats" placeholder="강연장 좌석 수를 입력하세요" v-model="placeSeats">
-                    </div>
-                </div>
-                <div class="form-group row">
-                  <label for="projector_screen" class="app-main-form__label col-sm-2 col-form-label">빔프로젝터+스크린</label>
-                  <div class="col-sm-2">
-                    <input id="projector_screen" type="checkbox" style="width: 25px;height: 25px;" v-model="projector_screen">
-                  </div>
-                  <label for="projector_notebook" class="app-main-form__label col-sm-2 col-form-label">빔프로젝터에 연결된 노트북</label>
-                  <div class="col-sm-2">
-                    <input id="projector_notebook" type="checkbox" style="width: 25px;height: 25px;" v-model="projector_notebook">
-                  </div>
-                  <label for="sound_equipment" class="app-main-form__label col-sm-2 col-form-label">음향(마이크. 스피커)</label>
-                  <div class="col-sm-2">
-                    <input id="sound_equipment" type="checkbox" style="width: 25px;height: 25px;" v-model="sound_equipment">
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label for="camcorder_yn" class="app-main-form__label col-sm-2 col-form-label">캠코더 보유 유무</label>
-                  <div class="col-sm-2">
-                    <input id="camcorder_yn" type="checkbox" style="width: 25px;height: 25px;" v-model="camcorder_yn">
-                  </div>
-                  <label for="lecture_video_recording_yn" class="app-main-form__label col-sm-2 col-form-label">강연 촬영 & 영상 공개</label>
-                  <div class="col-sm-2">
-                    <input id="lecture_video_recording_yn" type="checkbox" style="width: 25px;height: 25px;" v-model="lecture_video_recording_yn">
-                  </div>
-                  <label for="coordinate_photography_yn" class="app-main-form__label col-sm-2 col-form-label">촬영 협조 가능</label>
-                  <div class="col-sm-2">
-                    <input id="coordinate_photography_yn" type="checkbox" style="width: 25px;height: 25px;" v-model="coordinate_photography_yn">
-                  </div>
-                </div>
-                <div class="form-group row">
-                    <label for="internet_yn" class="app-main-form__label col-sm-2 col-form-label">인터넷 가능 여부</label>
-                    <div class="col-sm-2">
-                      <input id="internet_yn" type="checkbox" style="width: 25px;height: 25px;" v-model="internet_yn">
-                    </div>
-                    <label for="etc_equipment" class="app-main-form__label col-sm-2 col-form-label">기타 보유</label>
-                    <div class="col-sm-6">
-                        <input type="text" class="form-control" id="etc_equipment" placeholder="기타 보유 물품을 입력하세요" v-model="etc_equipment">
-                    </div>
-                </div>
-                <div class="form-group row">
-                    <div class="col-sm-10">
-                        <button type="submit" class="btn btn-primary" @click.prevent="modify">저장하기</button>
-                    </div>
-                </div>
-            </form>
-            <hr style="border-top: 3px double #8c8b8b;">
-            <div class="form-group row">
-                <div class="col-12">
-                    <h5>참여 기록</h5>
-                    <table class="table table-hover">
-                        <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>회차</th>
-                            <th>연도</th>
-                            <th>날짜</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for entry in library.roundtable %}
-                        <tr>
-                            <td>{{ loop.index }}</td>
-                            <td>{{ entry.roundtable.roundtable_num }}</td>
-                            <td>{{ entry.roundtable.roundtable_year }}</td>
-                            <td>{{ entry.roundtable.roundtable_date }}</td>
-                        </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+  <div class="app-main-container container-fluid">
+    <div class="app-main-card" id="form">
+      <form class="app-main-form">
+        <div class="form-group row">
+          <label class="app-main-form__label col-sm-2 col-form-label">도서관명</label>
+          <div class="col-sm-10">
+            <div class="input-group">
+              <input type="text" class="form-control" v-model="libraryName">
+              <div class="input-group-append">
+                <button class="btn btn-info" @click.prevent="inFormLibrary">정보 가져오기</button>
+              </div>
             </div>
-            <div class="form-group row">
-                <div class="col-12">
-                    <h5>강연자</h5>
-                    <table class="table table-hover">
-                        <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>회차</th>
-                            <th>연도</th>
-                            <th>강연주제</th>
-                            <th>강연자명</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for entry in library.lecture %}
-                        <tr>
-                            <td>{{ loop.index }}</td>
-                            <td>{{ entry.roundtable.roundtable_num }}</td>
-                            <td>{{ entry.roundtable.roundtable_year }}</td>
-                            <td>{{ entry.lecture_title }}</td>
-                            <td>{{ entry.lecture_name }}</td>
-                        </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="modal fade" id="findMoreLibrary" tabindex="-1" role="dialog">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="findMoreLibraryLabel">찾아진 도서관</h5>
-                            <button type="button" class="close" data-dismiss="modal">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <ul class="list-group" style="height: 300px;overflow-y: auto">
-                                {% raw %}
-                                <li class="list-group-item" v-for="(item, index) in findLibrary" :key="index" @click="selectLibrary(item)" style="cursor: pointer">{{ item.place_name }} ({{ item.road_address_name }})</li>
-                                {% endraw %}
-                            </ul>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
+        <div class="form-group row">
+          <label for="libraryAddr" class="app-main-form__label col-sm-2 col-form-label">도서관 주소</label>
+          <div class="col-sm-10">
+            <div class="input-group">
+              <div class="input-group-prepend">
+                <div class="input-group-text">
+                  <i class="fas fa-map-pin" v-if="libraryLat !== 0.0 && libraryLong !== 0.0"></i>
+                  <span v-if="libraryLat === 0.0 && libraryLong === 0.0">&nbsp;</span>
+                </div>
+              </div>
+              <input type="text" class="form-control" id="libraryAddr" placeholder="도서관 주소를 입력하세요" v-model="libraryAddr">
+              <div class="input-group-append">
+                <button class="btn btn-info" @click.prevent="inFormAddr">주소찾기</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="managerName" class="app-main-form__label col-sm-2 col-form-label">사서명</label>
+          <div class="col-sm-4">
+            <input type="text" class="form-control" id="managerName" placeholder="사서 선생님 이름을 입력하세요" v-model="managerName">
+          </div>
+          <label for="managerEmail" class="app-main-form__label col-sm-2 col-form-label">사서 이메일</label>
+          <div class="col-sm-4">
+            <input type="text" class="form-control" id="managerEmail" placeholder="사서 선생님 이메일을 입력하세요" v-model="managerEmail">
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="managerDescription" class="app-main-form__label col-sm-2 col-form-label">사서 선생님 직함</label>
+          <div class="col-sm-10">
+            <input type="text" class="form-control" id="managerDescription" placeholder="사서 선생님 직함을 입력하세요" v-model="managerDescription">
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="libraryTel" class="app-main-form__label col-sm-2 col-form-label">대표전화</label>
+          <div class="col-sm-4">
+            <input type="text" class="form-control" id="libraryTel" placeholder="도서관 대표 전화번호를 입력하세요" v-model="libraryTel">
+          </div>
+          <label for="managerHp" class="app-main-form__label col-sm-2 col-form-label">휴대전화</label>
+          <div class="col-sm-4">
+            <input type="text" class="form-control" id="managerHp" placeholder="사서 선생님 개인 연락처를 입력하세요" v-model="managerHp">
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="libraryFax" class="app-main-form__label col-sm-2 col-form-label">팩스</label>
+          <div class="col-sm-4">
+            <input type="text" class="form-control" id="libraryFax" placeholder="도서관 팩스 번호를 입력하세요" v-model="libraryFax">
+          </div>
+          <label for="libraryHomepage" class="app-main-form__label col-sm-2 col-form-label">홈페이지</label>
+          <div class="col-sm-4">
+            <input type="text" class="form-control" id="libraryHomepage"
+                   placeholder="도서관 홈페이지 주소를 입력하세요" v-model="libraryHomepage">
+          </div>
+        </div>
+          <fieldset class="form-group">
+            <div class="row">
+              <label class="app-main-form__label col-form-label col-md-2 pt-0">도서관 위치</label>
+              <div class="col-md-10 col-sm-12">
+                <div style="width: 100%;height: 300px; border: solid 1px grey; background-color: #f5b7b1;" id="map">
+                  여기에 지도를 배치하세요
+                </div>
+              </div>
+            </div>
+          </fieldset>
+          <div class="form-group row">
+            <label for="expectedAudience" class="app-main-form__label col-sm-2 col-form-label">예상청중</label>
+            <div class="col-sm-6">
+              <input type="text" class="form-control" id="expectedAudience" :placeholder="placeholder.expectedAudience" v-model="expectedAudience">
+            </div>
+            <label for="expectedListens" class="app-main-form__label col-sm-2 col-form-label">예상 인원</label>
+            <div class="col-sm-2">
+              <input type="text" class="form-control" id="expectedListens" placeholder="예상 인원 수를 입력하세요" v-model="expectedListens">
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="prProduction" class="app-main-form__label col-sm-2 col-form-label">홍보물 제작 계획</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="prProduction" placeholder="홍보물 제작 계획을 입력하세요" v-model="prProduction">
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="libraryPlace" class="app-main-form__label col-sm-2 col-form-label">강연장</label>
+            <div class="col-sm-4">
+              <input type="text" class="form-control" id="libraryPlace" placeholder="강연장 이름을 입력하세요" v-model="libraryPlace">
+            </div>
+            <label for="placeSeats" class="app-main-form__label col-sm-2 col-form-label">강연장 좌석 수</label>
+            <div class="col-sm-4">
+              <input type="text" class="form-control" id="placeSeats" placeholder="강연장 좌석 수를 입력하세요" v-model="placeSeats">
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="projector_screen" class="app-main-form__label col-sm-2 col-form-label">빔프로젝터+스크린</label>
+            <div class="col-sm-2">
+              <input id="projector_screen" type="checkbox" style="width: 25px;height: 25px;" v-model="projector_screen">
+            </div>
+            <label for="projector_notebook" class="app-main-form__label col-sm-2 col-form-label">빔프로젝터에 연결된 노트북</label>
+            <div class="col-sm-2">
+              <input id="projector_notebook" type="checkbox" style="width: 25px;height: 25px;" v-model="projector_notebook">
+            </div>
+            <label for="sound_equipment" class="app-main-form__label col-sm-2 col-form-label">음향(마이크. 스피커)</label>
+            <div class="col-sm-2">
+              <input id="sound_equipment" type="checkbox" style="width: 25px;height: 25px;" v-model="sound_equipment">
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="camcorder_yn" class="app-main-form__label col-sm-2 col-form-label">캠코더 보유 유무</label>
+            <div class="col-sm-2">
+              <input id="camcorder_yn" type="checkbox" style="width: 25px;height: 25px;" v-model="camcorder_yn">
+            </div>
+            <label for="lecture_video_recording_yn" class="app-main-form__label col-sm-2 col-form-label">강연 촬영 & 영상 공개</label>
+            <div class="col-sm-2">
+              <input id="lecture_video_recording_yn" type="checkbox" style="width: 25px;height: 25px;" v-model="lecture_video_recording_yn">
+            </div>
+            <label for="coordinate_photography_yn" class="app-main-form__label col-sm-2 col-form-label">촬영 협조 가능</label>
+            <div class="col-sm-2">
+              <input id="coordinate_photography_yn" type="checkbox" style="width: 25px;height: 25px;" v-model="coordinate_photography_yn">
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="internet_yn" class="app-main-form__label col-sm-2 col-form-label">인터넷 가능 여부</label>
+            <div class="col-sm-2">
+              <input id="internet_yn" type="checkbox" style="width: 25px;height: 25px;" v-model="internet_yn">
+            </div>
+            <label for="etc_equipment" class="app-main-form__label col-sm-2 col-form-label">기타 보유</label>
+            <div class="col-sm-6">
+              <input type="text" class="form-control" id="etc_equipment" placeholder="기타 보유 물품을 입력하세요" v-model="etc_equipment">
+            </div>
+          </div>
+          <div class="form-group row">
+            <div class="col-sm-10">
+              <button type="submit" class="btn btn-primary" @click.prevent="modify">저장하기</button>
+            </div>
+          </div>
+      </form>
+      <hr style="border-top: 3px double #8c8b8b;">
+      <div class="form-group row">
+        <div class="col-12">
+          <h5>참여 기록</h5>
+          <table class="table table-hover is-responsive">
+            <thead>
+            <tr>
+              <th>#</th>
+              <th>회차</th>
+              <th>연도</th>
+              <th>날짜</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for entry in library.roundtable %}
+            <tr>
+              <th scope="row">{{ loop.index }}</th>
+              <td data-header="회차">{{ entry.roundtable.roundtable_num }}</td>
+              <td data-header="연도">{{ entry.roundtable.roundtable_year }}</td>
+              <td data-header="날짜">{{ entry.roundtable.roundtable_date }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-12">
+          <h5>강연자</h5>
+          <table class="table table-hover is-responsive">
+            <thead>
+            <tr>
+              <th>#</th>
+              <th>회차</th>
+              <th>연도</th>
+              <th>강연주제</th>
+              <th>강연자명</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for entry in library.lecture %}
+            <tr>
+              <th scope="row">{{ loop.index }}</th>
+              <td data-header="회차">{{ entry.roundtable.roundtable_num }}</td>
+              <td data-header="연도">{{ entry.roundtable.roundtable_year }}</td>
+              <td data-header="강연주제">{{ entry.lecture_title }}</td>
+              <td data-header="강연자명">{{ entry.lecture_name }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-        <script>
-          var element_wrap = document.getElementById('wrap');
+      <div class="modal fade" id="findMoreLibrary" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="findMoreLibraryLabel">찾아진 도서관</h5>
+              <button type="button" class="close" data-dismiss="modal">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <ul class="list-group" style="height: 300px;overflow-y: auto">
+                {% raw %}
+                <li class="list-group-item" v-for="(item, index) in findLibrary" :key="index" @click="selectLibrary(item)" style="cursor: pointer">{{ item.place_name }} ({{ item.road_address_name }})</li>
+                {% endraw %}
+              </ul>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    function foldDaumPostcode() {
-        // iframe을 넣은 element를 안보이게 한다.
-        element_wrap.style.display = 'none';
-    }
+    <script>
+      var element_wrap = document.getElementById('wrap');
 
-            new Vue({
-                el: '#form',
-                data: {
-                    libraryName: '{{ library.library_name or '' }}',
-                    libraryAddr: '{{ library.library_addr or '' }}',
-                    managerName: '{{ library.manager_name or '' }}',
-                    managerHp: '{{ library.manager_hp or '' }}',
-                    managerEmail: '{{ library.manager_email or '' }}',
-                    managerDescription: '{{ library.manager_description or '' }}',
-                    libraryTel: '{{ library.library_tel or '' }}',
-                    libraryFax: '{{ library.library_fax or '' }}',
-                    libraryHomepage: '{{ library.library_homepage or '' }}',
-                    libraryDescription: `{{ library.library_description or '' }}`,
-                    expectedAudience: '{{ library.expected_audience or '' }}',
-                    expectedListens: '{{ library.expected_listens or '' }}',
-                    libraryLat: '{{ library.lat or '' }}',
-                    libraryLong: '{{ library.long or '' }}',
-                    libraryPlace: '{{ library.library_place or '' }}',
-                    placeSeats: '{{ library.place_seats or '' }}',
-                    prProduction: '{{ library.pr_production or '' }}',
-                    projector_screen: '{{ library.projector_screen or '' }}',
-                    projector_notebook: '{{ library.projector_notebook or '' }}',
-                    sound_equipment: '{{ library.sound_equipment or '' }}',
-                    camcorder_yn: '{{ library.camcorder_yn or '' }}',
-                    lecture_video_recording_yn: '{{ library.lecture_video_recording_yn or '' }}',
-                    coordinate_photography_yn: '{{ library.coordinate_photography_yn or '' }}',
-                    internet_yn: '{{ library.internet_yn or '' }}',
-                    etc_equipment: '{{ library.etc_equipment or '' }}',
-                    placeholder: {
-                        libraryDescription: '예시) 시청각실(120석)<br>\n' +
-                            '빔프로젝터, 노트북 사용가능, 음향시설 사용 가능',
-                        expectedAudience: '예시) 초등 고학년~청소년(50명)'
-                    },
-                    findLibrary: [],
-                    library_marker: null,
-                    map: null
+      function foldDaumPostcode() {
+          // iframe을 넣은 element를 안보이게 한다.
+          element_wrap.style.display = 'none';
+      }
+
+        new Vue({
+            el: '#form',
+            data: {
+                libraryName: '{{ library.library_name or '' }}',
+                libraryAddr: '{{ library.library_addr or '' }}',
+                managerName: '{{ library.manager_name or '' }}',
+                managerHp: '{{ library.manager_hp or '' }}',
+                managerEmail: '{{ library.manager_email or '' }}',
+                managerDescription: '{{ library.manager_description or '' }}',
+                libraryTel: '{{ library.library_tel or '' }}',
+                libraryFax: '{{ library.library_fax or '' }}',
+                libraryHomepage: '{{ library.library_homepage or '' }}',
+                libraryDescription: `{{ library.library_description or '' }}`,
+                expectedAudience: '{{ library.expected_audience or '' }}',
+                expectedListens: '{{ library.expected_listens or '' }}',
+                libraryLat: '{{ library.lat or '' }}',
+                libraryLong: '{{ library.long or '' }}',
+                libraryPlace: '{{ library.library_place or '' }}',
+                placeSeats: '{{ library.place_seats or '' }}',
+                prProduction: '{{ library.pr_production or '' }}',
+                projector_screen: '{{ library.projector_screen or '' }}',
+                projector_notebook: '{{ library.projector_notebook or '' }}',
+                sound_equipment: '{{ library.sound_equipment or '' }}',
+                camcorder_yn: '{{ library.camcorder_yn or '' }}',
+                lecture_video_recording_yn: '{{ library.lecture_video_recording_yn or '' }}',
+                coordinate_photography_yn: '{{ library.coordinate_photography_yn or '' }}',
+                internet_yn: '{{ library.internet_yn or '' }}',
+                etc_equipment: '{{ library.etc_equipment or '' }}',
+                placeholder: {
+                    libraryDescription: '예시) 시청각실(120석)<br>\n' +
+                        '빔프로젝터, 노트북 사용가능, 음향시설 사용 가능',
+                    expectedAudience: '예시) 초등 고학년~청소년(50명)'
                 },
-                methods: {
-                    modify: function (e) {
-                        axios.post('/admin/library/owner', {
-                            libraryName: this.libraryName,
-                            libraryAddr: this.libraryAddr,
-                            managerName: this.managerName,
-                            managerHp: this.managerHp,
-                            managerEmail: this.managerEmail,
-                            managerDescription: this.managerDescription,
-                            libraryTel: this.libraryTel,
-                            libraryFax: this.libraryFax,
-                            libraryPlace: this.libraryPlace,
-                            placeSeats: this.placeSeats,
-                            prProduction: this.prProduction,
-                            projector_screen: this.projector_screen,
-                            projector_notebook: this.projector_notebook,
-                            sound_equipment: this.sound_equipment,
-                            camcorder_yn: this.camcorder_yn,
-                            lecture_video_recording_yn: this.lecture_video_recording_yn,
-                            coordinate_photography_yn: this.coordinate_photography_yn,
-                            internet_yn: this.internet_yn,
-                            etc_equipment: this.etc_equipment,
-                            libraryHomepage: this.libraryHomepage,
-                            libraryDescription: this.libraryDescription,
-                            expectedAudience: this.expectedAudience,
-                            expectedListens: this.expectedListens,
-                            libraryLat: this.libraryLat,
-                            libraryLong: this.libraryLong
-                        }).then(function (e) {
-                            alert('도서관 수정이 완료되었습니다')
-                            location.href = '/admin/library/owner'
-                        })
-                    },
-                    inFormLibrary: function (e) {
-                        var vm = this
-                        var places = new daum.maps.services.Places();
+                findLibrary: [],
+                library_marker: null,
+                map: null
+            },
+            methods: {
+                modify: function (e) {
+                    axios.post('/admin/library/owner', {
+                        libraryName: this.libraryName,
+                        libraryAddr: this.libraryAddr,
+                        managerName: this.managerName,
+                        managerHp: this.managerHp,
+                        managerEmail: this.managerEmail,
+                        managerDescription: this.managerDescription,
+                        libraryTel: this.libraryTel,
+                        libraryFax: this.libraryFax,
+                        libraryPlace: this.libraryPlace,
+                        placeSeats: this.placeSeats,
+                        prProduction: this.prProduction,
+                        projector_screen: this.projector_screen,
+                        projector_notebook: this.projector_notebook,
+                        sound_equipment: this.sound_equipment,
+                        camcorder_yn: this.camcorder_yn,
+                        lecture_video_recording_yn: this.lecture_video_recording_yn,
+                        coordinate_photography_yn: this.coordinate_photography_yn,
+                        internet_yn: this.internet_yn,
+                        etc_equipment: this.etc_equipment,
+                        libraryHomepage: this.libraryHomepage,
+                        libraryDescription: this.libraryDescription,
+                        expectedAudience: this.expectedAudience,
+                        expectedListens: this.expectedListens,
+                        libraryLat: this.libraryLat,
+                        libraryLong: this.libraryLong
+                    }).then(function (e) {
+                        alert('도서관 수정이 완료되었습니다')
+                        location.href = '/admin/library/owner'
+                    })
+                },
+                inFormLibrary: function (e) {
+                    var vm = this
+                    var places = new daum.maps.services.Places();
 
-                        var callback = function (result, status) {
-                            if (status === daum.maps.services.Status.OK) {
-                                var filtered_list = _.filter(result, function (entry) { return ['PK6', 'CT1'].indexOf(entry.category_group_code) === -1 })
+                    var callback = function (result, status) {
+                        if (status === daum.maps.services.Status.OK) {
+                            var filtered_list = _.filter(result, function (entry) { return ['PK6', 'CT1'].indexOf(entry.category_group_code) === -1 })
 
-                                if (result.length > 1) {
-                                    vm.findLibrary = result;
-                                    $("#findMoreLibrary").modal("show")
-                                } else {
-                                    vm.libraryAddr = result[0].road_address_name
-                                    vm.libraryLat = result[0].y
-                                    vm.libraryLong = result[0].x
-                                }
+                            if (result.length > 1) {
+                                vm.findLibrary = result;
+                                $("#findMoreLibrary").modal("show")
                             } else {
-                                alert('도서관 정보를 찾지 못했습니다.\n다시 검색하거나 수동으로 입력해주세요')
+                                vm.libraryAddr = result[0].road_address_name
+                                vm.libraryLat = result[0].y
+                                vm.libraryLong = result[0].x
                             }
-                        };
-
-                        places.keywordSearch(this.libraryName, callback);
-                    },
-                    inFormAddr: function (e) {
-                        const vm = this
-                        new daum.Postcode({
-                            oncomplete: function(data) {
-                                vm.libraryAddr = data.address
-
-                                var geocoder = new daum.maps.services.Geocoder();
-
-                                var callback = function (result, status) {
-                                    if (status === daum.maps.services.Status.OK) {
-                                        if (result.length === 1) {
-                                            vm.libraryLat = result[0].y
-                                            vm.libraryLong = result[0].x
-                                        } else {
-                                            alert('검색된 도서관 주소가 여러개입니다. 정확한 것 하나만 찾아주세요')
-                                        }
-                                    } else {
-                                        alert('주소가 정확하지 않은 것 같습니다. 확인하여 주세요')
-                                    }
-                                };
-
-                                geocoder.addressSearch(vm.libraryAddr, callback);
-                            }
-                        }).open();
-                    },
-                    selectLibrary(item) {
-                        this.libraryAddr = item.road_address_name
-                        this.libraryLat = item.y
-                        this.libraryLong = item.x
-
-                        $("#findMoreLibrary").modal("hide")
-                    }
-                },
-                mounted: function () {
-                    var container = document.getElementById('map');
-
-                    var options = {
-                        center: new daum.maps.LatLng(this.libraryLat, this.libraryLong),
-                        level: 3
+                        } else {
+                            alert('도서관 정보를 찾지 못했습니다.\n다시 검색하거나 수동으로 입력해주세요')
+                        }
                     };
 
-                    var map = new daum.maps.Map(container, options);
-
-                    this.library_marker = new daum.maps.Marker({
-                        map: map,
-                        position: new daum.maps.LatLng(this.libraryLat, this.libraryLong)
-                    });
-                    this.library_marker.setMap(map);
-                    this.map = map
+                    places.keywordSearch(this.libraryName, callback);
                 },
-                watch: {
-                  libraryLat: function (newVal) {
-                    // 기존 마커 제거
-                    this.library_marker.setMap(null);
+                inFormAddr: function (e) {
+                    const vm = this
+                    new daum.Postcode({
+                        oncomplete: function(data) {
+                            vm.libraryAddr = data.address
 
-                    var moveLatLon = new daum.maps.LatLng(newVal, this.libraryLong)
+                            var geocoder = new daum.maps.services.Geocoder();
 
-                    this.library_marker = new daum.maps.Marker({
-                        map: this.map,
-                        position: moveLatLon
-                    });
+                            var callback = function (result, status) {
+                                if (status === daum.maps.services.Status.OK) {
+                                    if (result.length === 1) {
+                                        vm.libraryLat = result[0].y
+                                        vm.libraryLong = result[0].x
+                                    } else {
+                                        alert('검색된 도서관 주소가 여러개입니다. 정확한 것 하나만 찾아주세요')
+                                    }
+                                } else {
+                                    alert('주소가 정확하지 않은 것 같습니다. 확인하여 주세요')
+                                }
+                            };
 
-                    this.map.panTo(moveLatLon);
-                  }
+                            geocoder.addressSearch(vm.libraryAddr, callback);
+                        }
+                    }).open();
+                },
+                selectLibrary(item) {
+                    this.libraryAddr = item.road_address_name
+                    this.libraryLat = item.y
+                    this.libraryLong = item.x
+
+                    $("#findMoreLibrary").modal("hide")
                 }
-            })
-        </script>
-    </div>
-    <!-- /.container-fluid -->
+            },
+            mounted: function () {
+                var container = document.getElementById('map');
+
+                var options = {
+                    center: new daum.maps.LatLng(this.libraryLat, this.libraryLong),
+                    level: 3
+                };
+
+                var map = new daum.maps.Map(container, options);
+
+                this.library_marker = new daum.maps.Marker({
+                    map: map,
+                    position: new daum.maps.LatLng(this.libraryLat, this.libraryLong)
+                });
+                this.library_marker.setMap(map);
+                this.map = map
+            },
+            watch: {
+              libraryLat: function (newVal) {
+                // 기존 마커 제거
+                this.library_marker.setMap(null);
+
+                var moveLatLon = new daum.maps.LatLng(newVal, this.libraryLong)
+
+                this.library_marker = new daum.maps.Marker({
+                    map: this.map,
+                    position: moveLatLon
+                });
+
+                this.map.panTo(moveLatLon);
+              }
+            }
+        })
+    </script>
+  </div>
 {% endblock %}

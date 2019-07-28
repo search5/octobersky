@@ -106,16 +106,16 @@
                   <tbody>
                       {% for row in paginator %}
                           <tr>
-                            <td>{{ row.category | category_name }}</td>
-                            <td>{{ row.press_date }}</td>
+                            <td data-header="홍보유형">{{ row.category | category_name }}</td>
+                            <td data-header="배부일자">{{ row.press_date }}</td>
                             {% if row.category == 1 %}
-                              <td><a href="{{ url_for('public.news_view', news=row.id) }}">{{ row.news_title }}</a></td>
+                              <td data-header="제목"><a href="{{ url_for('public.news_view', news=row.id) }}">{{ row.news_title }}</a></td>
                             {% else %}
-                              <td><a href="{{ row.news_link }}" target="_blank">{{ row.news_title }}</a></td>
+                              <td data-header="제목"><a href="{{ row.news_link }}" target="_blank">{{ row.news_title }}</a></td>
                             {% endif %}
-                            <td>{{ row.news_press }}</td>
-                            <td>{{ row.writer.name }}</td>
-                            <td>{{ row.news_write_date }}</td>
+                            <td data-header="언론사">{{ row.news_press }}</td>
+                            <td data-header="작성자">{{ row.writer.name }}</td>
+                            <td data-header="작성일">{{ row.news_write_date }}</td>
                           </tr>
                       {% endfor %}
                   </tbody>

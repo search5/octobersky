@@ -6,6 +6,7 @@ from flask import request, make_response
 
 from flask_login import current_user
 from markupsafe import Markup
+from sqlalchemy import asc
 
 from nanumlectures.database import db_session
 from nanumlectures.models import User, Roundtable
@@ -57,6 +58,16 @@ def user_lectureAndHostExist(roundtable):
         return True
     else:
         return False
+
+
+def opened_library_links():
+    roundtables = Roundtable.query.order_by(asc(Roundtable.id))
+
+    links = []
+    for entry in roundtables:
+        links.append("<a href=\"{}?roundtable={}\" class=\"text-white\">{}회</a>".format(request.environ["PATH_INFO"], entry.id, entry.roundtable_num))
+
+    return Markup(" | ".join(links))
 
 
 def donate2record(record, donation_type):
@@ -115,13 +126,16 @@ def statstics_summary(statics_area_cnt, statics_library, special_area=None):
         # 지역별로 신청 가능(미신청한 강연/진행자) 수를 긁어온다..(애초에 이게 말이 되니..)
         if library_area in statics_area_cnt:
             statics_area_cnt[library_area]['total_round_num'] += round_and_library.round_num
-            statics_area_cnt[library_area]['total_lecture'] += len(library.lecture)
-            statics_area_cnt[library_area]['total_host'] += len(library.host)
+
+            statics_area_cnt[library_area]['total_lecture'] += len(tuple(filter(
+                lambda x: x.roundtable_id == round_and_library.roundtable_id, library.lecture)))
+            statics_area_cnt[library_area]['total_host'] += len(tuple(filter(
+                lambda x: x.roundtable_id == round_and_library.roundtable_id, library.host)))
         else:
             statics_area_cnt[library_area] = dict(
                 total_round_num=round_and_library.round_num,
-                total_lecture=len(library.lecture),
-                total_host=len(library.host)
+                total_lecture=len(tuple(filter(lambda x: x.roundtable_id == round_and_library.roundtable_id, library.lecture))),
+                total_host=len(tuple(filter(lambda x: x.roundtable_id == round_and_library.roundtable_id, library.host)))
             )
 
 
@@ -139,11 +153,58 @@ def latest_is_donation():
         return False
 
 
-def shortcut_summary(value, lecture_name):
+def shortcut_summary(value, lecture_name, lecture_title, round_num):
     lecture_summary_cut = 180
 
-    if len(lecture_name) > 33:
-        lecture_summary_cut = 150
+    if round_num == 3:
+        # 강연명
+        lecture_title_len = 0
+        if len(lecture_title) > 0 and len(lecture_title) < 16:
+            lecture_title_len = 1
+        elif len(lecture_title) > 11 and len(lecture_title) < 31:
+            lecture_title_len = 2
+        elif len(lecture_title) > 30:
+            lecture_title_len = 3
+
+        # 강연자명
+        lecture_name_len = 0
+        if len(lecture_name) > 0 and len(lecture_name) < 16:
+            lecture_name_len = 1
+        elif len(lecture_name) > 15 and len(lecture_name) < 31:
+            lecture_name_len = 2
+        elif len(lecture_name) > 30:
+            lecture_name_len = 3
+
+        str_cut_dict = {(1, 1): 97, (2, 1): 83, (3, 1): 69, (1, 2): 83, (2, 2): 69, (3, 2): 59, (1, 3): 83,
+                        (2, 3): 69, (3, 3): 55}
+
+        lecture_summary_cut = str_cut_dict[(lecture_title_len, lecture_name_len)]
+    elif round_num == 2:
+        # 강연명
+        lecture_title_len = 0
+        if len(lecture_title) > 0 and len(lecture_title) < 22:
+            lecture_title_len = 1
+        elif len(lecture_title) > 21 and len(lecture_title) < 31:
+            lecture_title_len = 2
+        elif len(lecture_title) > 30:
+            lecture_title_len = 3
+        else:
+            print("에러니?")
+            print(value)
+
+        # 강연자명
+        lecture_name_len = 0
+        if len(lecture_name) > 0 and len(lecture_name) < 30:
+            lecture_name_len = 1
+        elif len(lecture_name) > 29 and len(lecture_name) < 46:
+            lecture_name_len = 2
+        elif len(lecture_name) > 46:
+            lecture_name_len = 3
+
+        str_cut_dict = {(1, 1): 178, (2, 1): 175, (3, 1): 180, (1, 2): 123, (2, 2): 110, (3, 2): 80, (1, 3): 120,
+                        (2, 3): 99, (3, 3): 90}
+
+        lecture_summary_cut = str_cut_dict[(lecture_title_len, lecture_name_len)]
 
     if len(value) > lecture_summary_cut:
         summary_beofre, summary_after = value[:lecture_summary_cut], value[lecture_summary_cut:]

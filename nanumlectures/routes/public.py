@@ -360,8 +360,14 @@ def faq():
 
 @page.route("/lecture_library_map")
 def lecture_library_map():
-    # 최근 회차 정보 가져오기
-    main_roundtable = db_session.query(Roundtable).filter(Roundtable.is_active == True).first()
+    # 사용자가 과거 데이터를 보고 싶을 경우 roundtable_id를 조회한다.
+    req_roundtable_id = request.args.get('roundtable', 0, type=int)
+
+    if req_roundtable_id:
+        main_roundtable = db_session.query(Roundtable).filter(Roundtable.id == req_roundtable_id).first()
+    else:
+        # 최근 회차 정보 가져오기
+        main_roundtable = db_session.query(Roundtable).filter(Roundtable.is_active == True).first()
 
     # 강연이 열리는 지역 가져오기
     area_opened_library = db_session.query(func.distinct(Library.area)).join(
@@ -374,7 +380,12 @@ def lecture_library_map():
         req_area = {"name": req_area}
 
     opened_area = [{"name": entry[0]} for entry in area_opened_library]
-    opened_area.append({"name": '특별한 도서관'})
+
+    # 특별한 도서관이 있는지 먼저 확인한다.
+    round_in_special_library = db_session.query(func.count(RoundtableAndLibrary.roundtable_id)).filter(
+        RoundtableAndLibrary.library_type != '일반', RoundtableAndLibrary.roundtable == main_roundtable)
+    if round_in_special_library.first()[0] > 0:
+        opened_area.append({"name": '특별한 도서관'})
 
     round_library_items = db_session.query(Library, RoundtableAndLibrary).join(
         RoundtableAndLibrary).filter(RoundtableAndLibrary.roundtable_id == main_roundtable.id)
@@ -386,7 +397,7 @@ def lecture_library_map():
         # 10회차 한정 코드가 될지도 모르지만 특별한 도서관(SF/장애인/다문화)만 따로 필터링해서 보여주도록 한다
         # 동작 조건은 특별한 도서관 일때만, 다만 특별한 도서관이 아닌 경우는 지역별 도서관 정보를 가져온다.
         # 이 기능은 이민아 선생님 요청사항입니다(의견을 많이 주셔서 특별히 반영해드립니다)
-        if req_area == '특별한 도서관':
+        if req_area["name"] == '특별한 도서관':
             round_library_items = round_library_items.filter(RoundtableAndLibrary.library_type.in_(['SF', '장애인', '다문화']))
         else:
             round_library_items = round_library_items.filter(Library.area == req_area["name"])
@@ -397,15 +408,17 @@ def lecture_library_map():
     statics_library = round_library_items2.filter(RoundtableAndLibrary.library_type == '일반')
     statstics_summary(statics_area_cnt, statics_library)
 
-    statics_library = round_library_items2.filter(RoundtableAndLibrary.library_type.in_(['SF', '장애인', '다문화']))
-    statstics_summary(statics_area_cnt, statics_library, '특별한 도서관')
+    if round_in_special_library.first()[0] > 0:
+        statics_library = round_library_items2.filter(RoundtableAndLibrary.library_type.in_(['SF', '장애인', '다문화']))
+        statstics_summary(statics_area_cnt, statics_library, '특별한 도서관')
 
-    # 지역별로 열리는 도서관 수 뽑아와야 함..(이건 생각보다 좀 걸리네..)
+    # 지역별로 열리는 도서관 수 뽑아와야 함..
     opened_library_cnt = db_session.query(Library.id).join(RoundtableAndLibrary).filter(
         RoundtableAndLibrary.roundtable_id == main_roundtable.id)
     gen_q = dict(db_session.query(Library.area, func.count(Library.area)).filter(
         Library.id.in_(opened_library_cnt.filter(RoundtableAndLibrary.library_type == '일반'))).group_by(Library.area))
-    gen_q['특별한 도서관'] = len(tuple(statics_library))
+    if round_in_special_library.first()[0] > 0:
+        gen_q['특별한 도서관'] = len(tuple(statics_library))
 
     for idx, item in enumerate(opened_area):
         stat_area_item = statics_area_cnt.get(item["name"])
@@ -431,14 +444,21 @@ def lecture_library_map():
 
     return render_template(
         "public/lecture_library_map.html",
+        show_roundtable_num=main_roundtable.id,
         library=library_list,
         area=opened_area)
 
 
 @page.route('/lecture_application_donate')
 def lecture_application_donate():
-    # 최근 회차 정보 가져오기
-    main_roundtable = db_session.query(Roundtable).filter(Roundtable.is_active == True).first()
+    # 사용자가 과거 데이터를 보고 싶을 경우 roundtable_id를 조회한다.
+    req_roundtable_id = request.args.get('roundtable', 0, type=int)
+
+    if req_roundtable_id:
+        main_roundtable = db_session.query(Roundtable).filter(Roundtable.id == req_roundtable_id).first()
+    else:
+        # 최근 회차 정보 가져오기
+        main_roundtable = db_session.query(Roundtable).filter(Roundtable.is_active == True).first()
 
     # 강연이 열리는 지역 가져오기
     area_opened_library = db_session.query(func.distinct(Library.area)).join(
@@ -447,7 +467,12 @@ def lecture_application_donate():
         RoundtableAndLibrary.library_type == '일반')
 
     opened_area = [{"name": entry[0]} for entry in area_opened_library]
-    opened_area.append({"name": '특별한 도서관'})
+
+    # 특별한 도서관이 있는지 먼저 확인한다.
+    round_in_special_library = db_session.query(func.count(RoundtableAndLibrary.roundtable_id)).filter(
+        RoundtableAndLibrary.library_type != '일반', RoundtableAndLibrary.roundtable == main_roundtable)
+    if round_in_special_library.first()[0] > 0:
+        opened_area.append({"name": '특별한 도서관'})
 
     first_area_name = opened_area[0] if len(opened_area) > 0 else ''
 
@@ -463,15 +488,18 @@ def lecture_application_donate():
     statics_library = opened_library.filter(RoundtableAndLibrary.library_type == '일반')
     statstics_summary(statics_area_cnt, statics_library)
 
-    statics_library = opened_library.filter(RoundtableAndLibrary.library_type.in_(['SF', '장애인', '다문화']))
-    statstics_summary(statics_area_cnt, statics_library, '특별한 도서관')
+    if round_in_special_library.first()[0] > 0:
+        statics_library = opened_library.filter(RoundtableAndLibrary.library_type.in_(['SF', '장애인', '다문화']))
+        statstics_summary(statics_area_cnt, statics_library, '특별한 도서관')
 
-    # 지역별로 열리는 도서관 수 뽑아와야 함..(이건 생각보다 좀 걸리네..)
+    # 지역별로 열리는 도서관 수 뽑아와야 함..
     opened_library_cnt = db_session.query(Library.id).join(RoundtableAndLibrary).filter(
         RoundtableAndLibrary.roundtable_id == main_roundtable.id)
     gen_q = dict(db_session.query(Library.area, func.count(Library.area)).filter(
         Library.id.in_(opened_library_cnt.filter(RoundtableAndLibrary.library_type == '일반'))).group_by(Library.area))
-    gen_q['특별한 도서관'] = len(tuple(statics_library))
+
+    if round_in_special_library.first()[0] > 0:
+        gen_q['특별한 도서관'] = len(tuple(statics_library))
 
     for idx, item in enumerate(opened_area):
         stat_area_item = statics_area_cnt.get(item["name"])
@@ -485,7 +513,7 @@ def lecture_application_donate():
     # 10회차 한정 코드가 될지도 모르지만 특별한 도서관(SF/장애인/다문화)만 따로 필터링해서 보여주도록 한다
     # 동작 조건은 특별한 도서관 일때만, 다만 특별한 도서관이 아닌 경우는 지역별 도서관 정보를 가져온다.
     # 이 기능은 이민아 선생님 요청사항입니다(의견을 많이 주셔서 특별히 반영해드립니다)
-    if area == '특별한 도서관':
+    if area["name"] == '특별한 도서관':
         opened_library = opened_library.filter(RoundtableAndLibrary.library_type.in_(['SF', '장애인', '다문화']))
     else:
         opened_library = opened_library.filter(Library.area == area["name"])
@@ -903,7 +931,9 @@ def find_match_uuid():
 
     # 만료일보다 기간이 지나면 해당 인증번호는 사용을 못하게 막아놔야함
     # 첫 비밀번호 확인
-    find_match_uuid_object = db_session.query(FindPasswordToken).filter(FindPasswordToken.find_expired_date >= datetime.datetime.now()).order_by(FindPasswordToken.id.desc()).first()
+    find_match_uuid_object = db_session.query(FindPasswordToken).filter(
+        FindPasswordToken.find_expired_date >= datetime.datetime.now()).\
+        order_by(FindPasswordToken.id.desc()).first()
     find_match_password_uuid = find_match_uuid_object.uuid
 
     if find_password is None:
@@ -912,11 +942,12 @@ def find_match_uuid():
     else:
         # 인증번호가 존재하고 일치할 경우
         # 해당 인증번호는 1회용으로 사용 예정
-        if find_match_password_uuid == find_uuid and find_match_uuid_object.find_email_use_yn is False:
+        if find_match_password_uuid == find_uuid and\
+                find_match_uuid_object.find_email_use_yn is False:
             find_match_uuid_object.find_email_use_yn = True
             return render_template("public/user/reset_password.html", uuid=find_uuid)
-        # 인증번호가 존재하나 잘못 입력할 경우
         else:
+            # 인증번호가 존재하나 잘못 입력할 경우
             return abort(404)
 
 
@@ -937,12 +968,9 @@ def reset_complete_password(uuid):
     # 해당된 패스워드를 SHA256 방식으로 변경
     req_json = request.get_json()
     reset_password = req_json.get('reset_password')
-    m = hashlib.sha256()
-    m.update(reset_password.encode('utf-8'))
 
     # 해당된 정보를 통해 USERID 변경
-    reset_password = m.hexdigest()
-    reset_complete_user.password = reset_password
+    reset_complete_user.set_password(reset_password)
     db_session.add(reset_complete_user)
 
     return jsonify(success=True)

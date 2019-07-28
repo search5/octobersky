@@ -69,7 +69,7 @@
             <div class="carousel-inner" role="listbox">
               <!-- Slide One - Set the background image for this slide in the line below -->
               {% for entry in slide_carousel %}
-                <div class="carousel-item {% if loop.index0 == 0 %}active{% endif %}" style="background-image: url({{ s3_object_url(entry.slide_img) }})">
+                <div class="carousel-item {% if loop.index0 == 0 %}active{% endif %}" style="background-image: url({{ s3_object_url(entry.slide_img) }}); background-position: center;">
                     <div class="carousel-caption d-none d-md-block">
                         <h3>{{ entry.slide_title }}</h3>
                         <p>{{ entry.slide_text }}</p>

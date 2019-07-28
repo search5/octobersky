@@ -35,6 +35,10 @@ class User(Base, UserMixin):
     vote = relationship("VoteBooks", back_populates="lecture_user")
     phone_search = column_property(func.replace(phone, '-', ''))
 
+    @hybrid_property
+    def lecture_and_host(self):
+        return sorted(list(self.lecture) + list(self.host), key=lambda x: x.roundtable_id)
+
     def __repr__(self):
         r = {
             'username': self.username,
@@ -156,7 +160,7 @@ class Library(Base):
 
     @hybrid_property
     def expected_listener(self):
-        return "{}({})".format(self.expected_audience, self.expected_listens)
+        return "{}({})".format(self.expected_audience or '', self.expected_listens or '')
 
     @hybrid_property
     def lib_description(self):
@@ -174,8 +178,8 @@ class Library(Base):
         if self.etc_equipment:
             addition.append(self.etc_equipment)
 
-        return Markup("{}({})<br>{}".format(self.library_place,
-                                            self.place_seats,
+        return Markup("{}({})<br>{}".format(self.library_place or '',
+                                            self.place_seats or '',
                                             "{} 사용 가능".format(", ".join(addition))))
 
 

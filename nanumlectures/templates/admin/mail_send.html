@@ -17,33 +17,47 @@
     <div class="card" id="app">
       <div class="card-body">
         <div class="form-group row">
-          <div class="col-2"><span>받는 사람 타입</span></div>
-          <div class="col-10">
-            <div class="btn-group btn-group-toggle" data-toggle="buttons">
-              <label class="btn btn-outline-success" @click="receive_type = 'A'" :class="{active: receive_type === 'A'}">
-                <input type="radio" name="receive_type" autocomplete="off"> 전체(도서관, 강연자, 진행자)
-              </label>
-              <label class="btn btn-outline-success" @click="receive_type = 'B'" :class="{active: receive_type === 'B'}">
-                <input type="radio" name="receive_type" autocomplete="off"> 도서관
-              </label>
-              <label class="btn btn-outline-success" @click="receive_type = 'C'" :class="{active: receive_type === 'C'}">
-                <input type="radio" name="receive_type" autocomplete="off"> 강연자
-              </label>
-              <label class="btn btn-outline-success" @click="receive_type = 'D'" :class="{active: receive_type === 'D'}">
-                <input type="radio" name="receive_type" autocomplete="off"> 진행자
-              </label>
-              <label class="btn btn-outline-success" @click="receive_type = 'E'" :class="{active: receive_type === 'E'}">
-                <input type="radio" name="receive_type" autocomplete="off"> 도서관 섭외
-              </label>
-              <label class="btn btn-outline-success" @click="receive_type = 'F'" :class="{active: receive_type === 'F'}">
-                <input type="radio" name="receive_type" autocomplete="off"> 별도 메일 전송(섭외, 양해 등)
-              </label>
+          <div class="col-2 d-none d-md-block"><span>받는 사람 타입</span></div>
+          <div class="col">
+            <label class="d-inline d-sm-inline d-md-none">받는 사람 타입</label>
+            <div class="d-none d-md-block">
+              <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-outline-success" @click="receive_type = 'A'" :class="{active: receive_type === 'A'}">
+                  <input type="radio" name="receive_type" autocomplete="off"> 전체(도서관, 강연자, 진행자)
+                </label>
+                <label class="btn btn-outline-success" @click="receive_type = 'B'" :class="{active: receive_type === 'B'}">
+                  <input type="radio" name="receive_type" autocomplete="off"> 도서관
+                </label>
+                <label class="btn btn-outline-success" @click="receive_type = 'C'" :class="{active: receive_type === 'C'}">
+                  <input type="radio" name="receive_type" autocomplete="off"> 강연자
+                </label>
+                <label class="btn btn-outline-success" @click="receive_type = 'D'" :class="{active: receive_type === 'D'}">
+                  <input type="radio" name="receive_type" autocomplete="off"> 진행자
+                </label>
+                <label class="btn btn-outline-success" @click="receive_type = 'E'" :class="{active: receive_type === 'E'}">
+                  <input type="radio" name="receive_type" autocomplete="off"> 도서관 섭외
+                </label>
+                <label class="btn btn-outline-success" @click="receive_type = 'F'" :class="{active: receive_type === 'F'}">
+                  <input type="radio" name="receive_type" autocomplete="off"> 별도 메일 전송(섭외, 양해 등)
+                </label>
+              </div>
+            </div>
+            <div class="d-block d-sm-block d-md-none">
+              <select class="form-control" v-model="receive_type">
+                <option value="A">전체(도서관, 강연자, 진행자)</option>
+                <option value="B">도서관</option>
+                <option value="C">강연자</option>
+                <option value="D">진행자</option>
+                <option value="E">도서관 섭외</option>
+                <option value="F">별도 메일 전송(섭외, 양해 등)</option>
+              </select>
             </div>
           </div>
         </div>
         <div class="form-group row">
-          <div class="col-2">지역구분</div>
-          <div class="col-10">
+          <div class="col-2 d-none d-md-block">지역구분</div>
+          <div class="col">
+            <label class="d-inline d-sm-inline d-md-none">지역구분</label>
             <select v-model="area" class="form-control" :disabled="receive_type === 'E' || receive_type === 'A' || receive_type === 'F'">
               <option value="all">전체</option>
               {% for item in area_opened_library %}
@@ -53,27 +67,31 @@
           </div>
         </div>
         <div class="form-group row">
-          <div class="col-2">받는 사람 주소</div>
-          <div class="col-10">
+          <div class="col-2 d-none d-md-block">받는 사람 주소</div>
+          <div class="col">
+            <label class="d-inline d-sm-inline d-md-none">받는 사람 주소</label>
             <input type="text" class="form-control" v-model="mail_addr" :disabled="receive_type !== 'E'" v-if="receive_type !== 'F'">
             <textarea v-model="mail_addr" rows="6" class="form-control" v-if="receive_type === 'F'" placeholder="이름 <메일주소>"></textarea>
           </div>
         </div>
         <div class="form-group row">
-          <div class="col-2">메일 제목</div>
-          <div class="col-10">
+          <div class="col-2 d-none d-md-block">메일 제목</div>
+          <div class="col">
+            <label class="d-inline d-sm-inline d-md-none">받는 사람 타입</label>
             <input type="text" class="form-control" v-model="mail_subject">
           </div>
         </div>
         <div class="form-group row">
-          <div class="col-2">메일 본문</div>
-          <div class="col-10">
+          <div class="col-2 d-none d-md-block">메일 본문</div>
+          <div class="col">
+            <label class="d-inline d-sm-inline d-md-none">메일 본문</label>
             <summer-note v-model="mail_content" placeholder="메일 내용을 입력해주세요"></summer-note>
           </div>
         </div>
         <div class="row">
-          <div class="col-2">첨부파일</div>
-          <div class="col-10">
+          <div class="col-2 d-none d-md-block">첨부파일</div>
+          <div class="col">
+            <label class="d-inline d-sm-inline d-md-none">첨부파일</label>
             <div id="filelist" class="border">
               {% raw %}
               <div :id="file.id" v-for="file in upload_files">

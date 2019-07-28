@@ -1,4 +1,5 @@
 {% extends "admin/base.html" %}
+{% import 'admin/card-footer.html' as footer with context %}
 
 {% block script %}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
@@ -11,105 +12,86 @@
 {% endblock %}
 
 {% block content %}
-    <div class="app-main-container container-fluid">
+  <div class="app-main-container container-fluid">
+    <h4 class="app-main-breadcrumb__title">물품 기부</h4>
 
-        <h4 class="app-main-breadcrumb__title">물품 기부</h4>
+    <!-- Breadcrumbs-->
+    <ol class="app-main-breadcrumb breadcrumb">
+      <li class="app-main-breadcrumb-item breadcrumb-item">
+        <a class="app-main-breadcrumb-item__a" href="/admin">Admin</a>
+      </li>
+      <li class="app-main-breadcrumb-item--sub breadcrumb-item active">물품 기부</li>
+    </ol>
 
-        <!-- Breadcrumbs-->
-        <ol class="app-main-breadcrumb breadcrumb">
-            <li class="app-main-breadcrumb-item breadcrumb-item">
-                <a class="app-main-breadcrumb-item__a" href="/admin">Admin</a>
-            </li>
-            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">물품 기부</li>
-        </ol>
+    <!-- Page Content -->
+    <div class="card mb-2">
+      <div class="card-body">
+          <table class="table table-hover is-responsive">
+              <thead>
+              <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">개최회차</th>
+                  <th scope="col">기부타입</th>
+                  <th scope="col">기부방법</th>
+                  <th scope="col">기부자</th>
+                  <th scope="col">확인</th>
+              </tr>
+              </thead>
+              <tbody>
+               {% for row in paginator %}
+                  <tr>
+                      <th scope="row">{{ (total_cnt - (items_per_page * (page - 1))) - loop.index0 }}</th>
+                      <td data-header="개최회차">{{ row.roundtable.roundtable_num }}회차</td>
+                      <td data-header="기부타입"><a href="{{ url_for('admin.goods_donation_view', donation=row.id) }}">{{ row.donation_type | donation_type }}</a></td>
+                      <td data-header="기부방법">{{ row.donation_transport | donation_transport }}</td>
+                      <td data-header="기부자">{% if row.lecture_user %}{{ row.lecture_user.name }}{% else %}별도로 기입할 필요 있음{% endif %}</td>
+                      <td data-header="확인"><input type="checkbox" {% if row.is_received %}checked{% endif %} style="width: 20px;height: 20px;" onchange="receive_check('{{ row.id }}', this)"></td>
+                  </tr>
+              {% endfor %}
+              </tbody>
+          </table>
+      </div>
+      <div class="card-footer">
+        {% set error_stack = namespace() %}
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+              {% for message in messages %}
+                {% set error_stack.class = 'is-invalid' %}
+                {% set error_stack.msg = message %}
+              {% endfor %}
+          {% endif %}
+        {% endwith %}
 
-        <!-- Page Content -->
-        <div class="card mb-2">
-            <div class="card-body">
-                <table class="table table-hover is-responsive">
-                    <thead>
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">개최회차</th>
-                        <th scope="col">기부타입</th>
-                        <th scope="col">기부방법</th>
-                        <th scope="col">기부자</th>
-                        <th scope="col">확인</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                     {% for row in paginator %}
-                        <tr>
-                            <th scope="row">{{ (total_cnt - (items_per_page * (page - 1))) - loop.index0 }}</th>
-                            <td>{{ row.roundtable.roundtable_num }}회차</td>
-                            <td><a href="{{ url_for('admin.goods_donation_view', donation=row.id) }}">{{ row.donation_type | donation_type }}</a></td>
-                            <td>{{ row.donation_transport | donation_transport }}</td>
-                            <td>{% if row.lecture_user %}{{ row.lecture_user.name }}{% else %}별도로 기입할 필요 있음{% endif %}</td>
-                            <td><input type="checkbox" {% if row.is_received %}checked{% endif %} style="width: 20px;height: 20px;" onchange="receive_check('{{ row.id }}', this)"></td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="card-footer">
-                <div class="row">
-                    <div class="col-6">
-                        <nav>
-                            <ul class="pagination justify-content-start">
-                                  {{ paginator.pager(
-                                       dotdot_attr={'class':'spacer'},
-                                       symbol_first='',
-                                       symbol_last='',
-                                       symbol_previous='<a href="#"><span>&laquo;</span></a>',
-                                       symbol_next='<a href="#"><span>&raquo;</span></a>',
-                                       link_tag=paginate_link_tag,
-                                       url=page_url|safe) | safe }}
-                            </ul>
-                        </nav>
-                    </div>
-                    {% set error_stack = namespace() %}
-                    {% with messages = get_flashed_messages() %}
-                      {% if messages %}
-                          {% for message in messages %}
-                            {% set error_stack.class = 'is-invalid' %}
-                            {% set error_stack.msg = message %}
-                          {% endfor %}
-                      {% endif %}
-                    {% endwith %}
-                    <div class="col-4">
-                      <form action="{{ url_for('admin.books') }}" method="get">
-                        <input type="hidden" name="page" value="{{ page }}">
-                        <div class="input-group">
-                          <div class="input-group-preped">
-                            <select class="form-control" name="search_option">
-                              <option value="roundtable_num">개최회차</option>
-                              <option value="donation_description">기부물품</option>
-                            </select>
-                          </div>
-                          <input type="text" class="form-control {{ error_stack.class }}" placeholder="검색어를 입력하세요" name="search_word">
-                          <div class="input-group-append">
-                            <button class="btn btn-success" type="submit">검색하기</button>
-                          </div>
-                          <div class="invalid-feedback">
-                            {{ error_stack.msg }}
-                          </div>
-                        </div>
-                      </form>
-                    </div>
-                    <div class="col-2 text-right">
-                        <a href="{{ url_for('admin.goods_donation_reg') }}" class="btn btn-primary">등록</a>
-                        <a href="{{ url_for('admin.goods_donation_download') }}" class="btn btn-success">다운로드</a>
-                    </div>
-                </div>
-            </div>
-        </div>
+        {% set list_url = url_for('admin.goods_donation') %}
+        {% set reg_url = url_for('admin.goods_donation_reg') %}
+        {% set download_url = url_for('admin.goods_donation_download') %}
+
+        {% call footer.make_md_footer("d-none d-md-block", paginator,
+           list_url, reg_url, paginate_link_tag, page_url, error_stack,
+           btn_download={"url": download_url, "name": "다운로드"}) %}
+          <select class="form-control" name="search_option">
+            <option value="roundtable_num">개최회차</option>
+            <option value="donation_description">기부물품</option>
+          </select>
+        {% endcall %}
+
+        {% call footer.make_sm_footer("d-block d-sm-block d-md-none",
+         paginator, list_url, reg_url, paginate_link_tag, page_url,
+         error_stack, btn_download={"url": download_url, "name": "다운로드"}) %}
+          <select class="form-control" name="search_option">
+            <option value="roundtable_num">개최회차</option>
+            <option value="donation_description">기부물품</option>
+          </select>
+        {% endcall %}
+      </div>
     </div>
-    <!-- /.container-fluid -->
-    <script>
-    function receive_check(goods_id, checkbox) {
-        axios.post("/admin/goods_donate/check", {donation_id: goods_id, checked: checkbox.checked}).then(function (resp) {
-            // 아무것도 안함(alert 메시지라도 줄 수는 있는데 주는게 맞을까...)
-        })
-    }
-    </script>
+  </div>
+  <!-- /.container-fluid -->
+  <script>
+  function receive_check(goods_id, checkbox) {
+      axios.post("/admin/goods_donate/check", {donation_id: goods_id, checked: checkbox.checked}).then(function (resp) {
+          // 아무것도 안함(alert 메시지라도 줄 수는 있는데 주는게 맞을까...)
+      })
+  }
+  </script>
 {% endblock %}

@@ -1,0 +1,409 @@
+{# -----------------------------------------------------------------------------
+ # 회차 관리, 강연자 관리, 진행자 관리, 추천도서 관리
+ # 물품 기부, 뉴스, FAQ, 사진첩, 디자인, 도서 관리 Footer(데스크톱, 모바일 대응)
+----------------------------------------------------------------------------- #}
+{% macro make_md_footer(class_, paginator, list_url, reg_url, paginate_link_tag, page_url, error_stack, btn_name='등록', btn_download=None) -%}
+  <div class="{{ class_ }}">
+    <div class="row">
+      <div class="col-6">
+        <nav>
+          <ul class="pagination justify-content-start">
+            {{ paginator.pager(
+                 dotdot_attr={'class':'spacer'},
+                 symbol_first='',
+                 symbol_last='',
+                 symbol_previous='<a href="#"><span>&laquo;</span></a>',
+                 symbol_next='<a href="#"><span>&raquo;</span></a>',
+                 link_tag=paginate_link_tag,
+                 url=page_url|safe) | safe }}
+          </ul>
+        </nav>
+      </div>
+      <div class="col-4">
+        <form action="{{ list_url }}" method="get">
+          <input type="hidden" name="page" value="{{ page }}">
+          <div class="input-group">
+            <div class="input-group-preped">
+              {{ caller() }}
+            </div>
+            <input type="text" class="form-control {{ error_stack.class }}" placeholder="검색어를 입력하세요" name="search_word">
+            <div class="input-group-append">
+              <button class="btn btn-success" type="submit">검색하기</button>
+            </div>
+            <div class="invalid-feedback">
+                {{ error_stack.msg }}
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="col-2 text-right">
+        <a href="{{ reg_url }}" class="btn btn-primary">{{ btn_name }}</a>
+        {% if btn_download %}
+          <a href="{{ btn_download['url'] }}" class="btn btn-success">{{ btn_download['name'] }}</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{%- endmacro %}
+
+{% macro make_sm_footer(class_, paginator, list_url, reg_url, paginate_link_tag, page_url, error_stack, btn_name='등록', btn_download=None) -%}
+  <div class="{{ class_ }}">
+    <div class="row">
+      <div class="col-12">
+        <nav>
+          <ul class="pagination justify-content-start">
+            {{ paginator.pager(
+                 dotdot_attr={'class':'spacer'},
+                 symbol_first='',
+                 symbol_last='',
+                 symbol_previous='<a href="#"><span>&laquo;</span></a>',
+                 symbol_next='<a href="#"><span>&raquo;</span></a>',
+                 link_tag=paginate_link_tag,
+                 url=page_url|safe) | safe }}
+          </ul>
+        </nav>
+      </div>
+    </div>
+    <form action="{{ list_url }}" method="get">
+      <input type="hidden" name="page" value="{{ page }}">
+      <div class="row">
+        <div class="col-12">
+          {{ caller() }}
+        </div>
+      </div>
+      <div class="row mt-1">
+        <div class="col-12">
+          <input type="text" class="form-control {{ error_stack.class }}" placeholder="검색어를 입력하세요" name="search_word">
+          <div class="invalid-feedback">
+            {{ error_stack.msg }}
+          </div>
+        </div>
+      </div>
+      <div class="row mt-1">
+        <div class="col-12">
+          <button class="btn btn-success" type="submit">검색하기</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12 text-right">
+          <a href="{{ reg_url }}" class="btn btn-primary">{{ btn_name }}</a>
+          {% if btn_download %}
+            <a href="{{ btn_download['url'] }}" class="btn btn-success">{{ btn_download['name'] }}</a>
+        {% endif %}
+        </div>
+      </div>
+    </form>
+  </div>
+{%- endmacro %}
+
+{# -----------------------------------------------------------------------------
+ # 도서관 관리 Footer(데스크톱, 모바일 대응)
+----------------------------------------------------------------------------- #}
+{% macro make_library_md_footer(class_, paginator, list_url, reg_url, paginate_link_tag, page_url) -%}
+  <div class="{{ class_ }}">
+    <div class="row">
+      <div class="col-6">
+        <nav>
+          <ul class="pagination justify-content-start">
+            {{ paginator.pager(
+                 dotdot_attr={'class':'spacer'},
+                 symbol_first='',
+                 symbol_last='',
+                 symbol_previous='<a href="#"><span>&laquo;</span></a>',
+                 symbol_next='<a href="#"><span>&raquo;</span></a>',
+                 link_tag=paginate_link_tag,
+                 url=page_url|safe) | safe }}
+          </ul>
+        </nav>
+      </div>
+      <div class="col-4">
+        <form action="{{ list_url }}" method="get">
+          <input type="hidden" name="page" value="{{ page }}">
+          {{ caller() }}
+        </form>
+      </div>
+      <div class="col-2 text-right">
+        <a href="{{ reg_url }}" class="btn btn-primary">등록</a>
+      </div>
+    </div>
+  </div>
+{%- endmacro %}
+
+{% macro make_library_sm_footer(class_, paginator, list_url, reg_url, paginate_link_tag, page_url, error_stack) -%}
+  <div class="{{ class_ }}">
+    <div class="row">
+      <div class="col-12">
+        <nav>
+          <ul class="pagination justify-content-start">
+            {{ paginator.pager(
+                 dotdot_attr={'class':'spacer'},
+                 symbol_first='',
+                 symbol_last='',
+                 symbol_previous='<a href="#"><span>&laquo;</span></a>',
+                 symbol_next='<a href="#"><span>&raquo;</span></a>',
+                 link_tag=paginate_link_tag,
+                 url=page_url|safe) | safe }}
+          </ul>
+        </nav>
+      </div>
+    </div>
+    <form action="{{ list_url }}" method="get">
+      <input type="hidden" name="page" value="{{ page }}">
+      {{ caller() }}
+      <div class="row mt-1">
+        <div class="col-12">
+          <input type="text" class="form-control {{ error_stack.class }}" placeholder="검색어를 입력하세요" name="search_word">
+          <div class="invalid-feedback">
+            {{ error_stack.msg }}
+          </div>
+        </div>
+      </div>
+      <div class="row mt-1">
+        <div class="col-12">
+          <button class="btn btn-success" type="submit">검색하기</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12 text-right">
+            <a href="{{ reg_url }}" class="btn btn-primary">등록</a>
+        </div>
+      </div>
+    </form>
+  </div>
+{%- endmacro %}
+
+
+{# -----------------------------------------------------------------------------
+ # 회원 관리 Footer(데스크톱, 모바일 대응)
+----------------------------------------------------------------------------- #}
+{% macro make_member_md_footer(class_, paginator, list_url, paginate_link_tag, page_url, error_stack) -%}
+  <div class="{{ class_ }}">
+    <div class="row">
+      <div class="col-6">
+        <nav>
+          <ul class="pagination justify-content-start">
+            {{ paginator.pager(
+                 dotdot_attr={'class':'spacer'},
+                 symbol_first='',
+                 symbol_last='',
+                 symbol_previous='<a href="#"><span>&laquo;</span></a>',
+                 symbol_next='<a href="#"><span>&raquo;</span></a>',
+                 link_tag=paginate_link_tag,
+                 url=page_url|safe) | safe }}
+          </ul>
+        </nav>
+      </div>
+      <div class="col-4">
+        <form action="{{ list_url }}" method="get">
+          <input type="hidden" name="page" value="{{ page }}">
+          <div class="input-group">
+            <div class="input-group-preped">
+              {{ caller() }}
+            </div>
+            <input type="text" class="form-control {{ error_stack.class }}" placeholder="검색어를 입력하세요" name="search_word">
+            <div class="input-group-append">
+              <button class="btn btn-success" type="submit">검색하기</button>
+            </div>
+            <div class="invalid-feedback">
+                {{ error_stack.msg }}
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{%- endmacro %}
+
+
+{% macro make_member_sm_footer(class_, paginator, list_url, paginate_link_tag, page_url, error_stack) -%}
+  <div class="{{ class_ }}">
+    <div class="row">
+      <div class="col-12">
+        <nav>
+          <ul class="pagination justify-content-start">
+            {{ paginator.pager(
+                 dotdot_attr={'class':'spacer'},
+                 symbol_first='',
+                 symbol_last='',
+                 symbol_previous='<a href="#"><span>&laquo;</span></a>',
+                 symbol_next='<a href="#"><span>&raquo;</span></a>',
+                 link_tag=paginate_link_tag,
+                 url=page_url|safe) | safe }}
+          </ul>
+        </nav>
+      </div>
+    </div>
+    <form action="{{ list_url }}" method="get">
+      <input type="hidden" name="page" value="{{ page }}">
+      {{ caller() }}
+      <div class="row mt-1">
+        <div class="col-12">
+          <input type="text" class="form-control {{ error_stack.class }}" placeholder="검색어를 입력하세요" name="search_word">
+          <div class="invalid-feedback">
+            {{ error_stack.msg }}
+          </div>
+        </div>
+      </div>
+      <div class="row mt-1">
+        <div class="col-12">
+          <button class="btn btn-success" type="submit">검색하기</button>
+        </div>
+      </div>
+    </form>
+  </div>
+{%- endmacro %}
+
+
+{# -----------------------------------------------------------------------------
+ # OT 및 뒤풀이 관리 Footer(데스크톱, 모바일 대응)
+----------------------------------------------------------------------------- #}
+{% macro make_ot_md_footer(class_, paginator, paginate_link_tag, page_url) -%}
+  <div class="{{ class_ }}">
+    <div class="row text-center">
+      <div class="col">
+        <nav>
+          <ul class="pagination justify-content-start">
+            {{ paginator.pager(
+                 dotdot_attr={'class':'spacer'},
+                 symbol_first='',
+                 symbol_last='',
+                 symbol_previous='<a href="#"><span>&laquo;</span></a>',
+                 symbol_next='<a href="#"><span>&raquo;</span></a>',
+                 link_tag=paginate_link_tag,
+                 url=page_url|safe) | safe }}
+          </ul>
+        </nav>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-3">
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">1차 OT 참석</span>
+          </div>
+          <div class="btn-group btn-group-toggle" data-toggle="buttons">
+            <label class="btn btn-outline-secondary {% if request.args.get('ot1_join', '') == 'on' %}active{% endif %}">
+              <input type="radio" name="ot1_join" autocomplete="off" value="on" {% if request.args.get('ot1_join', '') == 'on' %}checked{% endif %}> 참석
+            </label>
+            <label class="btn btn-outline-secondary {% if request.args.get('ot1_join', '') == 'off' %}active{% endif %}">
+              <input type="radio" name="ot1_join" autocomplete="off" value="off" {% if request.args.get('ot1_join', '') == 'off' %}checked{% endif %}> 참석안함
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="col-3">
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">2차 OT 참석</span>
+          </div>
+          <div class="btn-group btn-group-toggle" data-toggle="buttons">
+            <label class="btn btn-outline-secondary {% if request.args.get('ot2_join', '') == 'on' %}active{% endif %}">
+              <input type="radio" name="ot2_join" autocomplete="off" value="on" {% if request.args.get('ot2_join', '') == 'on' %}checked{% endif %}> 참석
+            </label>
+            <label class="btn btn-outline-secondary {% if request.args.get('ot2_join', '') == 'off' %}active{% endif %}">
+              <input type="radio" name="ot2_join" autocomplete="off" value="off" {% if request.args.get('ot2_join', '') == 'off' %}checked{% endif %}> 참석안함
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="col-2">
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">뒤풀이 참석</span>
+          </div>
+          <div class="btn-group btn-group-toggle" data-toggle="buttons">
+            <label class="btn btn-outline-secondary {% if request.args.get('party_join', '') == 'on' %}active{% endif %}">
+              <input type="radio" name="party_join" autocomplete="off" value="on" {% if request.args.get('party_join', '') == 'on' %}checked{% endif %}> 참석
+            </label>
+            <label class="btn btn-outline-secondary {% if request.args.get('party_join', '') == 'off' %}active{% endif %}">
+              <input type="radio" name="party_join" autocomplete="off" value="off" {% if request.args.get('party_join', '') == 'off' %}checked{% endif %}> 참석안함
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="col-2">
+        <button type="submit" class="btn btn-success">검색</button>
+        <a href="{{ url_for('admin.otandparty_csv') }}" class="btn btn-warning">내려받기</a>
+      </div>
+    </div>
+  </div>
+{%- endmacro %}
+
+
+{% macro make_ot_sm_footer(class_, paginator, paginate_link_tag, page_url) -%}
+  <div class="{{ class_ }}">
+    <div class="row text-center">
+      <div class="col-12">
+        <nav>
+          <ul class="pagination justify-content-start">
+            {{ paginator.pager(
+                 dotdot_attr={'class':'spacer'},
+                 symbol_first='',
+                 symbol_last='',
+                 symbol_previous='<a href="#"><span>&laquo;</span></a>',
+                 symbol_next='<a href="#"><span>&raquo;</span></a>',
+                 link_tag=paginate_link_tag,
+                 url=page_url|safe) | safe }}
+          </ul>
+        </nav>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12">
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">1차 OT 참석</span>
+          </div>
+          <div class="btn-group btn-group-toggle" data-toggle="buttons">
+            <label class="btn btn-outline-secondary {% if request.args.get('ot1_join', '') == 'on' %}active{% endif %}">
+              <input type="radio" name="ot1_join" autocomplete="off" value="on" {% if request.args.get('ot1_join', '') == 'on' %}checked{% endif %}> 참석
+            </label>
+            <label class="btn btn-outline-secondary {% if request.args.get('ot1_join', '') == 'off' %}active{% endif %}">
+              <input type="radio" name="ot1_join" autocomplete="off" value="off" {% if request.args.get('ot1_join', '') == 'off' %}checked{% endif %}> 불참
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12">
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">2차 OT 참석</span>
+          </div>
+          <div class="btn-group btn-group-toggle" data-toggle="buttons">
+            <label class="btn btn-outline-secondary {% if request.args.get('ot2_join', '') == 'on' %}active{% endif %}">
+              <input type="radio" name="ot2_join" autocomplete="off" value="on" {% if request.args.get('ot2_join', '') == 'on' %}checked{% endif %}> 참석
+            </label>
+            <label class="btn btn-outline-secondary {% if request.args.get('ot2_join', '') == 'off' %}active{% endif %}">
+              <input type="radio" name="ot2_join" autocomplete="off" value="off" {% if request.args.get('ot2_join', '') == 'off' %}checked{% endif %}> 불참
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12">
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">뒤풀이 참석</span>
+          </div>
+          <div class="btn-group btn-group-toggle" data-toggle="buttons">
+            <label class="btn btn-outline-secondary {% if request.args.get('party_join', '') == 'on' %}active{% endif %}">
+              <input type="radio" name="party_join" autocomplete="off" value="on" {% if request.args.get('party_join', '') == 'on' %}checked{% endif %}> 참석
+            </label>
+            <label class="btn btn-outline-secondary {% if request.args.get('party_join', '') == 'off' %}active{% endif %}">
+              <input type="radio" name="party_join" autocomplete="off" value="off" {% if request.args.get('party_join', '') == 'off' %}checked{% endif %}> 불참
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12">
+        <button type="submit" class="btn btn-success">검색</button>
+        <a href="{{ url_for('admin.otandparty_csv') }}" class="btn btn-warning">내려받기</a>
+      </div>
+    </div>
+  </div>
+{%- endmacro %}

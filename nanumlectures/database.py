@@ -3,8 +3,9 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import os
 from nanumlectures import settings
+from nanumlectures.settings import DB_USER, DB_PASS, DB_HOST, DB_PORT, DB_NAME
 
-DB_CONN_PARAMS = ('username', 'password', 'host', 5432, 'db')
+DB_CONN_PARAMS = (DB_USER, DB_PASS, DB_HOST, DB_PORT, DB_NAME)
 
 if not settings.INIT:
     DB_CONN_PARAMS = (os.environ['RDS_USERNAME'], os.environ['RDS_PASSWORD'], os.environ['RDS_HOSTNAME'],

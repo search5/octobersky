@@ -1,91 +1,76 @@
 @media screen and (max-width: 800px) {
-    .is-responsive {
-        width: 100%;
-        border-collapse: collapse;
-        border-spacing: 0;
-        display: block;
-        position: relative;
-    }
+	.is-responsive {
+		margin: 0 auto;
+		width: 100%;
+		border-spacing: 0;
+	}
 
-    .is-responsive td:empty:before {
-        content: " ";
-    }
+	.is-responsive thead {
+		position: absolute;
+		clip: rect(1px, 1px, 1px, 1px);
+		padding: 0;
+		border: 0;
+		height: 1px;
+		width: 1px;
+		overflow: hidden;
+	}
 
-    .is-responsive th,
-    .is-responsive td {
-        margin: 0;
-        vertical-align: top;
-    }
+	.is-responsive tbody,
+	.is-responsive tr,
+	.is-responsive th,
+	.is-responsive td {
+		display: block;
+		padding: 0;
+		text-align: left;
+		white-space: normal;
+	}
 
-    .is-responsive th {
-        text-align: left;
-    }
+	.is-responsive tr td,
+	.is-responsive tr th {
+		padding: 1em 0.5em;
+		vertical-align: middle;
+		overflow: hidden;
+		position: relative;
+		border: 1px solid #EDF0F1;
+		border-top: none;
+		width: 100%;
+		white-space: normal;
+	}
 
-    .is-responsive thead {
-        border-right: solid 2px #dbdbdb;
-        display: block;
-        float: left;
-    }
+	.is-responsive th[scope="row"] {
+		width: 100%;
+		text-align: center;
+		display: block;
+		background-color: #B3BFC6;
+		margin: 0 auto;
+		padding: .5em 0;
+	}
 
-    .is-responsive thead tr {
-        display: block;
-        padding: 0 10px 0 0;
-    }
+	.is-responsive td[data-header]:before {
+		content: attr(data-header);
+		display: block;
+		color: grey;
+		font-weight: bold;
+		text-align: left;
+		font-size: 10pt;
+	}
 
-    .is-responsive thead tr th::before {
-        content: " ";
-    }
+	.is-responsive td[data-header] > * {
+		display: block;
+		/*float: right;*/
+		/*clear: right;*/
+		margin-top: 0;
+	}
 
-    .is-responsive thead td,
-    .is-responsive thead th {
-        border-width: 0 0 1px;
-    }
+	.is-responsive td[data-header] > button {
+		display: inline;
+	}
 
-    .is-responsive tbody {
-        display: block;
-        width: auto;
-        position: relative;
-        overflow-x: auto;
-        white-space: nowrap;
-    }
-
-    .is-responsive tbody tr {
-        display: inline-block;
-        vertical-align: top;
-    }
-
-    .is-responsive th {
-        display: block;
-        text-align: right;
-    }
-
-    .is-responsive td {
-        display: block;
-        min-height: 1.25em;
-        text-align: left;
-    }
-
-    .is-responsive th:last-child,
-    .is-responsive td:last-child {
-        border-bottom-width: 0;
-    }
-
-    .is-responsive tr:last-child td:not(:last-child) {
-        border: 1px solid #dbdbdb;
-    }
-
-    .is-responsive.is-bordered td,
-    .is-responsive.is-bordered th {
-        border-width: 1px;
-    }
-
-    .is-responsive.is-bordered tr td:last-child,
-    .is-responsive.is-bordered tr th:last-child {
-        border-bottom-width: 1px;
-    }
-
-    .is-responsive.is-bordered tr:last-child td,
-    .is-responsive.is-bordered tr:last-child th {
-        border-width: 1px;
-    }
+	.is-responsive td[data-header]:after {
+		content: "";
+		position: absolute;
+		left: 0;
+		top: 0;
+		display: block;
+	}
 }

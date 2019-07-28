@@ -1,4 +1,5 @@
 {% extends "admin/base.html" %}
+{% import 'admin/card-footer.html' as footer with context %}
 
 {% block script %}
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
@@ -9,120 +10,54 @@
 {% endblock %}
 
 {% block content %}
-    <div class="app-main-container container-fluid">
+  <div class="app-main-container container-fluid">
+    <h4 class="app-main-breadcrumb__title">OT및뒤풀이 참석 여부</h4>
 
-        <h4 class="app-main-breadcrumb__title">OT및뒤풀이 참석 여부</h4>
+    <!-- Breadcrumbs-->
+    <ol class="app-main-breadcrumb breadcrumb">
+      <li class="app-main-breadcrumb-item breadcrumb-item">
+        <a class="app-main-breadcrumb-item__a" href="/admin">10월의 하늘</a>
+      </li>
+      <li class="app-main-breadcrumb-item--sub breadcrumb-item active">OT및뒤풀이 참석 여부</li>
+    </ol>
 
-        <!-- Breadcrumbs-->
-        <ol class="app-main-breadcrumb breadcrumb">
-            <li class="app-main-breadcrumb-item breadcrumb-item">
-                <a class="app-main-breadcrumb-item__a" href="/admin">10월의 하늘</a>
-            </li>
-            <li class="app-main-breadcrumb-item--sub breadcrumb-item active">OT및뒤풀이 참석 여부</li>
-        </ol>
-
-        <!-- Page Content -->
-        <div class="app-main-card card mb-2">
-          <form method="get">
-            <div class="card-body">
-              <table class="table table-hover table-bordered text-center">
-                <tr>
-                  <th rowspan="2" class="align-middle">#</th>
-                  <th rowspan="2" class="align-middle">도서관</th>
-                  <th rowspan="2" class="align-middle">신청자</th>
-                  <th colspan="2">OT</th>
-                  <th rowspan="2" class="align-middle">뒤풀이</th>
-                </tr>
-                <tr>
-                  <th>1차 OT</th>
-                  <th>2차 OT</th>
-                </tr>
-                {% for row in paginator %}
-                <tr>
-                  <td scope="row">{{ (total_cnt - (items_per_page * (page - 1))) - loop.index0 }}</td>
-                  <td>{{ row.party_user | library_find(row.roundtable) }}</td>
-                  <td>{{ row.party_user.name }}</td>
-                  <td>{{ row.ot1_join and '참석' or '불참' }}</td>
-                  <td>{{ row.ot2_join and '참석' or '불참' }}</td>
-                  <td>{{ row.party_join and '참석' or '불참' }}</td>
-                </tr>
-                {% endfor %}
-              </table>
-            </div>
-            <div class="card-footer">
-              <div class="row text-center">
-                <div class="col">
-                  <nav>
-                    <ul class="pagination justify-content-start">
-                      {{ paginator.pager(
-                           dotdot_attr={'class':'spacer'},
-                           symbol_first='',
-                           symbol_last='',
-                           symbol_previous='<a href="#"><span>&laquo;</span></a>',
-                           symbol_next='<a href="#"><span>&raquo;</span></a>',
-                           link_tag=paginate_link_tag,
-                           url=page_url|safe) | safe }}
-                    </ul>
-                  </nav>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-3">
-                  <div class="input-group mb-3">
-                    <div class="input-group-prepend">
-                      <span class="input-group-text">1차 OT 참석</span>
-                    </div>
-                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                      <label class="btn btn-outline-secondary {% if request.args.get('ot1_join', '') == 'on' %}active{% endif %}">
-                        <input type="radio" name="ot1_join" autocomplete="off" value="on" {% if request.args.get('ot1_join', '') == 'on' %}checked{% endif %}> 참석
-                      </label>
-                      <label class="btn btn-outline-secondary {% if request.args.get('ot1_join', '') == 'off' %}active{% endif %}">
-                        <input type="radio" name="ot1_join" autocomplete="off" value="off" {% if request.args.get('ot1_join', '') == 'off' %}checked{% endif %}> 참석안함
-                      </label>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-3">
-                  <div class="input-group mb-3">
-                    <div class="input-group-prepend">
-                      <span class="input-group-text">2차 OT 참석</span>
-                    </div>
-                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                      <label class="btn btn-outline-secondary {% if request.args.get('ot2_join', '') == 'on' %}active{% endif %}">
-                        <input type="radio" name="ot2_join" autocomplete="off" value="on" {% if request.args.get('ot2_join', '') == 'on' %}checked{% endif %}> 참석
-                      </label>
-                      <label class="btn btn-outline-secondary {% if request.args.get('ot2_join', '') == 'off' %}active{% endif %}">
-                        <input type="radio" name="ot2_join" autocomplete="off" value="off" {% if request.args.get('ot2_join', '') == 'off' %}checked{% endif %}> 참석안함
-                      </label>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-2">
-                  <div class="input-group mb-3">
-                    <div class="input-group-prepend">
-                      <span class="input-group-text">뒤풀이 참석</span>
-                    </div>
-                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                      <label class="btn btn-outline-secondary {% if request.args.get('party_join', '') == 'on' %}active{% endif %}">
-                        <input type="radio" name="party_join" autocomplete="off" value="on" {% if request.args.get('party_join', '') == 'on' %}checked{% endif %}> 참석
-                      </label>
-                      <label class="btn btn-outline-secondary {% if request.args.get('party_join', '') == 'off' %}active{% endif %}">
-                        <input type="radio" name="party_join" autocomplete="off" value="off" {% if request.args.get('party_join', '') == 'off' %}checked{% endif %}> 참석안함
-                      </label>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-2">
-                  <button type="submit" class="btn btn-success">검색</button>
-                  <a href="{{ url_for('admin.otandparty_csv') }}" class="btn btn-warning">내려받기</a>
-                </div>
-              </div>
-            </div>
-          </form>
+    <!-- Page Content -->
+    <div class="app-main-card card mb-2">
+      <form method="get">
+        <div class="card-body">
+          <table class="table table-hover table-bordered text-center is-responsive">
+            <thead>
+            <tr>
+              <th rowspan="2" class="align-middle">#</th>
+              <th rowspan="2" class="align-middle">도서관</th>
+              <th rowspan="2" class="align-middle">신청자</th>
+              <th colspan="2">OT</th>
+              <th rowspan="2" class="align-middle">뒤풀이</th>
+            </tr>
+            <tr>
+              <th>1차 OT</th>
+              <th>2차 OT</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in paginator %}
+            <tr>
+              <th scope="row">{{ (total_cnt - (items_per_page * (page - 1))) - loop.index0 }}</th>
+              <td data-header="도서관">{{ row.party_user | library_find(row.roundtable) }}</td>
+              <td data-header="신청자">{{ row.party_user.name }}</td>
+              <td data-header="1차 OT">{{ row.ot1_join and '참석' or '불참' }}</td>
+              <td data-header="2차 OT">{{ row.ot2_join and '참석' or '불참' }}</td>
+              <td data-header="뒤풀이">{{ row.party_join and '참석' or '불참' }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
         </div>
+        <div class="card-footer">
+          {{ footer.make_ot_md_footer("d-none d-md-block", paginator, paginate_link_tag, page_url) }}
+          {{ footer.make_ot_sm_footer("d-block d-sm-block d-md-none", paginator, paginate_link_tag, page_url) }}
+        </div>
+      </form>
     </div>
-    <!-- /.container-fluid -->
-  <script>
-
-  </script>
+  </div>
 {% endblock %}

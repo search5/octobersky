@@ -6,7 +6,6 @@ import google_auth_oauthlib.helpers
 import yaml
 from flask import Blueprint, url_for, session, redirect, request
 
-from nanumlectures.lib.gauth2 import CLIENT_SECRET
 from nanumlectures.lib.public_context import library2dict, area_short_name
 from nanumlectures.models import GoogleToken, db_session
 from nanumlectures.routes.admin_views.board_view import BoardListView, BoardRegView, BoardEditView, BoardDetailView
@@ -45,6 +44,7 @@ from nanumlectures.routes.admin_views.roundtable_view import (
     RoundtableRegView, RoundtableDetailView,
     RoundtableEditView, RoundtableListView, RoundtableActiveView)
 from nanumlectures.routes.admin_views.vote_books_view import VoteBooksListView, VoteBooksListCsvView
+from nanumlectures.settings import CLIENT_SECRET
 
 page = Blueprint('admin', __name__, url_prefix="/admin", static_folder='../static/admin', static_url_path='/static')
 
@@ -253,7 +253,6 @@ page.add_url_rule('/main_admin', view_func=main_admin_view)
 # 2019/06/15 20:19 처리 작업 진행 중...
 #############################################################################
 GOOGLE_SCOPES = [
-    'https://www.googleapis.com/auth/gmail.send',
     'https://www.googleapis.com/auth/photoslibrary',
     'https://www.googleapis.com/auth/photoslibrary.sharing'
 ]

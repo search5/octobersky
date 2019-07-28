@@ -101,11 +101,11 @@
                   <tbody>
                       {% for row in paginator %}
                           <tr>
-                            <td>{{ row.book_info['book1'] }}</td>
-                            <td>{{ row.book_info['book1_desc'] }}</td>
-                            <td>{{ row.book_info['book2'] }}</td>
-                            <td>{{ row.book_info['book3'] }}</td>
-                            <td>{{ row.book_info['etc'] }}</td>
+                            <td data-header="도서 1">{{ row.book_info['book1'] }}</td>
+                            <td data-header="도서추천 이유">{{ row.book_info['book1_desc'] }}</td>
+                            <td data-header="도서 2">{{ row.book_info['book2'] }}</td>
+                            <td data-header="도서 3">{{ row.book_info['book3'] }}</td>
+                            <td data-header="기타 도서">{{ row.book_info['etc'] }}</td>
                           </tr>
                       {% endfor %}
                   </tbody>

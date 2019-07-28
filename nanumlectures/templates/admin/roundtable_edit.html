@@ -9,6 +9,7 @@
 {% endblock %}
 
 {% block css %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('public.static', filename='css/mobile-table.css') }}">
     <style type="text/css">
       .v-select .dropdown-toggle {
         height: 38px !important;
@@ -68,27 +69,27 @@
         <form class="app-main-form">
         <div class="form-group row">
           <label for="roundtableNum" class="app-main-form__label col-sm-2 col-form-label">개최회차</label>
-          <div class="col-sm-10">
+          <div class="col-sm-12">
             <input type="number" class="form-control" v-model="record.roundtableNum" id="roundtableNum" placeholder="개최회차를 숫자로 입력하세요">
           </div>
         </div>
         <div class="form-group row">
           <label for="roundtableYear" class="app-main-form__label col-sm-2 col-form-label">개최년도</label>
-          <div class="col-sm-10">
+          <div class="col-sm-12">
             <input type="number" class="form-control" v-model="record.roundtableYear" id="roundtableYear" placeholder="개최년도를 4자리 숫자로 입력하세요">
           </div>
         </div>
         <div class="form-group row">
           <label class="app-main-form__label col-form-label col-sm-2 pt-0">준비위원회</label>
-          <div class="col-10">
+          <div class="col-12">
             <textarea class="form-control" v-model="record.staff" placeholder="준비위원회 분들 이름을 입력해주시기 바랍니다" rows="2"></textarea>
           </div>
         </div>
         <div class="form-group row">
           <label class="app-main-form__label col-form-label col-sm-2 pt-0">도서관</label>
-          <div class="col-10">
+          <div class="col-12">
             <div class="card">
-              <div class="card-header">
+              <div class="card-header d-none d-md-block">
                 <div class="input-group mb-1">
                   {% raw %}
                   <v-select label="library_name" :filterable="false" :options="options"
@@ -125,25 +126,62 @@
                   </div>
                 </div>
               </div>
+              <div class="card-header d-block d-sm-block d-md-none">
+                {% raw %}
+                <v-select label="library_name" :filterable="false" :options="options"
+                          @search="onSearch" style="flex: 1" v-model="library">
+                  <template slot="no-options">
+                    검색할 도서관 이름을 입력하세요
+                  </template>
+                  <template slot="option" slot-scope="option">
+                    <div class="d-center">
+                      {{ option.library_name }} ({{ option.library_addr }})
+                    </div>
+                  </template>
+                  <template slot="selected-option" slot-scope="option">
+                    <div class="selected d-center">
+                      {{ option.library_name }} ({{ option.library_addr }})
+                    </div>
+                  </template>
+                </v-select>
+                {% endraw %}
+                <select v-model="session_time" class="form-control mt-1" style="flex: 0.1">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                </select>
+                <select v-model="library_type" class="form-control mt-1" style="flex: 0.1">
+                  <option value="일반">일반</option>
+                  <option value="SF">SF</option>
+                  <option value="장애인">장애인</option>
+                  <option value="다문화">다문화</option>
+                </select>
+                <div class="btn-group btn-block mt-1">
+                  <button class="btn btn-info" @click.prevent="library_add">추가</button>
+                  <button class="btn btn-danger" @click.prevent="library_del">삭제</button>
+                </div>
+              </div>
               <div class="card-body" style="height: 400px; overflow-y: auto">
-                  <table class="table table-hover">
+                  <table class="table table-hover is-responsive">
                       <thead>
                       <tr>
-                          <th>도서관명</th>
-                          <th>세션 수</th>
-                          <th>수정</th>
+                        <th>도서관명</th>
+                        <th class="d-inline d-sm-block d-md-none"></th>
+                        <th>세션 수</th>
+                        <th>수정</th>
                       </tr>
                       </thead>
                       <tbody ref="libraries">
                       {% raw %}
                       <tr v-for="(item, index) in filtered_library" :key="index" @click.stop="library_select($event, index, item)">
-                          <td>{{ item.library.library_name }} ({{ item.library.library_addr }})</td>
-                          <td>{{ item.session_time }}</td>
-                          <td>
-                            <button class="btn btn-warning" @click.exact.prevent.stop="library_modify($event, item)">
-                              <i class="far fa-edit"></i>
-                            </button>
-                          </td>
+                        <th scope="row">{{ item.library.library_name }} <span class="d-none d-md-inline-block">({{ item.library.library_addr }})</span></th>
+                        <td class="d-block d-sm-block d-md-none" data-header="주소">{{ item.library.library_addr }}</td>
+                        <td data-header="세션 수">{{ item.session_time }}</td>
+                        <td data-header="수정">
+                          <button class="btn btn-warning" @click.exact.prevent.stop="library_modify($event, item)">
+                            <i class="far fa-edit"></i>
+                          </button>
+                        </td>
                       </tr>
                       {% endraw %}
                       </tbody>

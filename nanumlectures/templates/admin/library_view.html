@@ -180,7 +180,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            {% for entry in library.roundtable %}
+                            {% for entry in library.roundtable | sort(attribute='roundtable_id', reverse=True) %}
                             <tr>
                                 <td>{{ loop.index }}</td>
                                 <td>{{ entry.roundtable.roundtable_num }}</td>

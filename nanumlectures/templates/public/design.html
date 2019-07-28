@@ -38,9 +38,9 @@
         <tbody>
          {% for row in paginator %}
             <tr>
-              <td width="10%">{{ row.roundtable.roundtable_num }} 회차</td>
-              <td width="30%"><span class="form-control-static"><a href="{{ url_for('public.archive_design_download', design=row.id, filename=row.design_files.keys() | design_file_name) }}">{{ row.design_name }}</a></span></td>
-              <td width="60%"><span class="form-control-static"><a href="{{ url_for('public.archive_design_download', design=row.id, filename=row.design_files.keys() | design_file_name) }}">{{ row.design_files.keys() | design_file_name }}</a></span></td>
+              <th scope="row" width="10%">{{ row.roundtable.roundtable_num }} 회차</th>
+              <td data-header="디자인명" width="30%"><span class="form-control-static"><a href="{{ url_for('public.archive_design_download', design=row.id, filename=row.design_files.keys() | design_file_name) }}">{{ row.design_name }}</a></span></td>
+              <td data-header="디자인 파일" width="60%"><span class="form-control-static"><a href="{{ url_for('public.archive_design_download', design=row.id, filename=row.design_files.keys() | design_file_name) }}">{{ row.design_files.keys() | design_file_name }}</a></span></td>
             </tr>
          {% endfor %}
         </tbody>

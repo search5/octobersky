@@ -73,3 +73,13 @@ AWS_SECRET_ACCESS_KEY = ''
 SES_HOST = ''
 SES_ID = ""
 SES_PASS = ""
+
+DB_USER = ''
+DB_PASS = ''
+DB_HOST = ''
+DB_PORT = 5432
+DB_NAME = ''
+
+S3_PUBLIC_BUCKET = ''
+
+CLIENT_SECRET = {}

@@ -378,43 +378,32 @@
                 <th scope="col">#</th>
                 <th scope="col">참여회차</th>
                 <th scope="col">도서관</th>
-                <th scope="col" scope="col">강연명</th>
+                <th scope="col">강연명</th>
                 <th scope="col">강연일</th>
                 <th scope="col">참여구분</th>
                 <th scope="col">취소</th>
               </tr>
               </thead>
               <tbody>
-              {% for entry in user[8].lecture %}
+              {% for entry in user[8].lecture_and_host | sort(attribute="roundtable_id", reverse=True) %}
+                {% set is_lecture = 'lecture_title' in dir(entry) %}
                 <tr>
-                  <td>{{ loop.index }}</td>
-                  <td>{{ entry.roundtable.roundtable_num }} 회차</td>
-                  <td>{{ entry.library.library_name }}</td>
-                  <td>{{ entry.lecture_title }}</td>
-                  <td>{{ entry.roundtable.roundtable_date }}</td>
-                  <td>강연기부</td>
-                  <td class="btn-group">
+                  <td data-header="#">{{ loop.index }}</td>
+                  <td data-header="참여회차">{{ entry.roundtable.roundtable_num }} 회차</td>
+                  <td data-header="도서관">{{ entry.library.library_name }}</td>
+                  <td data-header="강연명">{{ is_lecture and entry.lecture_title or '-' }}</td>
+                  <td data-header="강연일">{{ entry.roundtable.roundtable_date }}</td>
+                  <td data-header="참여구분">{{ is_lecture and '강연기부' or '진행기부' }}</td>
+                  <td data-header="취소">
                     {% if modified_allow_date(entry) %}
-                      <button class="btn btn-info btn-sm" @click.prevent="modify_lecture_show('{{ entry.id }}')">수정
-                      </button>
-                      <button class="btn btn-danger btn-sm" @click.prevent="cancel('lecture', '{{ entry.id }}')">취소
-                      </button>
-                    {% endif %}
-                  </td>
-                </tr>
-              {% endfor %}
-              {% for entry in user[8].host %}
-                <tr>
-                  <td>{{ loop.index }}</td>
-                  <td>{{ entry.roundtable.roundtable_num }} 회차</td>
-                  <td>{{ entry.library.library_name }}</td>
-                  <td>-</td>
-                  <td>{{ entry.roundtable.roundtable_date }}</td>
-                  <td>진행기부</td>
-                  <td class="btn-group">
-                    {% if modified_allow_date(entry) %}
-                      <button class="btn btn-danger btn-sm" @click.prevent="cancel('host', '{{ entry.id }}')">취소
-                      </button>
+                    <div class="btn-group">
+                      {% if is_lecture %}
+                        <button class="btn btn-info btn-sm" @click.prevent="modify_lecture_show('{{ entry.id }}')">수정</button>
+                      {% endif %}
+                      <button class="btn btn-danger btn-sm" @click.prevent="cancel('{{ "lecture" if is_lecture else "host"}}', '{{ entry.id }}')">취소</button>
+                    </div>
+                    {% else %}
+                      &nbsp;
                     {% endif %}
                   </td>
                 </tr>
@@ -436,17 +425,17 @@
                 <th style="width: 11%;">참여회차</th>
                 <th>첫번째 도서</th>
                 <th>도서 추천이유</th>
-                <th>취소</th>
+                <th>수정</th>
               </tr>
               </thead>
               <tbody>
               {% for entry in user[8].vote %}
                 <tr>
-                  <td>{{ loop.index }}</td>
-                  <td>{{ entry.roundtable.roundtable_num }} 회차</td>
-                  <td>{{ entry.book_info.book1 }}</td>
-                  <td>{{ entry.book_info.book1_desc }}</td>
-                  <td class="btn-group">
+                  <td data-header="#">{{ loop.index }}</td>
+                  <td data-header="참여회차">{{ entry.roundtable.roundtable_num }} 회차</td>
+                  <td data-header="첫번째 도서">{{ entry.book_info.book1 }}</td>
+                  <td data-header="도서 추천이유">{{ entry.book_info.book1_desc }}</td>
+                  <td data-header="수정" class="btn-group">
                       <button class="btn btn-info btn-sm" @click.prevent="modify_vote_show({{ entry.id }}, {{ entry.book_info }})">수정
                       </button>
                   </td>

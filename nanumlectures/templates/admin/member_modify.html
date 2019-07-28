@@ -172,7 +172,7 @@
         el: "#app",
         data: {
             record: {
-                username: '{{ record[8].social_auth.scalar().uid }}',
+                username: '{{ record[8].social_auth.filter_by(provider='username').scalar().uid }}',
                 password: '',
                 name: '{{ record[1] }}',
                 email: '{{ record[2] or '' }}',

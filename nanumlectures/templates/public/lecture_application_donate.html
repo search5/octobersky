@@ -1,10 +1,15 @@
 {% extends "public/base.html" %}
 
 {% block css %}
-    <style type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Noto+Sans|Open+Sans&display=swap" rel="stylesheet">
+  <style type="text/css">
     .bd-highlight {
         border: dotted 0.5px #FFFCFC;
         color: #ffffff;
+    }
+
+    .summary-content {
+      font-family: 'Noto Sans CJK JP Light', sans-serif;
     }
 
     .area_width {
@@ -57,7 +62,7 @@
 
     <div class="bg-success d-flex flex-wrap">
       {% for item in area %}
-        <div class="p-2 area_width"><a href="{{ url_for('public.lecture_application_donate', area=item["name"]) }}" style="color: white;">{{ library_short2long(item) }} {{ item["statics"] }}</a></div>
+        <div class="p-2 area_width"><a href="{{ url_for('public.lecture_application_donate', area=item["name"], roundtable=show_roundtable_num) }}" style="color: white;">{{ library_short2long(item) }} {{ item["statics"] }}</a></div>
       {% endfor %}
     </div>
 
@@ -97,14 +102,17 @@
                 {% set library_dependency = library_sessions(library, show_roundtable_num, lecture_addition.round_num) %}
                 <div class="d-none d-sm-block">
                 {% for lecture, host in library_dependency %}
-                  {% set card_width = {3: '32%', 2: '48%', 1:"96%"}[lecture_addition.round_num] %}
+                  {% set card_width = {3: '32%', 2: '48.7%', 1:"99%"}[lecture_addition.round_num] %}
                   <li class="list-inline-item" style="width: {{ card_width }};">
                     <div class="card">
                       <div class="card-body" style="height: 255px">
                       {% if lecture %}
                         <h5 class="card-title">{{ lecture.lecture_title }}</h5>
                         <h6 class="card-subtitle mb-2 text-muted">{{ lecture.lecture_info }}</h6>
-                        <p class="card-text text-justify">{{ shortcut_summary(lecture.lecture_summary, lecture.lecture_info) }}</p>
+                        <p class="card-text text-justify summary-content">{{ shortcut_summary(lecture.lecture_summary, lecture.lecture_info, lecture.lecture_title, lecture_addition.round_num) }}</p>
+                        {#<h5 class="card-title">{{ '가가가가가가가가가가가' * 3 }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">{{ '가가가가가가가가가가가가가가' * 3}}</h6>
+                        <p class="card-text text-justify summary-content">가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가가</p>#}
                       {% else %}
                         <h5 class="card-title"><span style="color: grey;">강연이 비어있습니다</span></h5>
                         {% if lecture_addition.library_type == '일반' %}
@@ -757,6 +765,14 @@
         }
     })
     </script>
+{% endblock %}
+
+{% block old_links %}
+  <div class="row">
+    <div class="col-12 text-right text-white">
+      이전 사이트: {{ opened_library_links() }}
+    </div>
+  </div>
 {% endblock %}
 
 {% block footer_script %}

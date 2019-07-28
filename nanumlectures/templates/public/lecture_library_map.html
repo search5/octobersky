@@ -167,7 +167,7 @@
           <a href="{{ url_for('public.lecture_library_map', area="all") }}" style="color: white;">전체</a>
         </div>
       {% for item in area %}
-        <div class="p-2 area_width"><a href="{{ url_for('public.lecture_library_map', area=item["name"]) }}" style="color: white;">{{ library_short2long(item) }} {{ item["statics"] }}</a></div>
+        <div class="p-2 area_width"><a href="{{ url_for('public.lecture_library_map', area=item["name"], roundtable=show_roundtable_num) }}" style="color: white;">{{ library_short2long(item) }} {{ item["statics"] }}</a></div>
       {% endfor %}
     </div>
 
@@ -267,4 +267,12 @@
         }
     })
     </script>
+{% endblock %}
+
+{% block old_links %}
+  <div class="row">
+    <div class="col-12 text-right text-white">
+      이전 사이트: {{ opened_library_links() }}
+    </div>
+  </div>
 {% endblock %}

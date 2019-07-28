@@ -5,6 +5,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
 {% endblock %}
 
+{% block css %}
+  <link rel="stylesheet" type="text/css" href="{{ url_for('public.static', filename='css/mobile-table.css') }}">
+{% endblock %}
+
 {% block content %}
     <div class="app-main-container container-fluid">
         <!-- Breadcrumbs-->
@@ -72,7 +76,7 @@
                 <h4>참여기록</h4>
                 <div class="row">
                     <div class="col-12">
-                        <table class="table table-hover">
+                        <table class="table table-hover is-responsive">
                             <thead>
                             <tr>
                                 <th>#</th>
@@ -84,24 +88,14 @@
                             </tr>
                             </thead>
                             <tbody>
-                            {% for entry in record[8].lecture %}
+                            {% for entry in record[8].lecture_and_host | sort(attribute="roundtable_id", reverse=True) %}
                             <tr>
-                              <td>{{ loop.index }}</td>
-                              <td>{{ entry.roundtable.roundtable_num }} 회차</td>
-                              <td><a href="{{ url_for('admin.library_view', library=entry.library.id) }}">{{ entry.library.library_name }}</a></td>
-                              <td>{{ entry.lecture_title }}</td>
-                              <td>{{ entry.roundtable.roundtable_date }}</td>
-                              <td>강연기부</td>
-                            </tr>
-                            {% endfor %}
-                            {% for entry in record[8].host %}
-                            <tr>
-                              <td>{{ loop.index }}</td>
-                              <td>{{ entry.roundtable.roundtable_num }} 회차</td>
-                              <td><a href="{{ url_for('admin.library_view', library=entry.library.id) }}">{{ entry.library.library_name }}</a></td>
-                              <td>-</td>
-                              <td>{{ entry.roundtable.roundtable_date }}</td>
-                              <td>진행기부</td>
+                              <th scope="row">{{ loop.index }}</th>
+                              <td data-header="참여회차">{{ entry.roundtable.roundtable_num }} 회차</td>
+                              <td data-header="도서관"><a href="{{ url_for('admin.library_view', library=entry.library.id) }}">{{ entry.library.library_name }}</a></td>
+                              <td data-header="강연명">{{ 'lecture_title' in dir(entry) and entry.lecture_title or '-' }}</td>
+                              <td data-header="강연일">{{ entry.roundtable.roundtable_date }}</td>
+                              <td data-header="강연구분">{{ 'lecture_title' in dir(entry) and '강연기부' or '진행기부' }}</td>
                             </tr>
                             {% endfor %}
                             </tbody>

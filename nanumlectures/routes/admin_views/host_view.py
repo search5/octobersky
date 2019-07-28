@@ -45,7 +45,7 @@ class SessionHostListView(MethodView):
                 records = records.filter(search_column == int(search_word) - 1)
             else:
                 records = records.filter(search_column.ilike('%{}%'.format(search_word)))
-        records = records.order_by(desc(SessionHost.id))
+        records = records.order_by(desc(SessionHost.roundtable_id))
         total_cnt = records.count()
 
         paginator = paginate.Page(records, current_page, page_url=page_url,

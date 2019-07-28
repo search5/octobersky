@@ -1,6 +1,6 @@
 flask
 gunicorn
-social-auth-core
+https://s3.ap-northeast-2.amazonaws.com/elasticbeanstalk-ap-northeast-2-931146565216/social-auth-core-3.1.0.zip
 social-auth-app-flask
 social-auth-app-flask-sqlalchemy
 social-auth-storage-sqlalchemy
@@ -16,6 +16,7 @@ wtforms
 paginate
 paginate_sqlalchemy
 google-cloud-storage
+boto3
 bs4
 lxml
 google_auth_httplib2

@@ -1,90 +1,83 @@
 {% extends "admin/base.html" %}
+{% import 'admin/card-footer.html' as footer with context %}
 
 {% block css %}
   <link rel="stylesheet" type="text/css" href="{{ url_for('public.static', filename='css/mobile-table.css') }}">
 {% endblock %}
 
 {% block content %}
-      <div class="app-main-container container-fluid">
+  <div class="app-main-container container-fluid">
+    <h4 class="app-main-breadcrumb__title">회원 관리</h4>
 
-          <h4 class="app-main-breadcrumb__title">회원 관리</h4>
+    <!-- Breadcrumbs-->
+    <ol class="app-main-breadcrumb breadcrumb">
+        <li class="app-main-breadcrumb-item breadcrumb-item">
+            <a class="app-main-breadcrumb-item__a" href="/admin">10월의 하늘</a>
+        </li>
+        <li class="app-main-breadcrumb-item--sub breadcrumb-item active">회원 관리</li>
+    </ol>
 
-          <!-- Breadcrumbs-->
-          <ol class="app-main-breadcrumb breadcrumb">
-              <li class="app-main-breadcrumb-item breadcrumb-item">
-                  <a class="app-main-breadcrumb-item__a" href="/admin">10월의 하늘</a>
-              </li>
-              <li class="app-main-breadcrumb-item--sub breadcrumb-item active">회원 관리</li>
-          </ol>
-
-          <!-- Page Content -->
-          <div class="card">
-              <div class="card-body">
-                <table class="table table-hover is-responsive">
-                  <thead>
-                  <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">ID</th>
-                    <th scope="col">이름</th>
-                    <th scope="col">이메일</th>
-                    <th scope="col">전화번호</th>
-                    <th scope="col">마지막 로그인</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  {% for row in paginator %}
-                    <tr>
-                      <th scope="row">{{ (total_cnt - (items_per_page * (page - 1))) - loop.index0 }}</th>
-                      <td><a
-                          href="{{ url_for('admin.member_view', uid=row.username) }}">{{ row.social_auth.filter_by(provider='username').scalar().uid }}</a>
-                      </td>
-                      <td>{{ row.name }}</td>
-                      <td>{{ row.email or '' }}</td>
-                      <td>{{ row.phone or '' }}</td>
-                      <td>{{ date_format(row.last_login_date and (row.last_login_date + kst), '%Y-%m-%d %H:%M:%S') }}</td>
-                    </tr>
-                  {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-              <div class="card-footer">
-                  <div class="row">
-                    <div class="col-6">
-                        <nav>
-                            <ul class="pagination justify-content-start">
-                                {{ paginator.pager(
-                                       dotdot_attr={'class':'spacer'},
-                                       symbol_first='',
-                                       symbol_last='',
-                                       symbol_previous='<a href="#"><span>&laquo;</span></a>',
-                                       symbol_next='<a href="#"><span>&raquo;</span></a>',
-                                       link_tag=paginate_link_tag,
-                                       url=page_url|safe) | safe }}
-                            </ul>
-                        </nav>
-                    </div>
-                    <div class="col-4">
-                      <form action="{{ url_for('admin.member_list') }}" method="get">
-                        <input type="hidden" name="page" value="{{ page }}">
-                        <div class="input-group">
-                          <div class="input-group-preped">
-                            <select class="form-control" name="search_option">
-                              <option value="username">ID</option>
-                              <option value="name">이름</option>
-                              <option value="email">이메일</option>
-                              <option value="phone">전화번호</option>
-                            </select>
-                          </div>
-                          <input type="text" class="form-control" placeholder="검색어를 입력하세요" name="search_word">
-                          <div class="input-group-append">
-                            <button class="btn btn-success" type="submit">검색하기</button>
-                          </div>
-                        </div>
-                      </form>
-                    </div>
-                </div>
-              </div>
-          </div>
+    <!-- Page Content -->
+    <div class="card">
+      <div class="card-body">
+        <table class="table table-hover is-responsive">
+          <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">ID</th>
+            <th scope="col">이름</th>
+            <th scope="col">이메일</th>
+            <th scope="col">전화번호</th>
+            <th scope="col">마지막 로그인</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for row in paginator %}
+            <tr>
+              <th scope="row">{{ (total_cnt - (items_per_page * (page - 1))) - loop.index0 }}</th>
+              <td data-header="ID">
+                <a href="{{ url_for('admin.member_view', uid=row.username) }}">{{ row.social_auth.filter_by(provider='username').scalar().uid }}</a>
+              </td>
+              <td data-header="이름">{{ row.name }}</td>
+              <td data-header="이메일">{{ row.email or '' }}</td>
+              <td data-header="전화번호">{{ row.phone or '' }}</td>
+              <td data-header="마지막 로그인">{{ date_format(row.last_login_date and (row.last_login_date + kst), '%Y-%m-%d %H:%M:%S') }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
       </div>
-    <!-- /.container-fluid -->
+      <div class="card-footer">
+        {% set error_stack = namespace() %}
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+              {% for message in messages %}
+                {% set error_stack.class = 'is-invalid' %}
+                {% set error_stack.msg = message %}
+              {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        {% set list_url = url_for('admin.member_list') %}
+
+        {% call footer.make_member_md_footer("d-none d-md-block", paginator, list_url, paginate_link_tag, page_url, error_stack) %}
+          <select class="form-control" name="search_option">
+            <option value="username">ID</option>
+            <option value="name">이름</option>
+            <option value="email">이메일</option>
+            <option value="phone">전화번호</option>
+          </select>
+        {% endcall %}
+
+        {% call footer.make_member_sm_footer("d-block d-sm-block d-md-none", paginator, list_url, paginate_link_tag, page_url, error_stack) %}
+          <select class="form-control" name="search_option">
+            <option value="username">ID</option>
+            <option value="name">이름</option>
+            <option value="email">이메일</option>
+            <option value="phone">전화번호</option>
+          </select>
+        {% endcall %}
+      </div>
+    </div>
+  </div>
 {% endblock %}

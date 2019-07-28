@@ -3,6 +3,7 @@ import glob
 import os
 import re
 import zipfile
+from csv import DictReader
 from functools import partial
 
 import click
@@ -17,7 +18,7 @@ from nanumlectures import main
 from subprocess import Popen, PIPE
 
 from nanumlectures.database import db_session
-from nanumlectures.models import Library, PageTemplate
+from nanumlectures.models import Library, PageTemplate, Lecture, SessionHost
 
 
 def create_app():
